@@ -483,6 +483,68 @@ parameters to avoid shadowing.
 Verification: backend **238/238**, frontend **75/75**, migration check clean,
 flake8/black/isort green, typecheck/lint/build green.
 
+
+### QA cycle: input-fuzz hardening + multi-tenancy audit (2026-08-22)
+
+**Task 024 — Resolver-level error envelope + fuzz regressions**
+(independent QA agent).
+
+*Defect (fixed).* Path-traversal identifiers (../../etc/passwd as a URL pk)
+broke out of the DRF-resolved namespace at the URL-resolver level and
+returned Django HTML 404 page, violating the documented JSON error contract
+for API consumers. Fixed at the shared layer: apps/core/error_views.py
+handler404/handler500 wired in config/urls.py, returning the standardized
+envelope for any /api/ path while keeping Django default pages elsewhere.
+No per-view changes.
+
+*Regression suite.* apps/core/tests/test_input_fuzz.py (7 tests) pins:
+malformed/numeric/traversal/nonexistent pks → enveloped 404 across
+five modules; invalid filterset enum → clean 400; injection-shaped
+search/ordering inert; page_size clamped to the 200 maximum; out-of-range
+pages → enveloped 404. A live probe of 12 hostile-input cases produced
+zero 500s. Suite: backend 245/245.
+
+*Multi-tenancy deep audit (finding — BLOCKED on Q-055, not fixed by
+design).* The platform has **no user-company binding**: identity.User
+carries no company/site FK and no domain queryset scopes by the requesting
+user's org. Consequence: today, **any authenticated user holding a module
+permission can read/update/delete/transition ANY company's records of that
+module by ID** (cross-company horizontal access). This is NOT patched
+because the correct policy (per-user company assignment? site membership?
+role-based?) is exactly the OPEN decision Q-055/Q-053 (DR-033) — inventing
+one is forbidden. Required business decision + severity documented here;
+until resolved the system must be treated as single-tenant-open and must
+not host two unrelated companies. Serializer-level cross-company
+consistency (DR-040) remains enforced.
+
+### QA cycle: frontend route-gating consistency (2026-08-22)
+
+**Task 025 - Approvals & notifications route guards** (independent QA
+agent). A scripted sweep of all 69 route definitions found exactly two leaf
+routes mounted without the standard `ProtectedRoute` wrapper:
+`/workflow/approvals` and `/notifications` (every other leaf route is gated;
+`master-data`/`workflow` are layout-only parents whose children are gated).
+Both pages are backend IsAuthenticated-only surfaces, so the fix wraps them
+in permission-less `ProtectedRoute` (login redirect, no permission gate) —
+matching both the app-wide convention and the API contract. Unauthenticated
+visitors no longer land on data-calling screens that can only fail.
+
+*Note:* at reporting time `npm run typecheck` shows errors in brand-new WIP
+pages from a concurrent agent (organization departments / site capabilities /
+machine create); they are excluded from this claim and owned by that agent.
+
+### Multi-tenancy preparation map (2026-08-22)
+
+**Task 026 — Q-055 dependency map** (no behavior change). Added
+`docs/architecture/multi-tenancy-preparation.md`: the complete inventory of
+company-scoped models (14 direct company-FK models, ~20 indirectly scoped via
+parent chains, site-scoped organization surfaces, generic entity-reference
+surfaces such as attachments and workflow instances, and the deliberately
+global master data), plus the layer-by-layer change-point map (read choke
+point on the shared base viewset, write-path assignment policy, generic-surface
+resolution, frontend company selectors, test strategy) that a future Q-055
+implementation will follow. Documents — without inventing — the
+single-tenant-open risk until the scoping decision is confirmed.
 <!-- APPEND-MODULE-TABLE -->
 
 ## Module status matrix

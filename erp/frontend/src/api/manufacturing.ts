@@ -10,6 +10,7 @@
  * and triggers the activate transition — it never duplicates the rule.
  */
 import { apiClient } from './client';
+import type { Paginated } from './masterData';
 import type { RevisionStatus } from './engineering';
 
 export type { RevisionStatus };
@@ -111,4 +112,80 @@ export function activateRoutingRevision(id: string): Promise<StructureRevision> 
     `/manufacturing/routing-revisions/${id}/activate/`,
     {},
   );
+}
+
+/** Retrieve one BOM root by id. */
+export function fetchBom(id: string): Promise<BillOfMaterials> {
+  return apiClient.get<BillOfMaterials>(`/manufacturing/boms/${id}/`);
+}
+
+/**
+ * All revisions of one BOM root, newest first — its version history
+ * (backend filters `?root=<id>`).
+ */
+export async function listBomRevisions(rootId: string): Promise<StructureRevision[]> {
+  const page = await apiClient.get<Paginated<StructureRevision>>(
+    `/manufacturing/bom-revisions/?root=${encodeURIComponent(rootId)}&page_size=100`,
+  );
+  return [...page.results].sort((a, b) => b.revision_number - a.revision_number);
+}
+
+/** One consumed material of a BOM revision (mirrors ``BomLineSerializer``). */
+export interface BomLine {
+  id: string;
+  revision: string;
+  sequence: number;
+  material: string;
+  quantity_per_output: string;
+  uom: string;
+  /** Free text — the canonical basis set is OPEN (Q-027). */
+  consumption_basis: string;
+  scrap_pct: string | null;
+  notes: string;
+}
+
+/** Lines of one BOM revision (`?revision=<id>`, ordered by sequence). */
+export async function listBomLines(revisionId: string): Promise<BomLine[]> {
+  const page = await apiClient.get<Paginated<BomLine>>(
+    `/manufacturing/bom-lines/?revision=${encodeURIComponent(revisionId)}&page_size=100`,
+  );
+  return [...page.results].sort((a, b) => a.sequence - b.sequence);
+}
+
+/** Retrieve one routing root by id. */
+export function fetchRouting(id: string): Promise<Routing> {
+  return apiClient.get<Routing>(`/manufacturing/routings/${id}/`);
+}
+
+/** All revisions of one routing root, newest first. */
+export async function listRoutingRevisions(rootId: string): Promise<StructureRevision[]> {
+  const page = await apiClient.get<Paginated<StructureRevision>>(
+    `/manufacturing/routing-revisions/?root=${encodeURIComponent(rootId)}&page_size=100`,
+  );
+  return [...page.results].sort((a, b) => b.revision_number - a.revision_number);
+}
+
+/** One operation of a routing revision (mirrors ``RoutingOperationSerializer``). */
+export interface RoutingOperation {
+  id: string;
+  revision: string;
+  sequence: number;
+  work_center: string;
+  operation_name: string;
+  output_material: string | null;
+  setup_time_minutes: string | null;
+  run_rate: string | null;
+  /** Free text — standard templates are OPEN (Q-029). */
+  run_rate_basis: string;
+  notes: string;
+}
+
+/** Operations of one routing revision (`?revision=<id>`, ordered by sequence). */
+export async function listRoutingOperations(
+  revisionId: string,
+): Promise<RoutingOperation[]> {
+  const page = await apiClient.get<Paginated<RoutingOperation>>(
+    `/manufacturing/routing-operations/?revision=${encodeURIComponent(revisionId)}&page_size=100`,
+  );
+  return [...page.results].sort((a, b) => a.sequence - b.sequence);
 }

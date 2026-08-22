@@ -47,7 +47,7 @@ export function BomRootCreatePage(): JSX.Element {
     setError(null);
     setSubmitting(true);
     try {
-      await createBomRoot({ spec_revision: specRevision, output_material: outputMaterial || null });
+      await createBomRoot({ spec_revision: specRevision, output_material: outputMaterial || undefined });
       navigate('/manufacturing/boms');
     } catch (err) {
       setError(isApiError(err) ? err.message : t('common.error'));

@@ -82,6 +82,9 @@ export interface UnitOfMeasure {
 export interface Employee {
   id: string;
   company: string;
+  site: string | null;
+  department: string | null;
+  user: string | null;
   employee_code: string;
   first_name_fa: string;
   last_name_fa: string;
@@ -89,6 +92,8 @@ export interface Employee {
   last_name_en: string;
   job_title: string;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SiteCapability {
@@ -130,4 +135,23 @@ export function createPartner(payload: Partial<Partner>): Promise<Partner> {
 /** Create a material via the audited service layer. */
 export function createMaterial(payload: Partial<Material>): Promise<Material> {
   return apiClient.post<Material>('/catalog/materials/', payload);
+}
+
+/** Create a product via the audited service layer. */
+export function createProduct(payload: Partial<Product>): Promise<Product> {
+  return apiClient.post<Product>('/catalog/products/', payload);
+}
+
+/** Create a unit of measure (no audit — lightweight reference data). */
+export function createUom(
+  payload: Partial<UnitOfMeasure>,
+): Promise<UnitOfMeasure> {
+  return apiClient.post<UnitOfMeasure>('/catalog/uoms/', payload);
+}
+
+/** Create an employee (audited write path). */
+export function createEmployee(
+  payload: Partial<Employee>,
+): Promise<Employee> {
+  return apiClient.post<Employee>('/hr/employees/', payload);
 }

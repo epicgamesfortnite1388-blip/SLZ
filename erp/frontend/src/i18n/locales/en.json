@@ -167,6 +167,7 @@
   "products": {
     "title": "Products",
     "subtitle": "Finished-goods identity and taxonomy.",
+    "new": "New product",
     "createdAt": "Created",
     "detail": {
       "title": "Product details",
@@ -207,6 +208,7 @@
   "uoms": {
     "title": "Units of measure",
     "subtitle": "Units and their dimensions.",
+    "new": "New unit",
     "dimension": "Dimension",
     "dimensions": {
       "MASS": "Mass",
@@ -220,8 +222,11 @@
   "employees": {
     "title": "Employees",
     "subtitle": "Minimal employee master.",
+    "new": "New employee",
     "code": "Employee code",
     "jobTitle": "Job title",
+    "firstName": "First name",
+    "lastName": "Last name",
     "detail": {
       "title": "Employee details",
       "back": "← Back to employees",

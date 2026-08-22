@@ -10,13 +10,16 @@ import { PartnersPage } from '@/pages/masterData/PartnersPage';
 import { PartnerCreatePage } from '@/pages/masterData/PartnerCreatePage';
 import { PartnerDetailPage } from '@/pages/masterData/PartnerDetailPage';
 import { ProductsPage } from '@/pages/masterData/ProductsPage';
+import { ProductCreatePage } from '@/pages/masterData/ProductCreatePage';
 import { ProductsDetailPage } from '@/pages/masterData/ProductsDetailPage';
 import { MaterialsPage } from '@/pages/masterData/MaterialsPage';
 import { MaterialCreatePage } from '@/pages/masterData/MaterialCreatePage';
 import { MaterialDetailPage } from '@/pages/masterData/MaterialDetailPage';
 import { UomsPage } from '@/pages/masterData/UomsPage';
+import { UomCreatePage } from '@/pages/masterData/UomCreatePage';
 import { EmployeesPage } from '@/pages/masterData/EmployeesPage';
 import { EmployeeDetailPage } from '@/pages/masterData/EmployeeDetailPage';
+import { EmployeeCreatePage } from '@/pages/masterData/EmployeeCreatePage';
 import { CustomerProductsPage } from '@/pages/engineering/CustomerProductsPage';
 import { CustomerProductCreatePage } from '@/pages/engineering/CustomerProductCreatePage';
 import { CustomerProductDetailPage } from '@/pages/engineering/CustomerProductDetailPage';
@@ -120,6 +123,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="products/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.product.manage">
+                <ProductCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="products/:id"
             element={
               <ProtectedRoute requiredPermission="catalog.product.view">
@@ -152,6 +163,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="uoms/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.uom.manage">
+                <UomCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="uoms"
             element={
               <ProtectedRoute requiredPermission="catalog.uom.view">
@@ -164,6 +183,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="hr.employee.view">
                 <EmployeesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="employees/new"
+            element={
+              <ProtectedRoute requiredPermission="hr.employee.manage">
+                <EmployeeCreatePage />
               </ProtectedRoute>
             }
           />

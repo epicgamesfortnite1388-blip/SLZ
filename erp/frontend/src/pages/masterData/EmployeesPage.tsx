@@ -1,4 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
+import { Button } from '@/components/ui';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import type { Employee } from '@/api/masterData';
@@ -18,6 +21,8 @@ const columns: Column<Employee>[] = [
 ];
 
 export function EmployeesPage(): JSX.Element {
+  const { t } = useTranslation();
+  const { hasPermission } = useAuth();
   const collection = useCollection<Employee>('/hr/employees/');
   const navigate = useNavigate();
   return (
@@ -28,6 +33,13 @@ export function EmployeesPage(): JSX.Element {
       rowKey={(r) => r.id}
       collection={collection}
       onRowClick={(row) => navigate(`/master-data/employees/${row.id}`)}
+      headerAction={
+        hasPermission('hr.employee.manage') ? (
+          <Link to="/master-data/employees/new">
+            <Button size="sm">{t('employees.new')}</Button>
+          </Link>
+        ) : null
+      }
     />
   );
 }
