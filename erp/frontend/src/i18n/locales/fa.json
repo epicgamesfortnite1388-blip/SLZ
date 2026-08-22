@@ -99,7 +99,8 @@
       "nameEn": "نام (انگلیسی)",
       "company": "شرکت",
       "active": "فعال",
-      "baseUom": "واحد پایه"
+      "baseUom": "واحد پایه",
+      "uom": "واحد"
     }
   },
   "organization": {
@@ -138,6 +139,18 @@
         "CUTTING_SEWING": "برش / دوخت",
         "WAREHOUSING": "انبارداری"
       }
+    }
+  },
+  "roles": {
+    "title": "نقش‌ها",
+    "subtitle": "نقش‌های دسترسی سامانه — مجموعه‌های مجوز قابل انتساب به کاربران.",
+    "new": "نقش جدید",
+    "fields": {
+      "nameEn": "نام (انگلیسی)",
+      "nameFa": "نام (فارسی)",
+      "permissions": "مجوزها",
+      "isSystem": "سیستمی",
+      "description": "توضیحات"
     }
   },
   "partners": {
@@ -340,7 +353,25 @@
       "effectiveFrom": "اعتبار از",
       "actions": "عملیات",
       "specRevision": "نسخه مشخصات فنی",
-      "outputMaterial": "ماده خروجی"
+      "outputMaterial": "ماده خروجی",
+      "lineMaterial": "ماده",
+      "lineQuantity": "مقدار",
+      "consumptionBasis": "مبنای مصرف",
+      "scrapPct": "درصد ضایعات",
+      "opWorkCenter": "مرکز کار",
+      "opName": "عملیات",
+      "setupTime": "زمان راه‌اندازی (دقیقه)",
+      "runRate": "نرخ تولید"
+    },
+    "detail": {
+      "bomTitle": "جزئیات BOM",
+      "bomSubtitle": "فهرست مواد نسخه‌بندی‌شده با تاریخچه بازنگری.",
+      "routingTitle": "جزئیات مسیر تولید",
+      "routingSubtitle": "عملیات‌های ترتیبی نسخه‌بندی‌شده با تاریخچه بازنگری.",
+      "headerTitle": "سربرگ",
+      "revisionsTitle": "بازنگری‌ها",
+      "linesTitle": "خطوط مواد",
+      "operationsTitle": "عملیات‌ها"
     },
     "statuses": {
       "DRAFT": "پیش‌نویس",

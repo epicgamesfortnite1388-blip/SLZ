@@ -33,7 +33,9 @@ import { MachineCreatePage } from '@/pages/manufacturing/MachineCreatePage';
 import { BomRevisionsPage } from '@/pages/manufacturing/BomRevisionsPage';
 import { BomRootsPage } from '@/pages/manufacturing/BomRootsPage';
 import { BomRootCreatePage } from '@/pages/manufacturing/BomRootCreatePage';
+import { BomRootDetailPage } from '@/pages/manufacturing/BomRootDetailPage';
 import { RoutingRevisionsPage } from '@/pages/manufacturing/RoutingRevisionsPage';
+import { RoutingRootDetailPage } from '@/pages/manufacturing/RoutingRootDetailPage';
 import { RoutingRootsPage } from '@/pages/manufacturing/RoutingRootsPage';
 import { RoutingRootCreatePage } from '@/pages/manufacturing/RoutingRootCreatePage';
 import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
@@ -62,6 +64,8 @@ import { WorkflowDefinitionsPage } from '@/pages/workflow/WorkflowDefinitionsPag
 import { WorkflowDefinitionCreatePage } from '@/pages/workflow/WorkflowDefinitionCreatePage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { AuditLogPage } from '@/pages/audit/AuditLogPage';
+import { RolesPage } from '@/pages/identity/RolesPage';
+import { RoleCreatePage } from '@/pages/identity/RoleCreatePage';
 import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { CompaniesPage } from '@/pages/organization/CompaniesPage';
 import { CompanyCreatePage } from '@/pages/organization/CompanyCreatePage';
@@ -305,6 +309,22 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="boms/:id"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.bom.view">
+                <BomRootDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="boms/:rootId/revisions"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.bom.view">
+                <BomRootDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="bom-revisions"
             element={
               <ProtectedRoute requiredPermission="manufacturing.bom.view">
@@ -325,6 +345,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="manufacturing.routing.manage">
                 <RoutingRootCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="routings/:rootId/revisions"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.routing.view">
+                <RoutingRootDetailPage />
               </ProtectedRoute>
             }
           />
@@ -623,6 +651,25 @@ export default function App(): JSX.Element {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/identity">
+          <Route
+            path="roles"
+            element={
+              <ProtectedRoute requiredPermission="identity.role.manage">
+                <RolesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="roles/new"
+            element={
+              <ProtectedRoute requiredPermission="identity.role.manage">
+                <RoleCreatePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
 
         <Route
           path="documents"

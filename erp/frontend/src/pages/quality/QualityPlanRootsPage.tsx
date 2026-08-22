@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { Button } from '@/components/ui';
@@ -14,7 +13,6 @@ import type { QualityPlan } from '@/api/quality';
  */
 export function QualityPlanRootsPage(): JSX.Element {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const collection = useCollection<QualityPlan>('/quality/plans/');
   const canManage = hasPermission('quality.plan.manage');
@@ -35,7 +33,7 @@ export function QualityPlanRootsPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
-      onRowClick={(r) => navigate(`/quality/plans/${r.id}/revisions`)}
+      onRowClick={undefined}
       headerAction={
         canManage ? (
           <Link to="/quality/plans/new">

@@ -35,7 +35,7 @@ export function BomRootsPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
-      onRowClick={(r) => navigate(`/manufacturing/boms/${r.id}/revisions`)}
+      onRowClick={(r) => navigate(`/manufacturing/boms/${r.id}`)}
       headerAction={
         canManage ? (
           <Link to="/manufacturing/boms/new">

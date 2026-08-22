@@ -99,7 +99,8 @@
       "nameEn": "Name (EN)",
       "company": "Company",
       "active": "Active",
-      "baseUom": "Base unit"
+      "baseUom": "Base unit",
+      "uom": "UoM"
     }
   },
   "organization": {
@@ -138,6 +139,18 @@
         "CUTTING_SEWING": "Cutting / sewing",
         "WAREHOUSING": "Warehousing"
       }
+    }
+  },
+  "roles": {
+    "title": "Roles",
+    "subtitle": "Platform RBAC roles — permission bundles assignable to users.",
+    "new": "New role",
+    "fields": {
+      "nameEn": "Name (EN)",
+      "nameFa": "Name (FA)",
+      "permissions": "Permissions",
+      "isSystem": "System",
+      "description": "Description"
     }
   },
   "partners": {
@@ -340,7 +353,25 @@
       "effectiveFrom": "Effective from",
       "actions": "Actions",
       "specRevision": "Spec revision",
-      "outputMaterial": "Output material"
+      "outputMaterial": "Output material",
+      "lineMaterial": "Material",
+      "lineQuantity": "Quantity",
+      "consumptionBasis": "Consumption basis",
+      "scrapPct": "Scrap %",
+      "opWorkCenter": "Work center",
+      "opName": "Operation",
+      "setupTime": "Setup (min)",
+      "runRate": "Run rate"
+    },
+    "detail": {
+      "bomTitle": "BOM Detail",
+      "bomSubtitle": "Versioned bill of materials with revision history.",
+      "routingTitle": "Routing Detail",
+      "routingSubtitle": "Versioned ordered operations with revision history.",
+      "headerTitle": "Header",
+      "revisionsTitle": "Revisions",
+      "linesTitle": "Material Lines",
+      "operationsTitle": "Operations"
     },
     "statuses": {
       "DRAFT": "Draft",
