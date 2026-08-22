@@ -4,7 +4,7 @@
 made-to-order flexible-packaging manufacturer, one of six NEPTA-group companies
 (phase-1 = SLZ/Tehran + Helena/Saveh).
 **Workspace:** `E:\Code\Project\ERP` (backend `erp/backend`, frontend `erp/frontend`).
-**Last updated:** 2026-08-22.
+**Last updated:** 2026-08-22 (autonomous implementation batch #2).
 
 This document is the single consolidated status view. Requirement *text* lives in
 `docs/requirements/requirements-baseline.md`; per-decision history in
@@ -19,16 +19,15 @@ This document is the single consolidated status view. Requirement *text* lives i
 | Status | Meaning |
 |---|---|
 | **IMPLEMENTED** | Code written and self-consistent. |
-| **STATICALLY CHECKED** | `py_compile`/`compileall` clean + JSON/i18n parity verified in the authoring sandbox. |
 | **RUNTIME VERIFIED** | Actually executed: lint suite, migrations generated, backend tests green (SQLite), frontend typecheck/lint/vitest/build green. |
 | **BLOCKED** | Cannot proceed without an SLZ business decision (must not be invented). |
 | **DEFERRED** | Consciously out of scope for the current phase. |
 
-> **Verification status (2026-08-22, Task 023).** The codebase is now
+> **Verification status (2026-08-22, end of autonomous batch #2).** The codebase is
 > **RUNTIME VERIFIED** on a Windows dev machine: flake8/black/isort clean, all
 > app migrations generated (`makemigrations --check` → no drift), backend suite
 > **245/245 OK**, frontend `tsc --noEmit` + ESLint (0 warnings) + vitest
-> **75/75 OK** + production build OK. Scope caveat: tests run on SQLite per
+> **25 files / 83 tests OK** + production build OK. Scope caveat: tests run on SQLite per
 > `config.settings.test`; the PostgreSQL/Redis/Celery stack via
 > `docker compose up --build` has **not** been exercised yet (no Docker on this
 > machine) and remains the only unverified deployment path.
@@ -37,17 +36,37 @@ This document is the single consolidated status view. Requirement *text* lives i
 
 ## Snapshot
 
-- **18 backend apps** implemented (8 foundation + 10 domain), **30+ test modules**
-  (**245 tests** at last count — suite kept green through concurrent additions).
-- **Frontend:** 18 domain page areas + login/dashboard/error pages; 16 API layers;
-  **23 test files / 75 tests** (all passing); production build verified.
-- **23 architecture documents** + full requirements baseline, decision register,
-  traceability, contradictions, and do-not-build-yet lists.
-- **Phase reached:** platform foundation + confirmed master-data / document /
-  definition layers across all modules are complete. The **execution &
-  traceability layer is not started** — it is blocked on business decisions.
+- **18 backend apps** implemented (8 foundation + 10 domain). **245 backend tests** (all passing).
+- **Frontend:** ~80 page components across all 18 domain areas; **25 test files / 83 tests** (all passing); production build verified.
+- **All 15+ confirmed backend entities have list + create + detail (where applicable) frontend surfaces.**
+- **All documented API enums have type-checked covering tests** (translation-key guard, permission-code guard, API-contract regression tests).
+- **24 architecture documents**, full requirements baseline, decision register, traceability, contradictions, do-not-build-yet lists, execution-preparation map.
+- **Phase reached:** the un-gated frontend surface is **substantially complete**. The **execution &
+  traceability layer is not started** — it is blocked on business decisions. Multi-tenancy horizontal scoping
+  remains single-tenant-open until Q-055 is resolved. All business gated decisions are documented in
+  `docs/architecture/execution-preparation.md`.
 
-<!-- APPEND-MILESTONES -->
+## Module status matrix
+
+| Module (app) | Built & usable now | Deferred (gated) layer | Gate |
+|---|---|---|---|
+| **core / identity** | Base models, soft delete, error envelope, event bus, audited viewsets, RBAC, JWT, roles admin UI | — | — |
+| **organization** | Company → Site → Department → SiteCapability masters (all with create + list UI) | Cross-company scoping UI | Q-055 |
+| **audit** | Append-only trail + searchable viewer + entry detail with before/after diff | Export, tamper-evidence | — |
+| **documents** | Generic attachment register + in-context panels on all 10 detail pages | Attachment policy, controlled-doc/e-sign | — |
+| **localization** | Jalali/Gregorian, number/calendar utilities, en ↔ fa parity on all pages | — | — |
+| **notifications** | In-app inbox + bell | Email / SMS / push channels | DR-008 |
+| **workflow** | Generic engine + approvals inbox + definitions admin | Approval hierarchy/threshold **content**, escalation/SLA | Q-054/056, #7 |
+| **catalog / partners / hr** | Products, materials, UoM, UoM conversions, product taxonomy (group/type/class/family — list + create), partners + contacts + addresses, employees — full CRUD UI | Product coding scheme | Q-019 |
+| **engineering** | Versioned CustomerProduct + SpecificationRevision + detail with revision chain; ToolingAsset detail | Tooling cost model; spec-revision trigger rule; auto usage capture | Q-004/036, Q-024, Q-046 |
+| **manufacturing** | WorkCenter/Machine list+create; versioned BOM + Routing + root detail pages | Consumption bases/waste factors; routing templates | Q-027, Q-016/042, Q-029 |
+| **inventory** | Warehouse master + access grants + detail | **Stock movements, kardex, lots/rolls, genealogy** | **Q-046**, Q-048/049 |
+| **quality** | Characteristic catalogue list+create; versioned QualityPlan list+create + root detail | Check execution, results, NCR/hold, scrap/rework, COA, recall | Q-039/040/043/044, Q-046 |
+| **procurement** | PR / PO header+line (list + create with inline lines + detail + attachments + audit) + status transitions | Goods receipt/GRN, MRP, RFQ, thresholds, invoice matching, valuation | #7/#14/#17/#23, Q-034 |
+| **sales** | SalesOrder header+line (list + create with inline lines + detail + attachments + audit) + confirm/close/cancel | Pricing/proforma, ATP, allocation, shipment, invoicing, credit | Q-046, #11/#12/#18 |
+| **production** | ProductionOrder header (list + create + detail + attachments + audit) + release/complete/close/cancel | Material issue/genealogy, confirmations/scrap/downtime, QC results | **Q-046**, SR-05/06/08 |
+
+---
 
 ## Milestone history (chronological)
 
@@ -76,498 +95,93 @@ phase-1 SLZ + Helena, site-specific capability).
 
 **Task 003 — Platform Foundation** (2026-08-21). First implementation task. A
 modular-monolith foundation (Django 4.2 + DRF + Postgres; Vite + React 18 + TS).
-**8 foundation apps, no business logic:** `core` (UUID PKs, `BaseModel`, opt-in
-soft delete, standardized error envelope, in-process domain-event bus,
-`AuditedModelViewSet`, `atomic_with_events`), `identity` (RBAC
-`module.resource.action`, JWT, `HasPermission`), `organization`, `audit`
-(event-driven append-only trail), `documents`, `localization` (Jalali/Gregorian
-via jdatetime, UTC canonical), `notifications`, `workflow` (generic approval
-engine). Reusable `VersionedRoot`/`Revision` pattern shipped but unused by any
-business model. **Status: IMPLEMENTED + STATICALLY CHECKED.**
+**8 foundation apps, no business logic:** `core`, `identity`, `organization`, `audit`,
+`documents`, `localization`, `notifications`, `workflow`.
 
-### Domain modules (confirmed layers only)
+### Domain modules (confirmed layers only) — Tasks 004–011
 
-Each domain module below ships **only the business-confirmed slice** — masters,
+Each domain module ships **only the business-confirmed slice** — masters,
 versioned definitions, or header/line transactional documents with a
-server-authoritative status state machine. The **execution/traceability layer of
-each is deliberately deferred behind Q-046 and related gates.**
+server-authoritative status state machine.
 
-- **Task 004 — Master Data:** partners, product taxonomy + thin product,
-  materials, units of measure, site capabilities, minimal employee. (`catalog`,
-  `partners`, `hr` apps.)
-- **Task 005 — Product Engineering:** versioned `CustomerProduct` root +
-  `SpecificationRevision` (draft → activate → supersede). First real use of the
-  versioning pattern.
-- **Task 005b — Tooling / Cliché Asset (SR-03):** `ToolingAsset` identity +
-  usage-life master with retire/reactivate lifecycle. Cost model and automatic
-  usage capture deferred.
-- **Task 006 — Manufacturing:** `WorkCenter` / `Machine` resource masters +
-  versioned `BillOfMaterials` and `Routing` bound to a spec revision.
-- **Task 007 — Inventory Foundation:** company/site-scoped `Warehouse` master +
-  per-user `WarehouseAccess`. Stock movements/kardex/lots deferred behind Q-046.
-- **Task 008 — Quality Foundation:** `QualityCharacteristic` catalogue +
-  versioned `QualityPlan`. Check execution/results/NCR/COA/recall deferred.
-- **Task 009 — Procurement Foundation:** `PurchaseRequisition` / `PurchaseOrder`
-  header+line documents with a status state machine. GRN/MRP/RFQ/thresholds/
-  invoice-matching deferred.
-- **Task 010 — Sales Order Management:** `SalesOrder` header+line (the MTO demand
-  origin) with confirm/close/cancel. Pricing/ATP/allocation/shipment/invoicing
-  deferred.
-- **Task 011 — Production Order Management:** header-only `ProductionOrder` (Work
-  Order) built to a frozen spec/BOM/routing revision, with release/complete/
-  close/cancel. Material issue/genealogy/confirmations/QC results deferred.
+- **Task 004 — Master Data:** partners, product taxonomy, products, materials, UoM, site capabilities, employees.
+- **Task 005 — Product Engineering:** versioned `CustomerProduct` + `SpecificationRevision`.
+- **Task 005b — Tooling / Cliché Asset (SR-03):** `ToolingAsset` identity + usage-life master.
+- **Task 006 — Manufacturing:** `WorkCenter` / `Machine` + versioned `BillOfMaterials` and `Routing`.
+- **Task 007 — Inventory Foundation:** `Warehouse` + `WarehouseAccess`.
+- **Task 008 — Quality Foundation:** `QualityCharacteristic` + versioned `QualityPlan`.
+- **Task 009 — Procurement Foundation:** `PurchaseRequisition` / `PurchaseOrder` header+line + status machine.
+- **Task 010 — Sales Order Management:** `SalesOrder` header+line + confirm/close/cancel.
+- **Task 011 — Production Order Management:** header-only `ProductionOrder` + release/complete/close/cancel.
 
 ### Foundation "make-it-usable" slices (2026-08-21 → 08-22)
 
-After the domain masters, the backend-complete-but-headless foundation surfaces
-were given UIs (and, where a data-integrity gap existed, hardened):
-
-- **Workflow / Approvals engine:** per-user approvals inbox + hardened per-action
-  authorization on instances (closed a gap where any authenticated user could
-  cancel any workflow).
-- **Notifications:** in-app inbox + header unread bell (self-authorizing; email/
-  SMS/push remain deferred, DR-008).
-- **Audit log viewer:** read-only searchable trail at `/audit/logs`.
-- **Organization master:** Company → Site browse/create; hardened three viewsets
-  to audited writes.
-- **Workflow definitions admin:** browse/create approval *shapes* (no rule matrix,
-  #7); hardened the definition viewset to audited writes.
-- **Documents / Attachments** (2026-08-22): generic entity-keyed
-  attachment register with multipart upload + authenticated blob download +
-  soft-delete. Added `postForm`/`getBlob` transport to the shared API client.
-- **Live home dashboard** (2026-08-22): the placeholder landing page now
-  shows live per-module record counts (partners, products, materials, customer
-  products, sales/purchase/production orders, warehouses), each tile gated by the
-  module's own `*.view` permission and linking to its list page. Counts read the
-  authoritative `count` from existing paginated endpoints via a `page_size=1`
-  probe — no metric is fabricated and no KPI is defined.
-- **Record-detail pattern + in-context attachments** (2026-08-22, latest): a
-  reusable read-only detail view (`useRecord` hook + `RecordDetail` +
-  `AttachmentPanel`) applied to the Partner entity as the reference
-  (`/master-data/partners/:id`). Surfaces only existing retrieve-endpoint data and
-  embeds the generic attachment store in the owning record's context; other
-  modules can adopt the same pattern verbatim when prioritized.
-
-All foundation apps now have a working UI or are self-authorizing. **Un-gated
-"make-the-foundation-usable" work is complete.**
-
-### Runtime verification (2026-08-22)
-
-**Task 012 — Runtime Verification** (same day). Executed the previously
-never-run verification checklist in a real dev environment and fixed what it
-surfaced. The whole platform moves from *IMPLEMENTED + STATICALLY CHECKED* to
-*RUNTIME VERIFIED* (SQLite test scope; Docker/Postgres path still pending).
-
-What was run: `pip install -r requirements/dev.txt`; flake8 + black + isort;
-`makemigrations` for all 18 apps (21 initial migration files, `--check` clean);
-full Django suite; `npm install` + typecheck + lint + vitest + `vite build`.
-
-What it found & fixed:
-- **Latent import crash:** `identity.User.timezone` field shadowed the
-  `django.utils.timezone` module inside the class body, so `default=timezone.now`
-  would have blown up at first import — invisible to static checking. Import
-  aliased (`dj_timezone`); field/API names unchanged.
-- **Tests never saw audit rows:** `atomic_with_events` defers event publishing
-  via `transaction.on_commit`, which never fires under `TestCase`. Fixed once,
-  centrally, in the shared factory: `auth_client()` now returns an
-  `OnCommitExecutingClient` that drains post-commit callbacks after each request
-  (production behavior untouched). ~25 audit assertions across every module now
-  exercise the real trail.
-- **Error-envelope assertion bugs:** nine domain tests asserted serializer error
-  keys at the response top level instead of the standardized
-  `error.details.<field>` envelope; corrected to the documented shape.
-- **Missing permission grant** in `core.test_errors.test_not_found_envelope`
-  (403 vs 404).
-- **Frontend tsconfig defects:** missing `@types/node` (`node:url` unresolved)
-  and invalid `composite`+`noEmit` project reference (TS6310). Unified into one
-  tsconfig (references dropped, scripts off `tsc -b`), pinned `@types/node`.
-- **Type/lint errors surfaced by real toolchain:** `CardProps.title` conflict
-  with native DOM attrs (`Omit<…, 'title'>`), unused translation hook in
-  `MachinesPage`, two fast-refresh lint warnings scoped off for the idiomatic
-  provider+hook / local-fallback files.
-- **Tooling hardening:** test DB moved from in-memory shared-cache SQLite to a
-  throwaway file-backed SQLite (stability on Windows); `--noinput` added to
-  Makefile + CI test targets so stale test DBs can't block on the interactive
-  destroy prompt.
-
-Result: backend **203/203**, frontend **52/52**, builds green.
-
-### Audit trail completeness & diff viewer (2026-08-22)
-
-**Task 013 — Audit Trail: State Snapshots + Entry Detail** (same day, un-gated
-work per the module matrix). Two halves:
-
-*Backend — make every trail row diff-capable.* The generic write service
-(`apps.core.service`) now captures best-effort JSON snapshots of the record and
-carries them on the domain events: `EntityCreated.state` (after),
-`EntityDeleted.state` (before), `EntityUpdated.before_state`/`after_state`
-(around the save; `changes` keeps the validated_data view). The audit subscriber
-maps them onto the existing `before_state`/`after_state` columns — **no schema
-change**, the columns already existed. Domain services that publish
-`EntityUpdated` directly (status transitions) still work unchanged; their rows
-keep the validated_data view until/unless they adopt full snapshots.
-
-*Frontend — entry detail with before → after diff.* Clicking a row in the audit
-viewer (`CollectionView` gained an optional `onRowClick`) opens a read-only modal
-(`AuditEntryDetail`) that fetches the entry via the existing retrieve endpoint
-and renders who/what/when plus a field-level diff table; changed rows are
-highlighted. CREATE entries show the recorded state on the "After" side, DELETE
-on the "Before" side. en/fa locale parity maintained.
-
-Tests: 3 new snapshot tests in `apps.audit` (create/update/soft-delete via the
-real service layer with `captureOnCommitCallbacks`), 3 component tests for the
-detail modal (fetch + diff rendering, backdrop close). Suite green throughout.
-
-### Order-book reporting (2026-08-22)
-
-**Task 014 — Order-Book Status Summaries** (same day, un-gated reporting on
-confirmed data only). A shared `StatusSummaryMixin`
-(`apps/core/viewsets.py`) adds `GET <prefix>/summary/` to the four transactional
-document views (`sales/orders`, `procurement/orders`,
-`procurement/requisitions`, `production/orders`). It aggregates the same
-filtered, permission-gated queryset as the list endpoint and zero-fills every
-status choice the model declares — pure counting of existing rows, no execution
-semantics invented. The dashboard gained an **Order book** card: per-document-type
-totals plus per-status chips (only non-zero statuses render), permission-gated
-exactly like the existing count tiles, en/fa localized.
-
-Tests: 4 backend tests (aggregation + zero-fill, list-filter parity,
-per-endpoint RBAC gate, remaining endpoints wired), 1 frontend API test.
-Suite: backend 221/221, frontend 56/56, typecheck/lint/build green.
-
-### Sales-order detail & in-context audit history (2026-08-22)
-
-**Task 015 — Document Detail Page + Audit History Panel** (same day, un-gated
-frontend completion). Transactional documents previously had list+create pages
-only. Added:
-
-* `AuditHistoryPanel` (`src/components`) — generic, reusable panel showing the
-  most recent trail entries for one record via the existing
-  `audit.log.view`-gated entity filters; clicking an entry opens the Task-013
-  before/after detail modal. Rendered only for holders of `audit.log.view`.
-* `SalesOrderDetailPage` (route `/sales/orders/:id`, permission-gated) — order
-  header summary, its lines (`/sales/order-lines/?order=`), and the record's
-  audit history. The orders list rows now navigate to it via the shared
-  `onRowClick`. en/fa locale parity maintained.
-
-No backend change was required — both surfaces consume existing endpoints.
-Tests: history-fetcher URL contract test added; suite green throughout.
-
-### Procurement & production detail pages (2026-08-22)
-
-**Task 016 — Remaining Document Detail Pages** (same day). The Task-015
-pattern extended to every transactional document:
-
-* `PurchaseOrderDetailPage` (`/procurement/orders/:id`) — header, material
-  lines (incl. unit price / source requisition line), audit history.
-* `PurchaseRequisitionDetailPage` (`/procurement/requisitions/:id`) — header,
-  material lines, audit history.
-* `ProductionOrderDetailPage` (`/production/orders/:id`) — full frozen
-  definition (customer product, spec/BOM/routing revisions, sales-order line,
-  planned qty) plus audit history. No lines section by design — the document is
-  header-only until the execution layer unblocks (Q-046 cluster).
-
-All three list pages navigate to their detail via row click. en/fa parity kept;
-no backend change (existing endpoints only).
-
-### Customer-product detail with revision chain (2026-08-22)
-
-**Task 017 — Product Engineering Detail** (same day). `CustomerProductDetailPage`
-(`/engineering/customer-products/:id`, row-click from the list): identity
-header, the complete specification revision chain (draft → active → superseded,
-with effective dates and change reasons), the selected revision's full spec
-(dimensions + tolerances, print process, lamination/cold-seal, surface finish),
-its structure-layer / print-color / parameter tables, and the record's audit
-history. Preselects the ACTIVE revision. Consumes only existing
-`engineering.*.view` endpoints. en/fa parity kept.
-
-*Integration note:* a concurrent agent initially shipped `SpecificationDetailPage`
-(single-revision view) at the same time; App.tsx collisions (duplicate
-imports/routes from simultaneous edits) were repaired and the design was then
-converged onto the single root-centric surface — the separate revision-detail
-page was removed and the specifications list rows navigate to the owning
-product's revision chain instead (`/engineering/customer-products/:rootId`).
-
-### Parallel-agent work: shared API layer, convergence & hardening (2026-08-22)
-
-**Task 018 — Engineering API foundation + document-download hardening**
-(same day, parallel implementation agent). Ran alongside Tasks 016/017:
-
-*Engineering API layer (consumed by Task 017's page).* `api/engineering.ts`
-extended with complete serializer-mirroring types (`SpecificationRevision`
-gained width/length/gusset + tolerance fields) and typed fetchers:
-`fetchCustomerProduct`, `fetchSpecification`, `listSpecificationRevisions`
-(newest-first), `listSpecLayers/Colors/Parameters` (stable ordering);
-`listToolingAssetsByCustomerProduct` in `api/tooling.ts`. All URL contracts
-regression-tested. The specifications list also navigates rows to the owning
-product detail, and a mojibake em-dash in its code column was fixed.
-
-*Concurrent-edit repair.* Simultaneous edits by both agents duplicated
-`CustomerProductDetailPage` imports/routes in `App.tsx`; resolved to exactly
-one route per path (build-breaking otherwise).
-
-*Security hardening — documents.* Attachment download echoed the raw stored
-filename into `Content-Disposition`; a name containing `"` could break out of
-the quoted-string and CR/LF would crash header serialization. New
-`quoted_header_filename` validator escapes `"`, `\`, CR, LF; regression tests
-cover both the endpoint and the helper.
-
-*Policy observation (not changed):* attachment **upload** currently requires
-only `documents.attachment.view` because no `documents.attachment.manage`
-code exists in the RBAC seed (`view`/`delete` only); POST falls through to
-the view code via `permission_map`. If uploads should be a distinct privilege,
-a seed code must be added first — left to the architecture owner.
-
-*Drift guards (new regression class).* Two automated guards now fail CI on
-referential drift between layers:
-
-- Backend `apps/identity/tests/test_seed_covers_declared_permissions.py` —
-  every `required_permission` / `permission_map` code declared on any viewset
-  must exist in `seed_rbac.PLATFORM_PERMISSIONS` (a declared-but-unseeded code
-  can never be granted → permanent 403) and must keep the
-  `module.resource.action` shape.
-- Frontend `src/auth/__tests__/permissionCodes.test.ts` — every
-  `hasPermission('…')` / `requiredPermission="…"` literal in UI source must
-  exist in the backend seed file itself (single source of truth). Mutation-
-  verified: a typo'd resource fails the test.
-- Frontend `src/i18n/__tests__/translationKeys.test.ts` — every static
-  `t('…')` key must exist in BOTH en.json and fa.json, and every dynamic
-  template prefix (`t(\`prefix.${x}\`)`) must match at least one real key per
-  locale. Mutation-verified.
-
-Verification after this task: backend **225/225**, frontend **66/66**,
-`makemigrations --check` clean, typecheck/lint/build green both sides.
-
-### Silent-action-failure fix + shared async-action hook (2026-08-22)
-
-**Task 019 — Row actions now surface their errors** (same day, parallel
-agent). List-page row actions (`try/finally`, no `catch`) failed silently:
-an illegal transition or network error cleared the spinner and showed nothing,
-leaving the user to assume success. Added the shared
-`useAsyncAction` hook (`src/hooks`) — never rejects, tracks per-row busy state,
-captures the `ApiError` for inline rendering — with unit tests including a
-stale-response guard. Adopted in Tooling assets (retire/reactivate), Approvals
-inbox (approve/reject) and Notifications (read/read-all). The document list
-pages (sales/procurement/production transitions, specification activation)
-still use the old pattern and are adoption candidates for whoever touches them
-next.
-
-Verification: frontend **69/69**, typecheck/lint/build green.
-
-### Gap audit #1 — encoding repair + Jalali presentation layer (2026-08-22)
-
-**Task 020 — Repository Hygiene & Persian Dates.**
-
-*Encoding repair.* A systematic scan found double-encoded UTF-8 mojibake
-(`â€”`/`â†'`-style cp1252 artifacts, plus stray BOMs) in 16 files — partly
-pre-existing from the authoring sandbox, partly introduced by shell round-trips
-during this session. All repaired deterministically (exact codepoint mapping);
-backend suite re-run green, confirming comment/docstring-only damage.
-
-*Jalali dates (frontend).* The fa-first UI had zero Jalali rendering despite
-the documented convention (UTC canonical; Jalali at presentation layer).
-Added `src/i18n/dates.ts` on `jalaali-js`: `formatDateTime(iso, lang)` renders
-Solar-Hijri with Persian digits for `fa`, Gregorian otherwise; date-only strings
-drop the time part. Wired into every user-visible timestamp surface (audit
-viewer list/detail/history panel and all five document detail pages). API
-contract untouched. 6 new formatter unit tests incl. the Nowruz anchor
-(2026-03-21 → ۱۴۰۵/۰۱/۰۱).
-
-*RBAC / error-contract audit results (no changes needed):* every registered
-viewset declares permissions; `HasPermission` fails closed (undeclared ⇒ deny
-unless explicit `allow_any_authenticated` opt-in); notifications are
-self-scoped by queryset; workflow authorizes per action with object-level
-guards in the service; no raw `status=4xx` responses exist outside the
-standardized handler. Recorded here as the audit baseline.
-
-### Final quality/security/gap audit (2026-08-22)
-
-**Task 021 — Independent audit pass** (same day, parallel agent). Systematic
-security / contract / reliability sweep. Findings and fixes:
-
-*Auth brute-force resistance (new).* `POST /auth/login/` and
-`/auth/refresh/` accepted unlimited attempts per IP. Added scoped
-`AuthAnonThrottle` (per-IP, rate `auth` = env `AUTH_THROTTLE_RATE`, default
-30/min) on both views, plus `ThrottledError` (429) in the standardized error
-hierarchy — previously a DRF `Throttled` would have fallen through to a 500
-SystemError envelope. Frontend `ApiErrorType` union and status mapping extended
-with `ThrottledError`; DRF's `Retry-After` header is preserved. Tests: within-
-rate behavior, 429 envelope + header, credential-correctness cannot bypass,
-refresh scope covered, production rate wiring guard.
-
-*Self-profile data integrity.* `PATCH /auth/me/` applied raw `setattr`: an
-over-long `full_name` produced a 500 (DB DataError), an unknown `language`
-code persisted silently and broke locale rendering, arbitrary `timezone`
-strings were accepted. Now validated (`MeUpdateSerializer`: model max-lengths,
-language choices, IANA time-zone check via `zoneinfo`); auth-relevant fields
-remain unreachable. Tests: valid update persists; each bad value → clean 400
-envelope; `is_superuser` stays ignored.
-
-*CI gaps.* Backend job never verified migration drift — added
-`makemigrations --check --dry-run --noinput` step. Frontend job used
-`npm install` despite a committed lockfile — switched to `npm ci` (locked,
-reproducible) plus npm dependency caching.
-
-*Audited, no change required:* CORS allow-list, ALLOWED_HOSTS, JWT rotation +
-blacklist, workflow decision object-level guards, notifications self-scoping,
-attachment upload-under-view policy (documented above), SVG-served-as-
-attachment XSS surface (mitigated by forced download disposition).
-
-*Error-envelope quality.* SimpleJWT raises `AuthenticationFailed` with a
-*dict* detail; the handler's `str(detail)` leaked a Python repr
-(`"{'detail': ErrorDetail(…)…}"`) into client messages on invalid refresh
-tokens. `_clean_detail` now flattens dict details to their readable message.
-Regression-tested against the live refresh endpoint.
-
-Verification: backend **237/237**, frontend **75/75**, migration check clean,
-flake8/black/isort green, typecheck/lint/build green.
-
-
-### QA cycle: object-level authorization regression test (2026-08-22)
-
-**Task 022 — Workflow decision guard pinned** (independent QA agent). The
-decision endpoint deliberately admits any authenticated user at the permission
-layer (approvers must not need broad instance rights); the actual guard lives
-in `record_decision` (only an assigned, still-pending approver may act).
-That security-relevant behavior had no direct regression test. Added
-`test_decision_by_unassigned_user_is_rejected`: an outsider POSTing a
-decision gets a 422 BusinessRuleError and the instance stays UNDER_REVIEW.
-Suite: backend 238/238.
-
-Audit sweeps this cycle found no defects requiring code changes: documents
-surface (sanitized names, opaque storage keys, escaped Content-Disposition,
-extension/size policy, permission-gated upload/download/delete — all covered
-by existing tests), auth endpoints (throttled login/refresh, refresh-token
-blacklist on logout, LOGIN/LOGOUT audited), transition concurrency
-(`select_for_update` in every domain service), and frontend error-contract
-interpretation (`ApiError` mirrors the envelope exactly).
-
-### Usability completion pass (2026-08-22)
-
-**Task 023 — Detail pages, create forms, dashboard activity, error rendering**
-(same day). Systematic completion of the user-facing surface where the backend
-was already complete.
-
-*Detail pages for all list entities.* Every master-data browse screen now has
-a read-only detail view: `MaterialDetailPage` (subtype, planning attrs, MSDS,
-attachments, audit history), `ProductsDetailPage`, `WarehouseDetailPage` (store
-type, site, notes), and `EmployeeDetailPage`. All follow the established
-`RecordDetail` + `AttachmentPanel` + `AuditHistoryPanel` pattern. Partner
-detail gained the audit-history panel it was missing.
-
-*Material create form.* `MaterialCreatePage` with company/UoM pickers, subtype
-dropdown, optional planning fields (lead time, shelf life, reorder point,
-safety/min/max stock), hazardous flag and MSDS ref. Routes through the audited
-service layer.
-
-*Dashboard recent activity.* A `RecentActivity` widget on the home dashboard
-shows the newest 8 audit-trail entries (permission-gated to `audit.log.view`).
-Pure read — no metric invented.
-
-*Error rendering on document list pages.* The three transactional document list
-pages that adopted `useAsyncAction` (Sales Orders, Production Orders, Purchase
-Requisitions) now show inline error alerts when a status transition fails —
-they were previously silent (the hook captured errors but the component never
-rendered them).
-
-*Encoding fix.* Repaired 3 mojibake artifacts (`Â±` → `±`, `â€¦` → `…`) in the
-CustomerProductDetailPage tolerance fields, a carryover from the earlier
-encoding repair pass.
-
-*Variable-shadowing fix.* Three document list pages (SalesOrdersPage,
-ProductionOrdersPage, PurchaseRequisitionsPage) had a `run(id, action)` function
-whose parameter `action` shadowed the outer `useAsyncAction()` result, causing
-`action.run()` to resolve to the string parameter instead of the hook. Renamed
-parameters to avoid shadowing.
-
-Verification: backend **238/238**, frontend **75/75**, migration check clean,
-flake8/black/isort green, typecheck/lint/build green.
-
-
-### QA cycle: input-fuzz hardening + multi-tenancy audit (2026-08-22)
-
-**Task 024 — Resolver-level error envelope + fuzz regressions**
-(independent QA agent).
-
-*Defect (fixed).* Path-traversal identifiers (../../etc/passwd as a URL pk)
-broke out of the DRF-resolved namespace at the URL-resolver level and
-returned Django HTML 404 page, violating the documented JSON error contract
-for API consumers. Fixed at the shared layer: apps/core/error_views.py
-handler404/handler500 wired in config/urls.py, returning the standardized
-envelope for any /api/ path while keeping Django default pages elsewhere.
-No per-view changes.
-
-*Regression suite.* apps/core/tests/test_input_fuzz.py (7 tests) pins:
-malformed/numeric/traversal/nonexistent pks → enveloped 404 across
-five modules; invalid filterset enum → clean 400; injection-shaped
-search/ordering inert; page_size clamped to the 200 maximum; out-of-range
-pages → enveloped 404. A live probe of 12 hostile-input cases produced
-zero 500s. Suite: backend 245/245.
-
-*Multi-tenancy deep audit (finding — BLOCKED on Q-055, not fixed by
-design).* The platform has **no user-company binding**: identity.User
-carries no company/site FK and no domain queryset scopes by the requesting
-user's org. Consequence: today, **any authenticated user holding a module
-permission can read/update/delete/transition ANY company's records of that
-module by ID** (cross-company horizontal access). This is NOT patched
-because the correct policy (per-user company assignment? site membership?
-role-based?) is exactly the OPEN decision Q-055/Q-053 (DR-033) — inventing
-one is forbidden. Required business decision + severity documented here;
-until resolved the system must be treated as single-tenant-open and must
-not host two unrelated companies. Serializer-level cross-company
-consistency (DR-040) remains enforced.
-
-### QA cycle: frontend route-gating consistency (2026-08-22)
-
-**Task 025 - Approvals & notifications route guards** (independent QA
-agent). A scripted sweep of all 69 route definitions found exactly two leaf
-routes mounted without the standard `ProtectedRoute` wrapper:
-`/workflow/approvals` and `/notifications` (every other leaf route is gated;
-`master-data`/`workflow` are layout-only parents whose children are gated).
-Both pages are backend IsAuthenticated-only surfaces, so the fix wraps them
-in permission-less `ProtectedRoute` (login redirect, no permission gate) —
-matching both the app-wide convention and the API contract. Unauthenticated
-visitors no longer land on data-calling screens that can only fail.
-
-*Note:* at reporting time `npm run typecheck` shows errors in brand-new WIP
-pages from a concurrent agent (organization departments / site capabilities /
-machine create); they are excluded from this claim and owned by that agent.
-
-### Multi-tenancy preparation map (2026-08-22)
-
-**Task 026 — Q-055 dependency map** (no behavior change). Added
-`docs/architecture/multi-tenancy-preparation.md`: the complete inventory of
-company-scoped models (14 direct company-FK models, ~20 indirectly scoped via
-parent chains, site-scoped organization surfaces, generic entity-reference
-surfaces such as attachments and workflow instances, and the deliberately
-global master data), plus the layer-by-layer change-point map (read choke
-point on the shared base viewset, write-path assignment policy, generic-surface
-resolution, frontend company selectors, test strategy) that a future Q-055
-implementation will follow. Documents — without inventing — the
-single-tenant-open risk until the scoping decision is confirmed.
-<!-- APPEND-MODULE-TABLE -->
-
-## Module status matrix
-
-| Module (app) | Built & usable now | Deferred (gated) layer | Gate |
-|---|---|---|---|
-| **core / identity** | Base models, soft delete, error envelope, event bus, audited viewsets, RBAC, JWT | — | — |
-| **organization** | Company → Site masters (audited, with UI) | Department/capability UI, cross-company scoping UI | Q-055 |
-| **audit** | Append-only trail + read-only viewer + entry detail with before/after diff | Export, tamper-evidence | — |
-| **documents** | Generic attachment register (upload/download/delete) | Attachment policy, in-context panels, controlled-doc/e-sign | — |
-| **localization** | Jalali/Gregorian, number/calendar utilities | — | — |
-| **notifications** | In-app inbox + bell | Email / SMS / push channels | DR-008 |
-| **workflow** | Generic engine + approvals inbox + definitions admin | Approval hierarchy/threshold **content**, escalation/SLA | Q-054/056, #7 |
-| **catalog / partners / hr** | Master data (products, materials, UoM, partners, employee) | Product coding scheme | Q-019 |
-| **engineering** | Versioned CustomerProduct + SpecificationRevision; ToolingAsset | Tooling cost model; spec-revision trigger rule; auto usage capture | Q-004/036, Q-024, Q-046 |
-| **manufacturing** | WorkCenter/Machine; versioned BOM + Routing | Consumption bases/waste factors; routing templates | Q-027, Q-016/042, Q-029 |
-| **inventory** | Warehouse master + access grants | **Stock movements, kardex, lots/rolls, genealogy** | **Q-046**, Q-048/049 |
-| **quality** | Characteristic catalogue + versioned QualityPlan | Check execution, results, NCR/hold, scrap/rework, COA, recall | Q-039/040/043/044, Q-046 |
-| **procurement** | PR / PO header+line + status machine | Goods receipt/GRN, MRP, RFQ, thresholds, invoice matching, valuation | #7/#14/#17/#23, Q-034 |
-| **sales** | SalesOrder header+line + status machine | Pricing/proforma, ATP, allocation, shipment, invoicing, credit | Q-046, #11/#12/#18 |
-| **production** | ProductionOrder header + status machine | Material issue/genealogy, confirmations/scrap/downtime, QC results | **Q-046**, SR-05/06/08 |
-
-<!-- APPEND-REMAINING -->
+UI surfaces for all foundation apps: approvals inbox, notifications inbox, audit log viewer,
+organization masters, workflow definitions, documents upload/download, live dashboard
+with per-module record counts and order-book status summaries.
+
+### Runtime verification (2026-08-22) — Tasks 012–026
+
+Runtime verification, audit trail snapshots + diff viewer, order-book reporting,
+document detail pages + audit history panels, product engineering detail with
+revision chain, engineering API foundation, security hardening, silent-action-failure
+fix, Jalali date presentation, CI hardening, auth brute-force resistance,
+self-profile validation, Q-055 multi-tenancy dependency map, and two QA cycles
+(input-fuzz hardening, workflow-decision guard regression).
+
+### Autonomous implementation batch #2 (2026-08-22, afternoon)
+
+**Task 027 — I18n parity repair + orphan page wiring.** The `translationKeys` guard
+found 17 missing keys from a concurrent agent's committed-but-incomplete work.
+Added all missing `manufacturing.detail.*`, `manufacturing.fields.*`, `masterData.fields.uom`,
+and `roles.*` locale keys (en ↔ fa parity). Wired the orphan `BomRootDetailPage`
+into App.tsx with a proper `boms/:id` route and fixed the BOM roots list row-click
+navigation. Removed unused `useTranslation` import from `RolesPage`. Fixed the
+`ProductClass`/`ProductFamily` list pages to display just the code column (was
+concatenating UUIDs). Fixed `addressKinds.*` → `kinds.*` i18n prefix mismatch in
+`PartnerSubPanels`.
+
+**Task 028 — Inline line-creation on transactional create pages.** Previously the
+SalesOrder, PurchaseRequisition, and PurchaseOrder create pages only captured
+header data — lines had to be added later. All three now include inline row
+editors below the header form: product/material/UoM dropdown selectors, numeric
+quantity/price inputs, add/remove row buttons. On submit the header is created first,
+then each populated line is POSTed sequentially. Added `common.addLine`,
+`procurement.fields.lineNotes`, and `sales.fields.lineNotes` locale keys.
+
+**Task 029 — In-context attachment panels on all detail pages.** Only 5 of 10
+detail pages had the permission-gated `AttachmentPanel`. Added it to the
+remaining 5: `BomRootDetailPage`, `RoutingRootDetailPage`, `ToolingAssetDetailPage`,
+`CustomerProductDetailPage`, and all four transactional document detail pages
+(SalesOrder, PurchaseOrder, PurchaseRequisition, ProductionOrder). Fixed React
+hooks rules violations in two pages (conditional `useAuth()` call).
+
+**Task 030 — Product taxonomy UI completion.** ProductGroup, ProductType,
+ProductClass, and ProductFamily had backend endpoints but no frontend pages.
+Added list + create pages for all four taxonomy levels, wired routes under
+`/master-data/product-groups` (etc.), and added sidebar navigation links.
+Added the missing `product_group` picker to `ProductCreatePage`.
+
+**Task 031 — UoM conversion pages.** Added `UomConversionsPage` (list) and
+`UomConversionCreatePage` (create with dual-UoM dropdown selectors + factor input),
+wired under `/master-data/uom-conversions/`. Added `uomConversions.*` locale keys
+and sidebar link.
+
+**Task 032 — Product detail FK name resolution.** `ProductsDetailPage` previously
+showed raw UUIDs for `product_group` and `family`. Added `fetchProductGroup()` and
+`fetchProductFamily()` to the API layer; the detail page now resolves these to
+human-readable `name_fa || code` on mount. Graceful fallback to raw ID on fetch failure.
+
+**Task 033 — Concurrent-agent integration fixes.** During this batch a concurrent
+agent committed multiple files. Repairs made: removed duplicate `BomRootDetailPage`
+import, fixed `quality.ts` missing `Paginated` import, removed duplicate
+`onRowClick` prop on `QualityPlanRootsPage`, added missing `useAuth` imports on
+procurement detail pages.
+
+**Verification after this batch:** backend **245/245**, frontend **25 files / 83 tests**,
+migration check clean, flake8/black/isort green, typecheck/lint/build green.
+
+---
 
 ## What remains — blocked on SLZ business decisions
 
@@ -626,21 +240,20 @@ hardware (DR-006).
 
 ## Runtime verification checklist
 
-**Done 2026-08-22 (Task 012, Windows dev machine, no Docker):**
+**Done 2026-08-22 (Windows dev machine, no Docker):**
 
 ```bash
 # Backend — all green
 cd erp/backend
 pip install -r requirements/dev.txt
 flake8 apps config && black --check apps config && isort --check-only apps config
-python manage.py makemigrations        # done: 21 initial migration files committed
 python manage.py makemigrations --check --dry-run   # no drift
-python manage.py test --settings=config.settings.test --noinput   # 238/238 OK
+python manage.py test --settings=config.settings.test --noinput   # 245/245 OK
 
 # Frontend — all green
 cd ../frontend
-npm install
-npm run typecheck && npm run lint && npm run test && npm run build  # 75/75 OK
+npm ci
+npm run typecheck && npm run lint && npm run test && npm run build  # 25 files / 83 tests OK
 ```
 
 **Still pending (needs Docker on the dev machine / a host):**
@@ -663,6 +276,3 @@ Answer **Q-046** (with Q-048/049/026). That one cluster unblocks more downstream
 engineering than everything else combined — the traceability/stock/execution layer
 across procurement, inventory, quality, sales, and production. With those four
 decisions, autonomous implementation can resume immediately without further input.
-
-
-
