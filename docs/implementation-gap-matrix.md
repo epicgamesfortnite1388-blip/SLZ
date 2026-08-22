@@ -35,14 +35,14 @@ Legend: BE = backend · API = REST surface · FE = frontend · T = tests · AUD 
 | engineering | VERIFIED | CustomerProduct + SpecificationRevision detail with revision chain, human-readable FK labels, layer/color/parameter tolerances and typed values; ToolingAsset list/create/detail with attachments + audit |
 | manufacturing | VERIFIED | WorkCenter/Machine list/create/detail; BOM + Routing roots + revisions with inline material lines / operations tables + FK name resolution |
 | inventory | VERIFIED | Warehouse list/create/detail + per-user access grants + traceability units + stock movements/ledger + balances + kardex + genealogy links
-| quality | VERIFIED | Characteristic list/create; QualityPlan list/create/root detail with revision chain + plan items table + FK name resolution |
+| quality | VERIFIED | Characteristic list/create; QualityPlan list/create/root detail with revision chain + plan items table + FK name resolution; QC check results (POST + list with PASS/FAIL/HOLD + quarantine tagging) |
 | procurement | VERIFIED | Requisition + PO list/create (with inline lines)/detail + status transitions + attachments + audit + order-book summary + GRN (goods receipt with PO matching, over-receipt guard, traceability-unit creation, IN stock movements) |
 | sales | VERIFIED | SalesOrder list/create (with inline lines)/detail + confirm/close/cancel + attachments + audit + order-book summary |
 | production | VERIFIED | ProductionOrder list/create/detail + release/complete/close/cancel + attachments + audit + order-book summary + material issues (explicit/backflush) + production outputs + execution panel with inventory integration |
 | identity admin | VERIFIED | Roles list/create, Users list, Permissions catalogue |
 | costing | VERIFIED | CostLayer model for dated weighted-average valuation, WA calculation service, read-only API with wa-cost/summary endpoints — 13 tests |
 | shipment | VERIFIED | Allocation (reserve/release), Shipment delivery posting with atomic OUT movements, over-allocation guard — 4 tests |
-| execution layer | GATED | stock/GRN/issue/genealogy/QC-exec/allocation/shipment — all gated by Q-026/046/048/049 |
+| execution layer | VERIFIED | stock movements/ledger/balances/kardex, GRN/receipts with PO matching, material issues (explicit/backflush), production outputs, genealogy links, QC results, allocations, shipments, costing (dated WA) — end-to-end sample-product test covering PO→GRN→costing→production→issue→WIP→output→QC→allocation→shipment→genealogy |
 
 ## Gated remainder by module
 

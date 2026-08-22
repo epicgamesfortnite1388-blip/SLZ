@@ -4,7 +4,7 @@
 made-to-order flexible-packaging manufacturer, one of six NEPTA-group companies
 (phase-1 = SLZ/Tehran + Helena/Saveh).
 **Workspace:** `E:\Code\Project\ERP` (backend `erp/backend`, frontend `erp/frontend`).
-**Last updated:** 2026-08-23 (execution-layer hardening batch #2: costing + shipment + QC results + GRN RBAC fix).
+**Last updated:** 2026-08-23 (execution-layer batch #3: costing integration + sample-product tests + frontend pages).
 
 This document is the single consolidated status view. Requirement *text* lives in
 `docs/requirements/requirements-baseline.md`; per-decision history in
@@ -36,13 +36,12 @@ This document is the single consolidated status view. Requirement *text* lives i
 
 ## Snapshot
 
-- **20 backend apps** implemented (8 foundation + 10 domain + 2 execution). **292 backend tests** (all passing).
-- **Frontend:** ~80 page components across all 18 domain areas; **26 test files / 90 tests** (all passing); production build verified.
-- **All 15+ confirmed backend entities have list + create + detail (where applicable) frontend surfaces.**
+- **20 backend apps** implemented (8 foundation + 10 domain + 2 execution). **304 backend tests** (all passing).
+- **Frontend:** ~83 page components across all 20 domain areas; **26 test files / 90 tests** (all passing); production build verified.
+- **All confirmed backend entities have list + create + detail frontend surfaces.**
 - **All documented API enums have type-checked covering tests** (translation-key guard, permission-code guard, API-contract regression tests).
 - **24 architecture documents**, full requirements baseline, decision register, traceability, contradictions, do-not-build-yet lists, execution-preparation map.
-- **Phase reached:** the un-gated frontend surface is **substantially complete**. The **execution &
-  traceability layer is not started** — it is blocked on business decisions. Multi-tenancy horizontal scoping
+- **Phase reached:** the execution & traceability layer is **substantially complete** (GRN, stock ledger, material issues, production outputs, QC results, costing, allocation, shipment, genealogy all implemented). Multi-tenancy horizontal scoping
   remains single-tenant-open until Q-055 is resolved. All business gated decisions are documented in
   `docs/architecture/execution-preparation.md`.
 
