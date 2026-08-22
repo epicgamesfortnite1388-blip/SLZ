@@ -1,4 +1,4 @@
-﻿# SLZ ERP â€” Roadmap Gap Matrix
+# SLZ ERP â€” Roadmap Gap Matrix
 
 **Generated:** 2026-08-22, from direct repository inspection (not from task
 notes). Ground truth at time of writing: **245** backend tests / **85+**
