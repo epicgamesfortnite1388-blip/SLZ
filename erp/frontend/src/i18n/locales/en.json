@@ -158,6 +158,7 @@
     "title": "Partners",
     "subtitle": "Customers and suppliers.",
     "new": "New partner",
+    "edit": "Edit partner",
     "roles": "Roles",
     "isCustomer": "Customer",
     "isSupplier": "Supplier",
@@ -830,6 +831,17 @@
     "history": {
       "title": "History",
       "empty": "No recorded activity for this record yet."
+    }
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Platform user accounts — read-only for identity administrators.",
+    "fields": {
+      "email": "Email",
+      "fullName": "Full name",
+      "language": "Language",
+      "roles": "Roles",
+      "isActive": "Active"
     }
   }
 }

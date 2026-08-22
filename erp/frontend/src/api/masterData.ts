@@ -132,6 +132,11 @@ export function createPartner(payload: Partial<Partner>): Promise<Partner> {
   return apiClient.post<Partner>('/partners/partners/', payload);
 }
 
+/** Update a partner (audited PATCH; the reference master-data edit flow). */
+export function updatePartner(id: string, payload: Partial<Partner>): Promise<Partner> {
+  return apiClient.patch<Partner>(`/partners/partners/${id}/`, payload);
+}
+
 /** Create a material via the audited service layer. */
 export function createMaterial(payload: Partial<Material>): Promise<Material> {
   return apiClient.post<Material>('/catalog/materials/', payload);

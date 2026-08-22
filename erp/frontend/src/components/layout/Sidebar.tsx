@@ -54,6 +54,7 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: 'documents.title', to: '/documents', permission: 'documents.attachment.view' },
   { labelKey: 'audit.title', to: '/audit/logs', permission: 'audit.log.view' },
   { labelKey: 'roles.title', to: '/identity/roles', permission: 'identity.role.manage' },
+  { labelKey: 'users.title', to: '/identity/users', permission: 'identity.user.view' },
 ];
 
 /** App sidebar. Items are filtered by the current user's permissions. */

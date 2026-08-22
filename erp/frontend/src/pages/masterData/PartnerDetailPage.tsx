@@ -59,6 +59,14 @@ export function PartnerDetailPage(): JSX.Element {
           <Link to="/master-data/partners" className="link-back">
             {t('partners.detail.back')}
           </Link>
+          {data && hasPermission('partners.partner.manage') && id && (
+            <>
+              {' · '}
+              <Link to={`/master-data/partners/${id}/edit`} className="link-inline">
+                {t('partners.edit')}
+              </Link>
+            </>
+          )}
         </p>
       </div>
 

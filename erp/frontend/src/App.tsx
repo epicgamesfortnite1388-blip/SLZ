@@ -7,6 +7,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { MasterDataHomePage } from '@/pages/masterData/MasterDataHomePage';
 import { PartnersPage } from '@/pages/masterData/PartnersPage';
+import { PartnerEditPage } from '@/pages/masterData/PartnerEditPage';
 import { PartnerCreatePage } from '@/pages/masterData/PartnerCreatePage';
 import { PartnerDetailPage } from '@/pages/masterData/PartnerDetailPage';
 import { ProductsPage } from '@/pages/masterData/ProductsPage';
@@ -80,6 +81,7 @@ import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { AuditLogPage } from '@/pages/audit/AuditLogPage';
 import { RolesPage } from '@/pages/identity/RolesPage';
 import { RoleCreatePage } from '@/pages/identity/RoleCreatePage';
+import { UsersPage } from '@/pages/identity/UsersPage';
 import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { CompaniesPage } from '@/pages/organization/CompaniesPage';
 import { CompanyCreatePage } from '@/pages/organization/CompanyCreatePage';
@@ -129,6 +131,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="partners.partner.view">
                 <PartnerDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="partners/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="partners.partner.manage">
+                <PartnerEditPage />
               </ProtectedRoute>
             }
           />
@@ -792,6 +802,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="identity.role.manage">
                 <RoleCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute requiredPermission="identity.user.view">
+                <UsersPage />
               </ProtectedRoute>
             }
           />
