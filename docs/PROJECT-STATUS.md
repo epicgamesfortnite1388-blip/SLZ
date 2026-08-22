@@ -270,6 +270,50 @@ all application logic is verified.
 
 ---
 
+## Definitive pre-decision status (2026-08-22)
+
+**CURRENTLY IMPLEMENTED** — platform foundation complete and usable:
+identity/RBAC/JWT/throttling, organization masters, audit trail with
+snapshots/diff viewer, documents register with in-context attachment panels,
+localization incl. Jalali display, notifications, workflow engine with
+approvals inbox, all master-data modules (partners w/ contacts+addresses,
+catalog incl. UoM conversions, hr), versioned engineering (customer products,
+spec revisions, tooling), manufacturing definition (work centers, machines,
+BOM/routing roots+revisions), warehouse foundation with access grants,
+quality characteristics + versioned plans, procurement requisition/PO with
+state machines, sales orders, production orders — each with detail pages,
+order-book summaries, roles admin.
+
+**CURRENTLY RUNTIME VERIFIED** — backend suite green on SQLite;
+frontend typecheck/lint/vitest/build green; migration drift gate clean; both
+enforced in CI. PostgreSQL/Redis/Celery/Docker path remains unexecuted here.
+
+**BUSINESS BLOCKERS** — see `docs/business-decision-package.md`
+(workshop-ready): Q-046/Q-048/Q-049/Q-026 execution cluster; Q-055/Q-053
+multi-tenancy (CRITICAL security exposure until closed); costing cluster
+Q-031/033/034; KPIs Q-038; build-vs-buy DR-000; secondary batch Q-019/024/
+027/029/039/040/043/047/051/052/054/060/062.
+
+**INFRASTRUCTURE BLOCKERS** — requires a Docker-capable machine:
+`docker compose up --build` then `migrate` + `seed_rbac` inside the backend
+container (entrypoint already waits for Postgres and applies committed
+migrations). Static audit of Dockerfile/compose/CI found no defects to fix.
+
+**NEXT ENGINEERING ACTION AFTER EACH DECISION:**
+- Q-046 answered — inventory movement/lot-roll schema + GRN + issue +
+  output + genealogy, following `execution-preparation.md` seams.
+- Q-048 answered — consumption posting engine + shop-floor issue UX.
+- Q-049 answered — labeling/packing units + recall query depth.
+- Q-026 answered — BOM structure finalization + intermediate storage.
+- Q-055/Q-053 answered — systematic scoping sweep per
+  `multi-tenancy-preparation.md` (read choke point + write assignment +
+  generic-surface resolution + cross-company regression tests).
+- Q-031/033/034 answered — valuation/costing engine on configurable
+  formula seams (already data-only).
+- Q-038 answered — KPI views on confirmed dimensions.
+
+---
+
 ## Recommended next step
 
 Answer **Q-046** (with Q-048/049/026). That one cluster unblocks more downstream
