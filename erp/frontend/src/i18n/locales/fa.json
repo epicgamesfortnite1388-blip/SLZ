@@ -1,0 +1,642 @@
+{
+  "app": {
+    "title": "سامانه SLZ ERP",
+    "subtitle": "سامانه یکپارچه صنایع بسته‌بندی انعطاف‌پذیر"
+  },
+  "common": {
+    "loading": "در حال بارگذاری…",
+    "error": "خطایی رخ داد",
+    "retry": "تلاش مجدد",
+    "cancel": "انصراف",
+    "close": "بستن",
+    "placeholder": "نمونه",
+    "view": "مشاهده",
+    "actions": "عملیات",
+    "yes": "بله",
+    "no": "خیر",
+    "back": "بازگشت"
+  },
+  "language": {
+    "label": "زبان",
+    "en": "English",
+    "fa": "فارسی",
+    "switchTo": "تغییر زبان"
+  },
+  "nav": {
+    "dashboard": "داشبورد",
+    "masterData": "داده‌های پایه"
+  },
+  "userMenu": {
+    "profile": "پروفایل",
+    "logout": "خروج",
+    "account": "حساب کاربری"
+  },
+  "login": {
+    "title": "ورود",
+    "subtitle": "به حساب کاربری خود در SLZ ERP وارد شوید",
+    "email": "ایمیل",
+    "emailPlaceholder": "you@example.com",
+    "password": "گذرواژه",
+    "passwordPlaceholder": "گذرواژه شما",
+    "submit": "ورود",
+    "submitting": "در حال ورود…",
+    "error": "ورود ممکن نشد. لطفاً اطلاعات ورود را بررسی کنید."
+  },
+  "dashboard": {
+    "title": "داشبورد",
+    "welcome": "خوش آمدید، {{name}}",
+    "welcomeGeneric": "خوش آمدید",
+    "placeholderNotice": "این یک پوسته پایه است. ماژول‌های کسب‌وکار و داده‌های واقعی هنوز متصل نشده‌اند.",
+    "stats": {
+      "placeholderTitle": "شاخص نمونه",
+      "placeholderValue": "—",
+      "noData": "هنوز داده‌ای وجود ندارد",
+      "error": "—",
+      "noAccess": "هنوز به هیچ ماژولی دسترسی ندارید.",
+      "partners": "طرف‌های تجاری",
+      "products": "محصولات",
+      "materials": "مواد",
+      "customerProducts": "محصولات مشتری",
+      "salesOrders": "سفارش‌های فروش",
+      "purchaseOrders": "سفارش‌های خرید",
+      "productionOrders": "سفارش‌های تولید",
+      "warehouses": "انبارها"
+    },
+    "orderBook": {
+      "title": "دفتر سفارش‌ها",
+      "salesOrders": "سفارش‌های فروش",
+      "purchaseOrders": "سفارش‌های خرید",
+      "productionOrders": "دستورهای تولید",
+      "empty": "هنوز سندی ثبت نشده است"
+    }
+  },
+  "errors": {
+    "notFoundTitle": "صفحه یافت نشد",
+    "notFoundBody": "صفحه‌ای که به دنبال آن هستید وجود ندارد.",
+    "forbiddenTitle": "دسترسی مجاز نیست",
+    "forbiddenBody": "شما اجازه مشاهده این صفحه را ندارید.",
+    "boundaryTitle": "خطای غیرمنتظره",
+    "boundaryBody": "برنامه با مشکل غیرمنتظره‌ای مواجه شد.",
+    "backHome": "بازگشت به داشبورد"
+  },
+  "masterData": {
+    "title": "داده‌های پایه",
+    "subtitle": "داده‌های مرجع پایه برای سامانه SLZ ERP.",
+    "searchPlaceholder": "جستجو…",
+    "empty": "رکوردی یافت نشد.",
+    "noAccess": "شما به هیچ بخشی از داده‌های پایه دسترسی ندارید.",
+    "save": "ذخیره",
+    "prev": "قبلی",
+    "next": "بعدی",
+    "pageOf": "صفحه {{page}} از {{total}}",
+    "fields": {
+      "code": "کد",
+      "nameFa": "نام (فارسی)",
+      "nameEn": "نام (انگلیسی)",
+      "company": "شرکت",
+      "active": "فعال",
+      "baseUom": "واحد پایه"
+    }
+  },
+  "organization": {
+    "companies": {
+      "title": "شرکت‌ها",
+      "subtitle": "اشخاص حقوقی — ریشهٔ دامنهٔ شرکت.",
+      "new": "شرکت جدید"
+    },
+    "sites": {
+      "title": "سایت‌ها",
+      "subtitle": "تأسیسات فیزیکی متعلق به یک شرکت.",
+      "new": "سایت جدید"
+    },
+    "fields": {
+      "timezone": "منطقهٔ زمانی"
+    }
+  },
+  "partners": {
+    "title": "طرف‌های تجاری",
+    "subtitle": "مشتریان و تأمین‌کنندگان.",
+    "new": "طرف تجاری جدید",
+    "roles": "نقش‌ها",
+    "isCustomer": "مشتری",
+    "isSupplier": "تأمین‌کننده",
+    "sanctioned": "تحریم‌شده",
+    "role": {
+      "customer": "مشتری",
+      "supplier": "تأمین‌کننده"
+    },
+    "fields": {
+      "legalName": "نام حقوقی",
+      "nationalId": "شناسه ملی",
+      "economicCode": "کد اقتصادی",
+      "notes": "یادداشت‌ها"
+    },
+    "detail": {
+      "title": "جزئیات طرف تجاری",
+      "back": "← بازگشت به طرف‌های تجاری",
+      "notFound": "این طرف تجاری یافت نشد."
+    }
+  },
+  "products": {
+    "title": "محصولات",
+    "subtitle": "شناسه و طبقه‌بندی کالای ساخته‌شده."
+  },
+  "materials": {
+    "title": "مواد",
+    "subtitle": "مواد اولیه، مرکب، حلال و مصرفی‌ها.",
+    "subtype": "نوع",
+    "hazardous": "خطرناک",
+    "subtypes": {
+      "RESIN_MASTERBATCH": "رزین / مستربچ",
+      "INK": "مرکب",
+      "SOLVENT": "حلال",
+      "CONSUMABLE": "مصرفی",
+      "PACKAGING": "بسته‌بندی",
+      "REGRIND": "بازآسیاب",
+      "SEMI_FINISHED": "نیمه‌ساخته",
+      "FINISHED": "ساخته‌شده"
+    }
+  },
+  "uoms": {
+    "title": "واحدهای اندازه‌گیری",
+    "subtitle": "واحدها و ابعاد آن‌ها.",
+    "dimension": "بُعد",
+    "dimensions": {
+      "MASS": "جرم",
+      "LENGTH": "طول",
+      "AREA": "سطح",
+      "VOLUME": "حجم",
+      "COUNT": "تعداد",
+      "TIME": "زمان"
+    }
+  },
+  "employees": {
+    "title": "کارکنان",
+    "subtitle": "داده‌های پایه حداقلی کارکنان.",
+    "code": "کد پرسنلی",
+    "jobTitle": "عنوان شغلی"
+  },
+  "engineering": {
+    "activate": "فعال‌سازی",
+    "customerProducts": {
+      "title": "محصولات مشتری",
+      "subtitle": "شناسه محصولات سفارشی (ریشه مشخصات فنی).",
+      "new": "محصول مشتری جدید"
+    },
+    "specifications": {
+      "title": "مشخصات فنی",
+      "subtitle": "مشخصات فنی نسخه‌بندی‌شده و چرخه عمر آن‌ها."
+    },
+    "fields": {
+      "customer": "مشتری",
+      "productGroup": "گروه محصول",
+      "family": "خانواده",
+      "revisionNumber": "نسخه",
+      "status": "وضعیت",
+      "specFormat": "قالب",
+      "colors": "رنگ‌ها",
+      "lamination": "لمینت‌شده",
+      "actions": "عملیات",
+      "code": "کد",
+      "nameFa": "نام (فارسی)",
+      "nameEn": "نام (انگلیسی)",
+      "baseUom": "یکای پایه",
+      "isActive": "فعال",
+      "effectiveFrom": "اجرا از",
+      "effectiveTo": "اجرا تا",
+      "changeReason": "دلیل تغییر",
+      "bagType": "نوع کیسه",
+      "width": "عرض (میلی‌متر)",
+      "length": "طول (میلی‌متر)",
+      "gusset": "شنل (میلی‌متر)",
+      "printProcess": "فرایند چاپ",
+      "coldSeal": "سردِ دربندی",
+      "surfaceFinish": "پرداخت سطح"
+    },
+    "statuses": {
+      "DRAFT": "پیش‌نویس",
+      "ACTIVE": "فعال",
+      "SUPERSEDED": "جایگزین‌شده",
+      "ARCHIVED": "بایگانی‌شده"
+    },
+    "detail": {
+      "headerTitle": "هویت محصول",
+      "revisionsTitle": "بازنگری‌های مشخصات فنی",
+      "specTitle": "مشخصات فنی",
+      "layersTitle": "لایه‌های ساختار",
+      "colorsTitle": "رنگ‌های چاپ",
+      "paramsTitle": "پارامترهای فنی"
+    },
+    "layers": {
+      "material": "متریال",
+      "function": "کارکرد",
+      "micron": "میکرون"
+    },
+    "colors": {
+      "colorName": "رنگ",
+      "ink": "جوهر",
+      "coverage": "پوشش ٪"
+    },
+    "params": {
+      "key": "پارامتر",
+      "value": "مقدار",
+      "unit": "یکا",
+      "tolerance": "رواداری"
+    }
+  },
+  "manufacturing": {
+    "activate": "فعال‌سازی",
+    "workCenters": {
+      "title": "مراکز کاری",
+      "subtitle": "مراحل تولید که ماشین‌آلات قابل‌جایگزین را گروه‌بندی می‌کنند.",
+      "new": "مرکز کاری جدید"
+    },
+    "machines": {
+      "title": "ماشین‌آلات",
+      "subtitle": "منابع فیزیکی با پروفایل قابلیت داده‌محور."
+    },
+    "boms": {
+      "title": "فهرست مواد",
+      "subtitle": "ساختار مواد نسخه‌بندی‌شده متصل به نسخه مشخصات فنی."
+    },
+    "routings": {
+      "title": "مسیرهای تولید",
+      "subtitle": "عملیات ترتیبی نسخه‌بندی‌شده متصل به نسخه مشخصات فنی."
+    },
+    "fields": {
+      "site": "سایت",
+      "sequenceHint": "ترتیب مرحله",
+      "capabilities": "قابلیت‌ها",
+      "revisionNumber": "نسخه",
+      "status": "وضعیت",
+      "effectiveFrom": "اعتبار از",
+      "actions": "عملیات"
+    },
+    "statuses": {
+      "DRAFT": "پیش‌نویس",
+      "ACTIVE": "فعال",
+      "SUPERSEDED": "جایگزین‌شده",
+      "ARCHIVED": "بایگانی‌شده"
+    }
+  },
+  "inventory": {
+    "warehouses": {
+      "title": "انبارها",
+      "subtitle": "مکان‌های نگهداری در محدوده شرکت/سایت و نوع انبار آن‌ها.",
+      "new": "انبار جدید"
+    },
+    "access": {
+      "title": "دسترسی انبار",
+      "subtitle": "اعطای دسترسی هر کاربر به انبارهای مشخص."
+    },
+    "fields": {
+      "site": "سایت",
+      "storeType": "نوع انبار",
+      "warehouse": "انبار",
+      "user": "کاربر",
+      "accessLevel": "سطح دسترسی"
+    },
+    "storeTypes": {
+      "GENERAL": "عمومی",
+      "RAW_MATERIAL": "مواد اولیه",
+      "WIP": "کالای در جریان ساخت",
+      "FINISHED_GOODS": "کالای ساخته‌شده",
+      "SCRAP": "ضایعات",
+      "QUARANTINE": "قرنطینه",
+      "CLICHE": "کلیشه",
+      "LINE_SIDE": "کنار خط",
+      "CONSIGNMENT": "امانی",
+      "STAGNANT": "راکد / کندگردش",
+      "SHIPPING_STAGING": "آماده‌سازی ارسال",
+      "RETURNS": "مرجوعی"
+    },
+    "accessLevels": {
+      "VIEW": "مشاهده",
+      "OPERATE": "عملیات"
+    }
+  },
+  "quality": {
+    "characteristics": {
+      "title": "مشخصه‌های کیفی",
+      "subtitle": "فهرست مشخصه‌های قابل اندازه‌گیری کیفیت در سطح شرکت.",
+      "new": "مشخصه جدید"
+    },
+    "plans": {
+      "title": "طرح‌های کنترل کیفیت",
+      "subtitle": "طرح‌های بازرسی نسخه‌بندی‌شده وابسته به نسخه مشخصات فنی محصول."
+    },
+    "activate": "فعال‌سازی",
+    "fields": {
+      "datatype": "نوع داده",
+      "method": "روش",
+      "revisionNumber": "نسخه",
+      "status": "وضعیت",
+      "effectiveFrom": "اعتبار از",
+      "actions": "عملیات"
+    },
+    "datatypes": {
+      "NUMBER": "عددی",
+      "TEXT": "متنی",
+      "BOOL": "بولی"
+    },
+    "statuses": {
+      "DRAFT": "پیش‌نویس",
+      "ACTIVE": "فعال",
+      "SUPERSEDED": "جایگزین‌شده",
+      "ARCHIVED": "بایگانی‌شده"
+    }
+  },
+  "procurement": {
+    "requisitions": {
+      "title": "درخواست‌های خرید",
+      "subtitle": "درخواست‌های داخلی برای خرید مواد؛ پیش از سفارش تأیید می‌شوند.",
+      "new": "درخواست خرید جدید"
+    },
+    "orders": {
+      "title": "سفارش‌های خرید",
+      "subtitle": "تعهد خرید از یک تأمین‌کننده تأییدشده.",
+      "new": "سفارش خرید جدید"
+    },
+    "fields": {
+      "number": "شماره",
+      "status": "وضعیت",
+      "supplier": "تأمین‌کننده",
+      "needBy": "تاریخ نیاز",
+      "expected": "تاریخ مورد انتظار",
+      "currency": "واحد پول",
+      "notes": "یادداشت‌ها",
+      "actions": "عملیات",
+      "requestedBy": "درخواست‌دهنده",
+      "orderDate": "تاریخ سفارش",
+      "lineSequence": "#",
+      "lineMaterial": "موجودی اولیه",
+      "lineQuantity": "مقدار",
+      "lineUom": "یکا",
+      "lineUnitPrice": "قیمت واحد"
+    },
+    "actions": {
+      "submit": "ارسال",
+      "approve": "تأیید",
+      "reject": "رد",
+      "cancel": "لغو",
+      "send": "ارسال به تأمین‌کننده",
+      "close": "بستن"
+    },
+    "reqStatuses": {
+      "DRAFT": "پیش‌نویس",
+      "SUBMITTED": "ارسال‌شده",
+      "APPROVED": "تأییدشده",
+      "REJECTED": "ردشده",
+      "CANCELLED": "لغوشده"
+    },
+    "orderStatuses": {
+      "DRAFT": "پیش‌نویس",
+      "APPROVED": "تأییدشده",
+      "SENT": "ارسال‌شده",
+      "CLOSED": "بسته‌شده",
+      "CANCELLED": "لغوشده"
+    },
+    "detail": {
+      "title": "سند خرید {number}",
+      "subtitle": "سربرگ، ردیف‌ها و تاریخچهٔ حسابرسی رکورد.",
+      "headerTitle": "سربرگ سند",
+      "linesTitle": "ردیف‌های سند"
+    }
+  },
+  "sales": {
+    "orders": {
+      "title": "سفارش‌های فروش",
+      "subtitle": "سفارش‌های مشتری — مبدأ تقاضا در تولید سفارشی.",
+      "new": "سفارش فروش جدید"
+    },
+    "fields": {
+      "number": "شماره",
+      "status": "وضعیت",
+      "customer": "مشتری",
+      "requested": "تاریخ درخواستی",
+      "currency": "ارز",
+      "notes": "یادداشت‌ها",
+      "actions": "عملیات",
+      "orderDate": "تاریخ سفارش",
+      "requestedDate": "تاریخ درخواست",
+      "lineSequence": "#",
+      "lineProduct": "محصول مشتری",
+      "lineQuantity": "مقدار",
+      "lineUom": "یکا",
+      "lineUnitPrice": "قیمت واحد"
+    },
+    "actions": {
+      "confirm": "تأیید",
+      "close": "بستن",
+      "cancel": "لغو"
+    },
+    "orderStatuses": {
+      "DRAFT": "پیش‌نویس",
+      "CONFIRMED": "تأییدشده",
+      "CLOSED": "بسته‌شده",
+      "CANCELLED": "لغوشده"
+    },
+    "detail": {
+      "title": "سفارش فروش {number}",
+      "subtitle": "سربرگ، ردیف‌ها و تاریخچهٔ حسابرسی رکورد.",
+      "headerTitle": "سربرگ سفارش",
+      "linesTitle": "ردیف‌های سفارش"
+    }
+  },
+  "production": {
+    "orders": {
+      "title": "سفارش‌های تولید",
+      "subtitle": "دستورهای کار — تعهد خط تولید بر اساس تعریف مهندسی قفل‌شده.",
+      "new": "سفارش تولید جدید"
+    },
+    "fields": {
+      "number": "شماره",
+      "status": "وضعیت",
+      "customerProduct": "محصول مشتری",
+      "specRevision": "نسخهٔ مشخصات فنی",
+      "quantity": "مقدار برنامه‌ریزی‌شده",
+      "uom": "واحد اندازه‌گیری",
+      "scheduledStart": "شروع زمان‌بندی‌شده",
+      "scheduledEnd": "پایان زمان‌بندی‌شده",
+      "notes": "یادداشت‌ها",
+      "actions": "عملیات",
+      "bomRevision": "بازنگری BOM",
+      "routingRevision": "بازنگری مسیر تولید",
+      "salesOrderLine": "ردیف سفارش فروش"
+    },
+    "actions": {
+      "release": "صدور",
+      "complete": "تکمیل",
+      "close": "بستن",
+      "cancel": "لغو"
+    },
+    "orderStatuses": {
+      "DRAFT": "پیش‌نویس",
+      "RELEASED": "صادرشده",
+      "COMPLETED": "تکمیل‌شده",
+      "CLOSED": "بسته‌شده",
+      "CANCELLED": "لغوشده"
+    },
+    "detail": {
+      "title": "دستور تولید {number}",
+      "subtitle": "تعریف منجمدِ مبنای این دستور کار، به‌همراه تاریخچهٔ آن.",
+      "headerTitle": "سربرگ دستور کار"
+    }
+  },
+  "tooling": {
+    "title": "قالب‌ها و کلیشه‌ها",
+    "subtitle": "کلیشه / برگ / دست چاپ با ردیابی عمر مصرف.",
+    "new": "قالب جدید",
+    "fields": {
+      "code": "کد",
+      "name": "نام",
+      "customer": "مشتری",
+      "customerProduct": "محصول مشتری",
+      "type": "نوع",
+      "status": "وضعیت",
+      "usage": "مصرف / حد مجاز",
+      "usageLifeLimit": "حد عمر مصرف",
+      "warehouse": "انبار کلیشه",
+      "notes": "یادداشت‌ها",
+      "actions": "عملیات"
+    },
+    "types": {
+      "CLICHE": "کلیشه",
+      "SHEET": "برگ",
+      "SET": "دست"
+    },
+    "statuses": {
+      "ACTIVE": "فعال",
+      "RETIRED": "بازنشسته"
+    },
+    "actions": {
+      "retire": "بازنشستگی",
+      "reactivate": "فعال‌سازی مجدد"
+    }
+  },
+  "approvals": {
+    "title": "تأییدهای من",
+    "subtitle": "درخواست‌های در انتظار تصمیم شما.",
+    "fields": {
+      "workflow": "گردش کار",
+      "target": "مورد",
+      "state": "وضعیت",
+      "comment": "توضیح",
+      "commentPlaceholder": "توضیح اختیاری",
+      "actions": "عملیات"
+    },
+    "states": {
+      "DRAFT": "پیش‌نویس",
+      "SUBMITTED": "ارسال‌شده",
+      "UNDER_REVIEW": "در حال بررسی",
+      "APPROVED": "تأییدشده",
+      "REJECTED": "ردشده",
+      "CANCELLED": "لغوشده"
+    },
+    "actions": {
+      "approve": "تأیید",
+      "reject": "رد"
+    }
+  },
+  "workflow": {
+    "definitions": {
+      "title": "تعاریف گردش کار",
+      "subtitle": "پیکربندی گردش کار تأیید (فقط ساختار، بدون قواعد کسب‌وکار).",
+      "new": "تعریف جدید",
+      "mode": "حالت تأیید"
+    },
+    "modes": {
+      "SEQUENTIAL": "ترتیبی",
+      "PARALLEL": "موازی"
+    }
+  },
+  "notifications": {
+    "title": "اعلان‌ها",
+    "subtitle": "هشدارها و درخواست‌های تأیید درون‌برنامه‌ای شما.",
+    "fields": {
+      "type": "نوع",
+      "title": "عنوان",
+      "body": "جزئیات",
+      "state": "وضعیت",
+      "actions": "عملیات"
+    },
+    "types": {
+      "APPROVAL_REQUIRED": "نیازمند تأیید",
+      "APPROVAL_COMPLETED": "تأیید تکمیل‌شده",
+      "TASK_ASSIGNED": "وظیفه واگذارشده",
+      "STATUS_CHANGED": "تغییر وضعیت",
+      "DEADLINE_APPROACHING": "نزدیک‌شدن مهلت",
+      "SYSTEM_ALERT": "هشدار سیستم"
+    },
+    "states": {
+      "read": "خوانده‌شده",
+      "unread": "خوانده‌نشده"
+    },
+    "actions": {
+      "markRead": "علامت‌گذاری به‌عنوان خوانده‌شده",
+      "markAllRead": "علامت‌گذاری همه به‌عنوان خوانده‌شده"
+    }
+  },
+  "documents": {
+    "title": "اسناد",
+    "subtitle": "پیوست‌های سراسر سیستم، متصل به رکورد مالک خود.",
+    "upload": {
+      "title": "بارگذاری سند"
+    },
+    "fields": {
+      "filename": "فایل",
+      "entity": "متصل به",
+      "entityType": "نوع موجودیت",
+      "entityTypePlaceholder": "مثلاً procurement.PurchaseOrder",
+      "entityId": "شناسهٔ موجودیت",
+      "size": "اندازه",
+      "description": "توضیحات",
+      "file": "فایل",
+      "actions": "اقدامات"
+    },
+    "actions": {
+      "upload": "بارگذاری",
+      "download": "دانلود",
+      "delete": "حذف"
+    },
+    "panel": {
+      "title": "پیوست‌ها",
+      "empty": "هنوز فایلی پیوست نشده است."
+    },
+    "errors": {
+      "noFile": "برای بارگذاری یک فایل انتخاب کنید."
+    }
+  },
+  "audit": {
+    "title": "گزارش حسابرسی",
+    "subtitle": "سابقهٔ فقط‌افزودنی هر اقدام حسابرسی‌شده. بر اساس موجودیت، شناسه یا کاربر جست‌وجو کنید.",
+    "fields": {
+      "timestamp": "زمان",
+      "actor": "کاربر",
+      "action": "اقدام",
+      "entity": "موجودیت",
+      "correlation": "شناسهٔ همبستگی"
+    },
+    "actions": {
+      "CREATE": "ایجاد",
+      "UPDATE": "به‌روزرسانی",
+      "DELETE": "حذف",
+      "APPROVE": "تأیید",
+      "REJECT": "رد",
+      "CANCEL": "لغو",
+      "LOGIN": "ورود",
+      "LOGOUT": "خروج"
+    },
+    "detail": {
+      "title": "رکورد حسابرسی",
+      "field": "فیلد",
+      "before": "پیش از تغییر",
+      "after": "پس از تغییر",
+      "empty": "برای این رکورد وضعیتی ثبت نشده است."
+    },
+    "history": {
+      "title": "تاریخچه",
+      "empty": "هنوز فعالیتی برای این رکورد ثبت نشده است."
+    }
+  }
+}

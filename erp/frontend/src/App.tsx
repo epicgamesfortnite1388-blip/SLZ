@@ -1,0 +1,469 @@
+import { Route, Routes } from 'react-router-dom';
+import { useDirection } from '@/i18n/useDirection';
+import { ProtectedRoute } from '@/routes/ProtectedRoute';
+import { AppShell } from '@/components/layout/AppShell';
+import { LoginPage } from '@/pages/LoginPage';
+import { DashboardPage } from '@/pages/DashboardPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
+import { MasterDataHomePage } from '@/pages/masterData/MasterDataHomePage';
+import { PartnersPage } from '@/pages/masterData/PartnersPage';
+import { PartnerCreatePage } from '@/pages/masterData/PartnerCreatePage';
+import { PartnerDetailPage } from '@/pages/masterData/PartnerDetailPage';
+import { ProductsPage } from '@/pages/masterData/ProductsPage';
+import { MaterialsPage } from '@/pages/masterData/MaterialsPage';
+import { UomsPage } from '@/pages/masterData/UomsPage';
+import { EmployeesPage } from '@/pages/masterData/EmployeesPage';
+import { CustomerProductsPage } from '@/pages/engineering/CustomerProductsPage';
+import { CustomerProductCreatePage } from '@/pages/engineering/CustomerProductCreatePage';
+import { CustomerProductDetailPage } from '@/pages/engineering/CustomerProductDetailPage';
+import { SpecificationsPage } from '@/pages/engineering/SpecificationsPage';
+import { ToolingAssetsPage } from '@/pages/engineering/ToolingAssetsPage';
+import { ToolingAssetCreatePage } from '@/pages/engineering/ToolingAssetCreatePage';
+import { WorkCentersPage } from '@/pages/manufacturing/WorkCentersPage';
+import { WorkCenterCreatePage } from '@/pages/manufacturing/WorkCenterCreatePage';
+import { MachinesPage } from '@/pages/manufacturing/MachinesPage';
+import { BomRevisionsPage } from '@/pages/manufacturing/BomRevisionsPage';
+import { RoutingRevisionsPage } from '@/pages/manufacturing/RoutingRevisionsPage';
+import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
+import { WarehouseCreatePage } from '@/pages/inventory/WarehouseCreatePage';
+import { WarehouseAccessPage } from '@/pages/inventory/WarehouseAccessPage';
+import { CharacteristicsPage } from '@/pages/quality/CharacteristicsPage';
+import { CharacteristicCreatePage } from '@/pages/quality/CharacteristicCreatePage';
+import { QualityPlanRevisionsPage } from '@/pages/quality/QualityPlanRevisionsPage';
+import { PurchaseRequisitionsPage } from '@/pages/procurement/PurchaseRequisitionsPage';
+import { PurchaseRequisitionCreatePage } from '@/pages/procurement/PurchaseRequisitionCreatePage';
+import { PurchaseOrdersPage } from '@/pages/procurement/PurchaseOrdersPage';
+import { PurchaseOrderCreatePage } from '@/pages/procurement/PurchaseOrderCreatePage';
+import { PurchaseOrderDetailPage } from '@/pages/procurement/PurchaseOrderDetailPage';
+import { PurchaseRequisitionDetailPage } from '@/pages/procurement/PurchaseRequisitionDetailPage';
+import { SalesOrdersPage } from '@/pages/sales/SalesOrdersPage';
+import { SalesOrderCreatePage } from '@/pages/sales/SalesOrderCreatePage';
+import { SalesOrderDetailPage } from '@/pages/sales/SalesOrderDetailPage';
+import { ProductionOrdersPage } from '@/pages/production/ProductionOrdersPage';
+import { ProductionOrderCreatePage } from '@/pages/production/ProductionOrderCreatePage';
+import { ProductionOrderDetailPage } from '@/pages/production/ProductionOrderDetailPage';
+import { ApprovalsPage } from '@/pages/workflow/ApprovalsPage';
+import { WorkflowDefinitionsPage } from '@/pages/workflow/WorkflowDefinitionsPage';
+import { WorkflowDefinitionCreatePage } from '@/pages/workflow/WorkflowDefinitionCreatePage';
+import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
+import { AuditLogPage } from '@/pages/audit/AuditLogPage';
+import { DocumentsPage } from '@/pages/documents/DocumentsPage';
+import { CompaniesPage } from '@/pages/organization/CompaniesPage';
+import { CompanyCreatePage } from '@/pages/organization/CompanyCreatePage';
+import { SitesPage } from '@/pages/organization/SitesPage';
+import { SiteCreatePage } from '@/pages/organization/SiteCreatePage';
+
+/** Root application: keeps direction in sync and declares the route table. */
+export default function App(): JSX.Element {
+  // Keep <html dir/lang> aligned with the active language.
+  useDirection();
+
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppShell />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardPage />} />
+
+        <Route path="master-data">
+          <Route index element={<MasterDataHomePage />} />
+          <Route
+            path="partners"
+            element={
+              <ProtectedRoute requiredPermission="partners.partner.view">
+                <PartnersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="partners/new"
+            element={
+              <ProtectedRoute requiredPermission="partners.partner.manage">
+                <PartnerCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="partners/:id"
+            element={
+              <ProtectedRoute requiredPermission="partners.partner.view">
+                <PartnerDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="products"
+            element={
+              <ProtectedRoute requiredPermission="catalog.product.view">
+                <ProductsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="materials"
+            element={
+              <ProtectedRoute requiredPermission="catalog.material.view">
+                <MaterialsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="uoms"
+            element={
+              <ProtectedRoute requiredPermission="catalog.uom.view">
+                <UomsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="employees"
+            element={
+              <ProtectedRoute requiredPermission="hr.employee.view">
+                <EmployeesPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="engineering">
+          <Route
+            path="customer-products"
+            element={
+              <ProtectedRoute requiredPermission="engineering.customerproduct.view">
+                <CustomerProductsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="customer-products/new"
+            element={
+              <ProtectedRoute requiredPermission="engineering.customerproduct.manage">
+                <CustomerProductCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="customer-products/:id"
+            element={
+              <ProtectedRoute requiredPermission="engineering.customerproduct.view">
+                <CustomerProductDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="specifications"
+            element={
+              <ProtectedRoute requiredPermission="engineering.specification.view">
+                <SpecificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="tooling"
+            element={
+              <ProtectedRoute requiredPermission="engineering.tooling.view">
+                <ToolingAssetsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="tooling/new"
+            element={
+              <ProtectedRoute requiredPermission="engineering.tooling.manage">
+                <ToolingAssetCreatePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="manufacturing">
+          <Route
+            path="work-centers"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.workcenter.view">
+                <WorkCentersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="work-centers/new"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.workcenter.manage">
+                <WorkCenterCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="machines"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.machine.view">
+                <MachinesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="boms"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.bom.view">
+                <BomRevisionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="routings"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.routing.view">
+                <RoutingRevisionsPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="inventory">
+          <Route
+            path="warehouses"
+            element={
+              <ProtectedRoute requiredPermission="inventory.warehouse.view">
+                <WarehousesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="warehouses/new"
+            element={
+              <ProtectedRoute requiredPermission="inventory.warehouse.manage">
+                <WarehouseCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="warehouse-access"
+            element={
+              <ProtectedRoute requiredPermission="inventory.warehouseaccess.view">
+                <WarehouseAccessPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="quality">
+          <Route
+            path="characteristics"
+            element={
+              <ProtectedRoute requiredPermission="quality.characteristic.view">
+                <CharacteristicsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="characteristics/new"
+            element={
+              <ProtectedRoute requiredPermission="quality.characteristic.manage">
+                <CharacteristicCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="plans"
+            element={
+              <ProtectedRoute requiredPermission="quality.plan.view">
+                <QualityPlanRevisionsPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="procurement">
+          <Route
+            path="requisitions"
+            element={
+              <ProtectedRoute requiredPermission="procurement.requisition.view">
+                <PurchaseRequisitionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="requisitions/:id"
+            element={
+              <ProtectedRoute requiredPermission="procurement.requisition.view">
+                <PurchaseRequisitionDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="requisitions/new"
+            element={
+              <ProtectedRoute requiredPermission="procurement.requisition.manage">
+                <PurchaseRequisitionCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders"
+            element={
+              <ProtectedRoute requiredPermission="procurement.order.view">
+                <PurchaseOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders/:id"
+            element={
+              <ProtectedRoute requiredPermission="procurement.order.view">
+                <PurchaseOrderDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders/new"
+            element={
+              <ProtectedRoute requiredPermission="procurement.order.manage">
+                <PurchaseOrderCreatePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="sales">
+          <Route
+            path="orders"
+            element={
+              <ProtectedRoute requiredPermission="sales.order.view">
+                <SalesOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders/:id"
+            element={
+              <ProtectedRoute requiredPermission="sales.order.view">
+                <SalesOrderDetailPage />
+              </ProtectedRoute>
+            }
+ />
+          <Route
+            path="orders/new"
+            element={
+              <ProtectedRoute requiredPermission="sales.order.manage">
+                <SalesOrderCreatePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="production">
+          <Route
+            path="orders"
+            element={
+              <ProtectedRoute requiredPermission="production.order.view">
+                <ProductionOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders/:id"
+            element={
+              <ProtectedRoute requiredPermission="production.order.view">
+                <ProductionOrderDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders/new"
+            element={
+              <ProtectedRoute requiredPermission="production.order.manage">
+                <ProductionOrderCreatePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="organization">
+          <Route
+            path="companies"
+            element={
+              <ProtectedRoute requiredPermission="organization.company.view">
+                <CompaniesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="companies/new"
+            element={
+              <ProtectedRoute requiredPermission="organization.company.manage">
+                <CompanyCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="sites"
+            element={
+              <ProtectedRoute requiredPermission="organization.site.view">
+                <SitesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="sites/new"
+            element={
+              <ProtectedRoute requiredPermission="organization.site.manage">
+                <SiteCreatePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="workflow">
+          <Route path="approvals" element={<ApprovalsPage />} />
+          <Route
+            path="definitions"
+            element={
+              <ProtectedRoute requiredPermission="workflow.definition.view">
+                <WorkflowDefinitionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="definitions/new"
+            element={
+              <ProtectedRoute requiredPermission="workflow.definition.manage">
+                <WorkflowDefinitionCreatePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="notifications" element={<NotificationsPage />} />
+
+        <Route
+          path="documents"
+          element={
+            <ProtectedRoute requiredPermission="documents.attachment.view">
+              <DocumentsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route path="audit">
+          <Route
+            path="logs"
+            element={
+              <ProtectedRoute requiredPermission="audit.log.view">
+                <AuditLogPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}

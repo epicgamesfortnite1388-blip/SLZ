@@ -1,0 +1,2 @@
+-r base.txt
+# Production-only extras can be added here (e.g. sentry-sdk, boto3 for S3 storage)

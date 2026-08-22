@@ -1,0 +1,642 @@
+{
+  "app": {
+    "title": "SLZ ERP",
+    "subtitle": "Flexible-packaging ERP"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "close": "Close",
+    "placeholder": "Placeholder",
+    "view": "View",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "fa": "فارسی",
+    "switchTo": "Switch language"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "masterData": "Master data"
+  },
+  "userMenu": {
+    "profile": "Profile",
+    "logout": "Sign out",
+    "account": "Account"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Sign in to your SLZ ERP account",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "error": "Unable to sign in. Please check your credentials."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {{name}}",
+    "welcomeGeneric": "Welcome",
+    "placeholderNotice": "This is a foundation shell. Business modules and real data are not connected yet.",
+    "stats": {
+      "placeholderTitle": "Placeholder metric",
+      "placeholderValue": "—",
+      "noData": "No data yet",
+      "error": "—",
+      "noAccess": "You do not have access to any modules yet.",
+      "partners": "Partners",
+      "products": "Products",
+      "materials": "Materials",
+      "customerProducts": "Customer products",
+      "salesOrders": "Sales orders",
+      "purchaseOrders": "Purchase orders",
+      "productionOrders": "Production orders",
+      "warehouses": "Warehouses"
+    },
+    "orderBook": {
+      "title": "Order book",
+      "salesOrders": "Sales orders",
+      "purchaseOrders": "Purchase orders",
+      "productionOrders": "Production orders",
+      "empty": "No documents yet"
+    }
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you are looking for does not exist.",
+    "forbiddenTitle": "Access denied",
+    "forbiddenBody": "You do not have permission to view this page.",
+    "boundaryTitle": "Unexpected error",
+    "boundaryBody": "The application ran into an unexpected problem.",
+    "backHome": "Back to dashboard"
+  },
+  "masterData": {
+    "title": "Master data",
+    "subtitle": "Foundational reference data for the SLZ ERP.",
+    "searchPlaceholder": "Search…",
+    "empty": "No records found.",
+    "noAccess": "You do not have access to any master-data sections.",
+    "save": "Save",
+    "prev": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{page}} of {{total}}",
+    "fields": {
+      "code": "Code",
+      "nameFa": "Name (FA)",
+      "nameEn": "Name (EN)",
+      "company": "Company",
+      "active": "Active",
+      "baseUom": "Base unit"
+    }
+  },
+  "organization": {
+    "companies": {
+      "title": "Companies",
+      "subtitle": "Legal entities — the root of company scoping.",
+      "new": "New company"
+    },
+    "sites": {
+      "title": "Sites",
+      "subtitle": "Physical facilities belonging to a company.",
+      "new": "New site"
+    },
+    "fields": {
+      "timezone": "Timezone"
+    }
+  },
+  "partners": {
+    "title": "Partners",
+    "subtitle": "Customers and suppliers.",
+    "new": "New partner",
+    "roles": "Roles",
+    "isCustomer": "Customer",
+    "isSupplier": "Supplier",
+    "sanctioned": "Sanctioned",
+    "role": {
+      "customer": "Customer",
+      "supplier": "Supplier"
+    },
+    "fields": {
+      "legalName": "Legal name",
+      "nationalId": "National ID",
+      "economicCode": "Economic code",
+      "notes": "Notes"
+    },
+    "detail": {
+      "title": "Partner details",
+      "back": "← Back to partners",
+      "notFound": "This partner could not be found."
+    }
+  },
+  "products": {
+    "title": "Products",
+    "subtitle": "Finished-goods identity and taxonomy."
+  },
+  "materials": {
+    "title": "Materials",
+    "subtitle": "Raw materials, inks, solvents and consumables.",
+    "subtype": "Type",
+    "hazardous": "Hazardous",
+    "subtypes": {
+      "RESIN_MASTERBATCH": "Resin / masterbatch",
+      "INK": "Ink",
+      "SOLVENT": "Solvent",
+      "CONSUMABLE": "Consumable",
+      "PACKAGING": "Packaging",
+      "REGRIND": "Regrind",
+      "SEMI_FINISHED": "Semi-finished",
+      "FINISHED": "Finished"
+    }
+  },
+  "uoms": {
+    "title": "Units of measure",
+    "subtitle": "Units and their dimensions.",
+    "dimension": "Dimension",
+    "dimensions": {
+      "MASS": "Mass",
+      "LENGTH": "Length",
+      "AREA": "Area",
+      "VOLUME": "Volume",
+      "COUNT": "Count",
+      "TIME": "Time"
+    }
+  },
+  "employees": {
+    "title": "Employees",
+    "subtitle": "Minimal employee master.",
+    "code": "Employee code",
+    "jobTitle": "Job title"
+  },
+  "engineering": {
+    "activate": "Activate",
+    "customerProducts": {
+      "title": "Customer products",
+      "subtitle": "Made-to-order product identities (specification roots).",
+      "new": "New customer product"
+    },
+    "specifications": {
+      "title": "Specifications",
+      "subtitle": "Versioned technical specifications and their lifecycle."
+    },
+    "fields": {
+      "customer": "Customer",
+      "productGroup": "Product group",
+      "family": "Family",
+      "revisionNumber": "Rev.",
+      "status": "Status",
+      "specFormat": "Format",
+      "colors": "Colors",
+      "lamination": "Laminated",
+      "actions": "Actions",
+      "code": "Code",
+      "nameFa": "Name (fa)",
+      "nameEn": "Name (en)",
+      "baseUom": "Base UoM",
+      "isActive": "Active",
+      "effectiveFrom": "Effective from",
+      "effectiveTo": "Effective to",
+      "changeReason": "Change reason",
+      "bagType": "Bag type",
+      "width": "Width (mm)",
+      "length": "Length (mm)",
+      "gusset": "Gusset (mm)",
+      "printProcess": "Print process",
+      "coldSeal": "Cold seal",
+      "surfaceFinish": "Surface finish"
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "SUPERSEDED": "Superseded",
+      "ARCHIVED": "Archived"
+    },
+    "detail": {
+      "headerTitle": "Product identity",
+      "revisionsTitle": "Specification revisions",
+      "specTitle": "Specification",
+      "layersTitle": "Structure layers",
+      "colorsTitle": "Print colors",
+      "paramsTitle": "Technical parameters"
+    },
+    "layers": {
+      "material": "Material",
+      "function": "Function",
+      "micron": "Micron"
+    },
+    "colors": {
+      "colorName": "Color",
+      "ink": "Ink",
+      "coverage": "Coverage %"
+    },
+    "params": {
+      "key": "Parameter",
+      "value": "Value",
+      "unit": "Unit",
+      "tolerance": "Tolerance"
+    }
+  },
+  "manufacturing": {
+    "activate": "Activate",
+    "workCenters": {
+      "title": "Work centers",
+      "subtitle": "Production stages that group interchangeable machines.",
+      "new": "New work center"
+    },
+    "machines": {
+      "title": "Machines",
+      "subtitle": "Physical resources with a data-driven capability profile."
+    },
+    "boms": {
+      "title": "Bills of materials",
+      "subtitle": "Versioned material structures bound to a specification revision."
+    },
+    "routings": {
+      "title": "Routings",
+      "subtitle": "Versioned ordered operations bound to a specification revision."
+    },
+    "fields": {
+      "site": "Site",
+      "sequenceHint": "Stage order",
+      "capabilities": "Capabilities",
+      "revisionNumber": "Rev.",
+      "status": "Status",
+      "effectiveFrom": "Effective from",
+      "actions": "Actions"
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "SUPERSEDED": "Superseded",
+      "ARCHIVED": "Archived"
+    }
+  },
+  "inventory": {
+    "warehouses": {
+      "title": "Warehouses",
+      "subtitle": "Company/site-scoped storage locations and their store type.",
+      "new": "New warehouse"
+    },
+    "access": {
+      "title": "Warehouse access",
+      "subtitle": "Per-user access grants to individual warehouses."
+    },
+    "fields": {
+      "site": "Site",
+      "storeType": "Store type",
+      "warehouse": "Warehouse",
+      "user": "User",
+      "accessLevel": "Access level"
+    },
+    "storeTypes": {
+      "GENERAL": "General",
+      "RAW_MATERIAL": "Raw material",
+      "WIP": "Work in progress",
+      "FINISHED_GOODS": "Finished goods",
+      "SCRAP": "Scrap",
+      "QUARANTINE": "Quarantine",
+      "CLICHE": "Cliché / plates",
+      "LINE_SIDE": "Line-side",
+      "CONSIGNMENT": "Consignment",
+      "STAGNANT": "Stagnant / slow-moving",
+      "SHIPPING_STAGING": "Shipping staging",
+      "RETURNS": "Returns"
+    },
+    "accessLevels": {
+      "VIEW": "View",
+      "OPERATE": "Operate"
+    }
+  },
+  "quality": {
+    "characteristics": {
+      "title": "Quality characteristics",
+      "subtitle": "Company catalogue of measurable quality attributes.",
+      "new": "New characteristic"
+    },
+    "plans": {
+      "title": "Quality plans",
+      "subtitle": "Versioned inspection plans bound to a product specification revision."
+    },
+    "activate": "Activate",
+    "fields": {
+      "datatype": "Datatype",
+      "method": "Method",
+      "revisionNumber": "Revision",
+      "status": "Status",
+      "effectiveFrom": "Effective from",
+      "actions": "Actions"
+    },
+    "datatypes": {
+      "NUMBER": "Number",
+      "TEXT": "Text",
+      "BOOL": "Boolean"
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "SUPERSEDED": "Superseded",
+      "ARCHIVED": "Archived"
+    }
+  },
+  "procurement": {
+    "requisitions": {
+      "title": "Purchase requisitions",
+      "subtitle": "Internal requests to purchase materials; approved before ordering.",
+      "new": "New requisition"
+    },
+    "orders": {
+      "title": "Purchase orders",
+      "subtitle": "Commitments to buy from an approved supplier.",
+      "new": "New purchase order"
+    },
+    "fields": {
+      "number": "Number",
+      "status": "Status",
+      "supplier": "Supplier",
+      "needBy": "Need by",
+      "expected": "Expected date",
+      "currency": "Currency",
+      "notes": "Notes",
+      "actions": "Actions",
+      "requestedBy": "Requested by",
+      "orderDate": "Order date",
+      "lineSequence": "#",
+      "lineMaterial": "Material",
+      "lineQuantity": "Quantity",
+      "lineUom": "UoM",
+      "lineUnitPrice": "Unit price"
+    },
+    "actions": {
+      "submit": "Submit",
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "send": "Send",
+      "close": "Close"
+    },
+    "reqStatuses": {
+      "DRAFT": "Draft",
+      "SUBMITTED": "Submitted",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "orderStatuses": {
+      "DRAFT": "Draft",
+      "APPROVED": "Approved",
+      "SENT": "Sent",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled"
+    },
+    "detail": {
+      "title": "Purchase document {number}",
+      "subtitle": "Header, lines and the record's audit history.",
+      "headerTitle": "Document header",
+      "linesTitle": "Document lines"
+    }
+  },
+  "sales": {
+    "orders": {
+      "title": "Sales orders",
+      "subtitle": "Customer orders — the made-to-order demand origin.",
+      "new": "New sales order"
+    },
+    "fields": {
+      "number": "Number",
+      "status": "Status",
+      "customer": "Customer",
+      "requested": "Requested date",
+      "currency": "Currency",
+      "notes": "Notes",
+      "actions": "Actions",
+      "orderDate": "Order date",
+      "requestedDate": "Requested date",
+      "lineSequence": "#",
+      "lineProduct": "Customer product",
+      "lineQuantity": "Quantity",
+      "lineUom": "UoM",
+      "lineUnitPrice": "Unit price"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "close": "Close",
+      "cancel": "Cancel"
+    },
+    "orderStatuses": {
+      "DRAFT": "Draft",
+      "CONFIRMED": "Confirmed",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled"
+    },
+    "detail": {
+      "title": "Sales order {number}",
+      "subtitle": "Header, lines and the record's audit history.",
+      "headerTitle": "Order header",
+      "linesTitle": "Order lines"
+    }
+  },
+  "production": {
+    "orders": {
+      "title": "Production orders",
+      "subtitle": "Work orders — shop-floor commitments built to a frozen engineering definition.",
+      "new": "New production order"
+    },
+    "fields": {
+      "number": "Number",
+      "status": "Status",
+      "customerProduct": "Customer product",
+      "specRevision": "Specification revision",
+      "quantity": "Planned quantity",
+      "uom": "Unit of measure",
+      "scheduledStart": "Scheduled start",
+      "scheduledEnd": "Scheduled end",
+      "notes": "Notes",
+      "actions": "Actions",
+      "bomRevision": "BOM revision",
+      "routingRevision": "Routing revision",
+      "salesOrderLine": "Sales order line"
+    },
+    "actions": {
+      "release": "Release",
+      "complete": "Complete",
+      "close": "Close",
+      "cancel": "Cancel"
+    },
+    "orderStatuses": {
+      "DRAFT": "Draft",
+      "RELEASED": "Released",
+      "COMPLETED": "Completed",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled"
+    },
+    "detail": {
+      "title": "Production order {number}",
+      "subtitle": "The frozen definition this work order is built to, plus its history.",
+      "headerTitle": "Work-order header"
+    }
+  },
+  "tooling": {
+    "title": "Tooling & clichés",
+    "subtitle": "Cliché / sheet / set printing tooling with usage-life tracking.",
+    "new": "New tooling asset",
+    "fields": {
+      "code": "Code",
+      "name": "Name",
+      "customer": "Customer",
+      "customerProduct": "Customer product",
+      "type": "Type",
+      "status": "Status",
+      "usage": "Usage / limit",
+      "usageLifeLimit": "Usage-life limit",
+      "warehouse": "Cliché store",
+      "notes": "Notes",
+      "actions": "Actions"
+    },
+    "types": {
+      "CLICHE": "Cliché",
+      "SHEET": "Sheet",
+      "SET": "Set"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "RETIRED": "Retired"
+    },
+    "actions": {
+      "retire": "Retire",
+      "reactivate": "Reactivate"
+    }
+  },
+  "approvals": {
+    "title": "My approvals",
+    "subtitle": "Requests awaiting your decision.",
+    "fields": {
+      "workflow": "Workflow",
+      "target": "Item",
+      "state": "State",
+      "comment": "Comment",
+      "commentPlaceholder": "Optional comment",
+      "actions": "Actions"
+    },
+    "states": {
+      "DRAFT": "Draft",
+      "SUBMITTED": "Submitted",
+      "UNDER_REVIEW": "Under review",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject"
+    }
+  },
+  "workflow": {
+    "definitions": {
+      "title": "Workflow definitions",
+      "subtitle": "Approval-workflow configuration (shape only, no business rules).",
+      "new": "New definition",
+      "mode": "Approval mode"
+    },
+    "modes": {
+      "SEQUENTIAL": "Sequential",
+      "PARALLEL": "Parallel"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Your in-app alerts and approval requests.",
+    "fields": {
+      "type": "Type",
+      "title": "Title",
+      "body": "Detail",
+      "state": "State",
+      "actions": "Actions"
+    },
+    "types": {
+      "APPROVAL_REQUIRED": "Approval required",
+      "APPROVAL_COMPLETED": "Approval completed",
+      "TASK_ASSIGNED": "Task assigned",
+      "STATUS_CHANGED": "Status changed",
+      "DEADLINE_APPROACHING": "Deadline approaching",
+      "SYSTEM_ALERT": "System alert"
+    },
+    "states": {
+      "read": "Read",
+      "unread": "Unread"
+    },
+    "actions": {
+      "markRead": "Mark read",
+      "markAllRead": "Mark all read"
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Attachments across the system, pinned to their owning record.",
+    "upload": {
+      "title": "Upload a document"
+    },
+    "fields": {
+      "filename": "File",
+      "entity": "Attached to",
+      "entityType": "Entity type",
+      "entityTypePlaceholder": "e.g. procurement.PurchaseOrder",
+      "entityId": "Entity id",
+      "size": "Size",
+      "description": "Description",
+      "file": "File",
+      "actions": "Actions"
+    },
+    "actions": {
+      "upload": "Upload",
+      "download": "Download",
+      "delete": "Delete"
+    },
+    "panel": {
+      "title": "Attachments",
+      "empty": "No files attached yet."
+    },
+    "errors": {
+      "noFile": "Choose a file to upload."
+    }
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Append-only record of every audited action. Search by entity, id or actor.",
+    "fields": {
+      "timestamp": "When",
+      "actor": "Actor",
+      "action": "Action",
+      "entity": "Entity",
+      "correlation": "Correlation"
+    },
+    "actions": {
+      "CREATE": "Create",
+      "UPDATE": "Update",
+      "DELETE": "Delete",
+      "APPROVE": "Approve",
+      "REJECT": "Reject",
+      "CANCEL": "Cancel",
+      "LOGIN": "Login",
+      "LOGOUT": "Logout"
+    },
+    "detail": {
+      "title": "Audit entry",
+      "field": "Field",
+      "before": "Before",
+      "after": "After",
+      "empty": "No state snapshot was recorded for this entry."
+    },
+    "history": {
+      "title": "History",
+      "empty": "No recorded activity for this record yet."
+    }
+  }
+}

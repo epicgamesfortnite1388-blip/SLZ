@@ -1,0 +1,27 @@
+import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
+import { useCollection } from '@/hooks/useCollection';
+import type { Product } from '@/api/masterData';
+
+const columns: Column<Product>[] = [
+  { headerKey: 'masterData.fields.code', render: (r) => r.code || '—' },
+  { headerKey: 'masterData.fields.nameFa', render: (r) => r.name_fa },
+  { headerKey: 'masterData.fields.nameEn', render: (r) => r.name_en || '—' },
+  {
+    headerKey: 'masterData.fields.active',
+    render: (r) => <BoolCell value={r.is_active} />,
+    align: 'center',
+  },
+];
+
+export function ProductsPage(): JSX.Element {
+  const collection = useCollection<Product>('/catalog/products/');
+  return (
+    <CollectionView
+      titleKey="products.title"
+      subtitleKey="products.subtitle"
+      columns={columns}
+      rowKey={(r) => r.id}
+      collection={collection}
+    />
+  );
+}
