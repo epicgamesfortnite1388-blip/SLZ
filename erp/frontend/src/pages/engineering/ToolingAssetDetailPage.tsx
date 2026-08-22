@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { fetchToolingAsset } from '@/api/tooling';
 import { isApiError } from '@/api/types';
+import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { BoolCell } from '@/components/CollectionView';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { Alert, Button, Spinner } from '@/components/ui';
+import { useAuth } from '@/auth/AuthContext';
 
 /**
  * Detail of one tooling asset: identity, lifecycle status, usage-life counters
@@ -15,6 +17,7 @@ import { Alert, Button, Spinner } from '@/components/ui';
  */
 export function ToolingAssetDetailPage(): JSX.Element {
   const { t } = useTranslation();
+  const { hasPermission } = useAuth();
   const { id = '' } = useParams();
   const [asset, setAsset] = useState<Awaited<ReturnType<typeof fetchToolingAsset>> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +84,10 @@ export function ToolingAssetDetailPage(): JSX.Element {
       <RecordDetail title={t('tooling.detail.headerTitle')} fields={fields} />
 
       <AuditHistoryPanel entityType="engineering.ToolingAsset" entityId={asset.id} />
+
+      {hasPermission('documents.attachment.view') && (
+        <AttachmentPanel entityType="engineering.ToolingAsset" entityId={asset.id} />
+      )}
 
       <div className="form-actions">
         <a className="link-back" onClick={() => window.history.back()} href="#back">
