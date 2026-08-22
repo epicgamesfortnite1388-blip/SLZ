@@ -57,6 +57,13 @@ export function createWorkCenter(
   return apiClient.post<WorkCenter>('/manufacturing/work-centers/', payload);
 }
 
+/** Create a machine (audited write path). */
+export function createMachine(
+  payload: Partial<Machine>,
+): Promise<Machine> {
+  return apiClient.post<Machine>('/manufacturing/machines/', payload);
+}
+
 /** Activate a DRAFT BOM revision (supersedes the prior ACTIVE one, atomic). */
 export function activateBomRevision(id: string): Promise<StructureRevision> {
   return apiClient.post<StructureRevision>(

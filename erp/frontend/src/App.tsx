@@ -26,6 +26,7 @@ import { ToolingAssetCreatePage } from '@/pages/engineering/ToolingAssetCreatePa
 import { WorkCentersPage } from '@/pages/manufacturing/WorkCentersPage';
 import { WorkCenterCreatePage } from '@/pages/manufacturing/WorkCenterCreatePage';
 import { MachinesPage } from '@/pages/manufacturing/MachinesPage';
+import { MachineCreatePage } from '@/pages/manufacturing/MachineCreatePage';
 import { BomRevisionsPage } from '@/pages/manufacturing/BomRevisionsPage';
 import { RoutingRevisionsPage } from '@/pages/manufacturing/RoutingRevisionsPage';
 import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
@@ -57,6 +58,8 @@ import { CompaniesPage } from '@/pages/organization/CompaniesPage';
 import { CompanyCreatePage } from '@/pages/organization/CompanyCreatePage';
 import { SitesPage } from '@/pages/organization/SitesPage';
 import { SiteCreatePage } from '@/pages/organization/SiteCreatePage';
+import { DepartmentsPage, DepartmentCreatePage } from '@/pages/organization/DepartmentsPage';
+import { SiteCapabilitiesPage, SiteCapabilityCreatePage } from '@/pages/organization/SiteCapabilitiesPage';
 
 /** Root application: keeps direction in sync and declares the route table. */
 export default function App(): JSX.Element {
@@ -241,6 +244,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="manufacturing.machine.view">
                 <MachinesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="machines/new"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.machine.manage">
+                <MachineCreatePage />
               </ProtectedRoute>
             }
           />
@@ -462,10 +473,49 @@ export default function App(): JSX.Element {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="departments"
+            element={
+              <ProtectedRoute requiredPermission="organization.department.view">
+                <DepartmentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="departments/new"
+            element={
+              <ProtectedRoute requiredPermission="organization.department.manage">
+                <DepartmentCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="site-capabilities"
+            element={
+              <ProtectedRoute requiredPermission="organization.sitecapability.view">
+                <SiteCapabilitiesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="site-capabilities/new"
+            element={
+              <ProtectedRoute requiredPermission="organization.sitecapability.manage">
+                <SiteCapabilityCreatePage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         <Route path="workflow">
-          <Route path="approvals" element={<ApprovalsPage />} />
+          <Route
+            path="approvals"
+            element={
+              <ProtectedRoute>
+                <ApprovalsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="definitions"
             element={
@@ -484,7 +534,14 @@ export default function App(): JSX.Element {
           />
         </Route>
 
-        <Route path="notifications" element={<NotificationsPage />} />
+        <Route
+          path="notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="documents"

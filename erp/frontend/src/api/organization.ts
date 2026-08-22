@@ -43,3 +43,67 @@ export function createCompany(payload: Partial<Company>): Promise<Company> {
 export function createSite(payload: Partial<Site>): Promise<Site> {
   return apiClient.post<Site>('/organization/sites/', payload);
 }
+
+/** A site-scoped department (mirrors ``DepartmentSerializer``). */
+export interface Department {
+  id: string;
+  site: string;
+  code: string;
+  name_en: string;
+  name_fa: string;
+  parent: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Create a department (audited write path). */
+export function createDepartment(
+  payload: Partial<Department>,
+): Promise<Department> {
+  return apiClient.post<Department>('/organization/departments/', payload);
+}
+
+/** Production capability codes (mirrors ``ProductionCapability``). */
+export type ProductionCapability =
+  | 'FILM_BLOWING'
+  | 'PRINTING'
+  | 'LAMINATION'
+  | 'SLITTING'
+  | 'CONVERTING'
+  | 'RECYCLING_GRINDING'
+  | 'CUTTING_SEWING'
+  | 'WAREHOUSING';
+
+/** Ordered list of capability choices for select inputs. */
+export const PRODUCTION_CAPABILITIES: ProductionCapability[] = [
+  'FILM_BLOWING',
+  'PRINTING',
+  'LAMINATION',
+  'SLITTING',
+  'CONVERTING',
+  'RECYCLING_GRINDING',
+  'CUTTING_SEWING',
+  'WAREHOUSING',
+];
+
+/** A production-capability declaration scoped to a site (mirrors ``SiteCapabilitySerializer``). */
+export interface SiteCapability {
+  id: string;
+  site: string;
+  capability: ProductionCapability;
+  is_active: boolean;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Create a site capability (audited write path). */
+export function createSiteCapability(
+  payload: Partial<SiteCapability>,
+): Promise<SiteCapability> {
+  return apiClient.post<SiteCapability>(
+    '/organization/site-capabilities/',
+    payload,
+  );
+}

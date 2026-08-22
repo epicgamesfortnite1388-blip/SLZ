@@ -114,7 +114,30 @@
       "new": "New site"
     },
     "fields": {
-      "timezone": "Timezone"
+      "timezone": "Timezone",
+      "site": "Site"
+    },
+    "departments": {
+      "title": "Departments",
+      "subtitle": "Site-scoped organizational units with optional parent hierarchy.",
+      "new": "New department",
+      "parent": "Parent department"
+    },
+    "siteCapabilities": {
+      "title": "Site capabilities",
+      "subtitle": "Production stages a site is declared capable of performing (SR-15).",
+      "new": "New capability",
+      "capability": "Capability",
+      "capabilities": {
+        "FILM_BLOWING": "Film blowing",
+        "PRINTING": "Printing",
+        "LAMINATION": "Lamination",
+        "SLITTING": "Slitting",
+        "CONVERTING": "Converting",
+        "RECYCLING_GRINDING": "Recycling / grinding",
+        "CUTTING_SEWING": "Cutting / sewing",
+        "WAREHOUSING": "Warehousing"
+      }
     }
   },
   "partners": {
@@ -282,7 +305,8 @@
     },
     "machines": {
       "title": "Machines",
-      "subtitle": "Physical resources with a data-driven capability profile."
+      "subtitle": "Physical resources with a data-driven capability profile.",
+      "new": "New machine"
     },
     "boms": {
       "title": "Bills of materials",

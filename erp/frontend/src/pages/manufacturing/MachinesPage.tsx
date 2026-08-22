@@ -1,3 +1,7 @@
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
+import { Button } from '@/components/ui';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import type { Machine } from '@/api/manufacturing';
@@ -8,6 +12,8 @@ import type { Machine } from '@/api/manufacturing';
  * adding a machine is adding data, never code (constraint #9).
  */
 export function MachinesPage(): JSX.Element {
+  const { t } = useTranslation();
+  const { hasPermission } = useAuth();
   const collection = useCollection<Machine>('/manufacturing/machines/');
 
   const columns: Column<Machine>[] = [
@@ -32,6 +38,13 @@ export function MachinesPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
+      headerAction={
+        hasPermission('manufacturing.machine.manage') ? (
+          <Link to="/manufacturing/machines/new">
+            <Button size="sm">{t('manufacturing.machines.new')}</Button>
+          </Link>
+        ) : null
+      }
     />
   );
 }
