@@ -58,6 +58,7 @@ import { CharacteristicCreatePage } from '@/pages/quality/CharacteristicCreatePa
 import { QualityPlanRevisionsPage } from '@/pages/quality/QualityPlanRevisionsPage';
 import { QualityPlanRootsPage } from '@/pages/quality/QualityPlanRootsPage';
 import { QualityPlanRootCreatePage } from '@/pages/quality/QualityPlanRootCreatePage';
+import { QualityPlanRootDetailPage } from '@/pages/quality/QualityPlanRootDetailPage';
 import { PurchaseRequisitionsPage } from '@/pages/procurement/PurchaseRequisitionsPage';
 import { PurchaseRequisitionCreatePage } from '@/pages/procurement/PurchaseRequisitionCreatePage';
 import { PurchaseOrdersPage } from '@/pages/procurement/PurchaseOrdersPage';
@@ -530,6 +531,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="quality.plan.manage">
                 <QualityPlanRootCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="plans/:id"
+            element={
+              <ProtectedRoute requiredPermission="quality.plan.view">
+                <QualityPlanRootDetailPage />
               </ProtectedRoute>
             }
           />

@@ -14,7 +14,8 @@
     "actions": "عملیات",
     "yes": "بله",
     "no": "خیر",
-    "back": "بازگشت"
+    "back": "بازگشت",
+    "addLine": "افزودن ردیف"
   },
   "language": {
     "label": "زبان",
@@ -497,7 +498,8 @@
       "revisionNumber": "نسخه",
       "status": "وضعیت",
       "effectiveFrom": "اعتبار از",
-      "actions": "عملیات"
+      "actions": "عملیات",
+      "specRevision": "بازنگری مشخصات"
     },
     "datatypes": {
       "NUMBER": "عددی",
@@ -509,6 +511,20 @@
       "ACTIVE": "فعال",
       "SUPERSEDED": "جایگزین‌شده",
       "ARCHIVED": "بایگانی‌شده"
+    },
+    "detail": {
+      "planTitle": "طرح بازرسی",
+      "planSubtitle": "تعریف نسخه‌بندی‌شدهٔ بازرسیِ متصل به یک بازنگری مشخصات.",
+      "headerTitle": "اتصال طرح",
+      "revisionsTitle": "بازنگری‌ها",
+      "itemsTitle": "اقلام بازرسی",
+      "characteristic": "ویژگی",
+      "workCenter": "مرحلهٔ کاری",
+      "stageLabel": "مرحله",
+      "target": "مقدار هدف",
+      "limits": "حدود",
+      "sampling": "نمونه‌گیری",
+      "mandatory": "الزامی"
     }
   },
   "procurement": {
@@ -537,7 +553,8 @@
       "lineMaterial": "موجودی اولیه",
       "lineQuantity": "مقدار",
       "lineUom": "یکا",
-      "lineUnitPrice": "قیمت واحد"
+      "lineUnitPrice": "قیمت واحد",
+      "lineNotes": "یادداشت"
     },
     "actions": {
       "submit": "ارسال",
@@ -588,7 +605,8 @@
       "lineProduct": "محصول مشتری",
       "lineQuantity": "مقدار",
       "lineUom": "یکا",
-      "lineUnitPrice": "قیمت واحد"
+      "lineUnitPrice": "قیمت واحد",
+      "lineNotes": "یادداشت"
     },
     "actions": {
       "confirm": "تأیید",

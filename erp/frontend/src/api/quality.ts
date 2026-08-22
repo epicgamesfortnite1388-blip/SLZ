@@ -12,6 +12,7 @@
  * server-side; the UI only surfaces state and triggers the activate transition.
  */
 import { apiClient } from './client';
+import type { Paginated } from './masterData';
 import type { RevisionStatus } from './engineering';
 
 export type { RevisionStatus };
@@ -87,4 +88,43 @@ export function createQualityPlan(
   payload: Partial<QualityPlan>,
 ): Promise<QualityPlan> {
   return apiClient.post<QualityPlan>('/quality/plans/', payload);
+}
+
+/** Retrieve one quality-plan root by id. */
+export function fetchQualityPlan(id: string): Promise<QualityPlan> {
+  return apiClient.get<QualityPlan>(`/quality/plans/${id}/`);
+}
+
+/** All revisions of one quality-plan root, newest first. */
+export async function listQualityPlanRevisions(rootId: string): Promise<QualityPlanRevision[]> {
+  const page = await apiClient.get<Paginated<QualityPlanRevision>>(
+    `/quality/plan-revisions/?root=${encodeURIComponent(rootId)}&page_size=100`,
+  );
+  return [...page.results].sort((a, b) => b.revision_number - a.revision_number);
+}
+
+/** One inspection item of a plan revision (mirrors ``QualityPlanItemSerializer``). */
+export interface QualityPlanItem {
+  id: string;
+  revision: string;
+  sequence: number;
+  characteristic: string;
+  work_center: string | null;
+  stage_label: string;
+  lower_limit: string | null;
+  upper_limit: string | null;
+  target: string | null;
+  unit: string;
+  sampling: string;
+  method_override: string;
+  is_mandatory: boolean;
+  notes: string;
+}
+
+/** Items of one revision (`/quality/plan-items/?revision=`, ordered by sequence). */
+export async function listQualityPlanItems(revisionId: string): Promise<QualityPlanItem[]> {
+  const page = await apiClient.get<Paginated<QualityPlanItem>>(
+    `/quality/plan-items/?revision=${encodeURIComponent(revisionId)}&page_size=100`,
+  );
+  return [...page.results].sort((a, b) => a.sequence - b.sequence);
 }

@@ -14,7 +14,8 @@
     "actions": "Actions",
     "yes": "Yes",
     "no": "No",
-    "back": "Back"
+    "back": "Back",
+    "addLine": "Add line"
   },
   "language": {
     "label": "Language",
@@ -497,7 +498,8 @@
       "revisionNumber": "Revision",
       "status": "Status",
       "effectiveFrom": "Effective from",
-      "actions": "Actions"
+      "actions": "Actions",
+      "specRevision": "Specification revision"
     },
     "datatypes": {
       "NUMBER": "Number",
@@ -509,6 +511,20 @@
       "ACTIVE": "Active",
       "SUPERSEDED": "Superseded",
       "ARCHIVED": "Archived"
+    },
+    "detail": {
+      "planTitle": "Quality plan",
+      "planSubtitle": "The versioned inspection definition bound to one specification revision.",
+      "headerTitle": "Plan binding",
+      "revisionsTitle": "Revisions",
+      "itemsTitle": "Inspection items",
+      "characteristic": "Characteristic",
+      "workCenter": "Work center",
+      "stageLabel": "Stage",
+      "target": "Target",
+      "limits": "Limits",
+      "sampling": "Sampling",
+      "mandatory": "Mandatory"
     }
   },
   "procurement": {
@@ -537,7 +553,8 @@
       "lineMaterial": "Material",
       "lineQuantity": "Quantity",
       "lineUom": "UoM",
-      "lineUnitPrice": "Unit price"
+      "lineUnitPrice": "Unit price",
+      "lineNotes": "Notes"
     },
     "actions": {
       "submit": "Submit",
@@ -588,7 +605,8 @@
       "lineProduct": "Customer product",
       "lineQuantity": "Quantity",
       "lineUom": "UoM",
-      "lineUnitPrice": "Unit price"
+      "lineUnitPrice": "Unit price",
+      "lineNotes": "Notes"
     },
     "actions": {
       "confirm": "Confirm",
