@@ -131,6 +131,24 @@ class WorkflowApiTests(TestCase):
         self.assertEqual(auth_client(self.a1).get(f"{self.BASE}mine/").data["results"], [])
         self.assertEqual(len(auth_client(self.a2).get(f"{self.BASE}mine/").data["results"]), 1)
 
+    def test_decision_by_unassigned_user_is_rejected(self):
+        """Object-level guard: only an assigned, still-pending approver may act.
+
+        The endpoint deliberately allows any authenticated user through the
+        permission layer (approvers must not need ``workflow.instance.manage``);
+        the service must therefore reject decisions from users without a
+        pending step on THIS instance — otherwise anyone could approve.
+        """
+        instance = self._start()
+        outsider = make_user(email="outsider@slz.test")
+        resp = auth_client(outsider).post(
+            f"{self.BASE}{instance.pk}/decision/", {"approve": True}, format="json"
+        )
+        self.assertEqual(resp.status_code, 422)
+        self.assertEqual(resp.json()["error"]["type"], "BusinessRuleError")
+        instance.refresh_from_db()
+        self.assertEqual(instance.state, WorkflowState.UNDER_REVIEW)
+
 
 class WorkflowDefinitionApiTests(TestCase):
     """The definitions admin surface: RBAC + audited writes."""

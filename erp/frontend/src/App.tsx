@@ -10,9 +10,13 @@ import { PartnersPage } from '@/pages/masterData/PartnersPage';
 import { PartnerCreatePage } from '@/pages/masterData/PartnerCreatePage';
 import { PartnerDetailPage } from '@/pages/masterData/PartnerDetailPage';
 import { ProductsPage } from '@/pages/masterData/ProductsPage';
+import { ProductsDetailPage } from '@/pages/masterData/ProductsDetailPage';
 import { MaterialsPage } from '@/pages/masterData/MaterialsPage';
+import { MaterialCreatePage } from '@/pages/masterData/MaterialCreatePage';
+import { MaterialDetailPage } from '@/pages/masterData/MaterialDetailPage';
 import { UomsPage } from '@/pages/masterData/UomsPage';
 import { EmployeesPage } from '@/pages/masterData/EmployeesPage';
+import { EmployeeDetailPage } from '@/pages/masterData/EmployeeDetailPage';
 import { CustomerProductsPage } from '@/pages/engineering/CustomerProductsPage';
 import { CustomerProductCreatePage } from '@/pages/engineering/CustomerProductCreatePage';
 import { CustomerProductDetailPage } from '@/pages/engineering/CustomerProductDetailPage';
@@ -26,6 +30,7 @@ import { BomRevisionsPage } from '@/pages/manufacturing/BomRevisionsPage';
 import { RoutingRevisionsPage } from '@/pages/manufacturing/RoutingRevisionsPage';
 import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
 import { WarehouseCreatePage } from '@/pages/inventory/WarehouseCreatePage';
+import { WarehouseDetailPage } from '@/pages/inventory/WarehouseDetailPage';
 import { WarehouseAccessPage } from '@/pages/inventory/WarehouseAccessPage';
 import { CharacteristicsPage } from '@/pages/quality/CharacteristicsPage';
 import { CharacteristicCreatePage } from '@/pages/quality/CharacteristicCreatePage';
@@ -106,10 +111,34 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="products/:id"
+            element={
+              <ProtectedRoute requiredPermission="catalog.product.view">
+                <ProductsDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="materials"
             element={
               <ProtectedRoute requiredPermission="catalog.material.view">
                 <MaterialsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="materials/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.material.manage">
+                <MaterialCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="materials/:id"
+            element={
+              <ProtectedRoute requiredPermission="catalog.material.view">
+                <MaterialDetailPage />
               </ProtectedRoute>
             }
           />
@@ -126,6 +155,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="hr.employee.view">
                 <EmployeesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="employees/:id"
+            element={
+              <ProtectedRoute requiredPermission="hr.employee.view">
+                <EmployeeDetailPage />
               </ProtectedRoute>
             }
           />
@@ -239,6 +276,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="inventory.warehouse.manage">
                 <WarehouseCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="warehouses/:id"
+            element={
+              <ProtectedRoute requiredPermission="inventory.warehouse.view">
+                <WarehouseDetailPage />
               </ProtectedRoute>
             }
           />

@@ -68,6 +68,10 @@
       "purchaseOrders": "Purchase orders",
       "productionOrders": "Production orders",
       "empty": "No documents yet"
+    },
+    "recentActivity": {
+      "title": "Recent activity",
+      "empty": "No recorded activity yet."
     }
   },
   "errors": {
@@ -139,13 +143,28 @@
   },
   "products": {
     "title": "Products",
-    "subtitle": "Finished-goods identity and taxonomy."
+    "subtitle": "Finished-goods identity and taxonomy.",
+    "createdAt": "Created",
+    "detail": {
+      "title": "Product details",
+      "back": "← Back to products",
+      "notFound": "This product could not be found."
+    }
   },
   "materials": {
     "title": "Materials",
     "subtitle": "Raw materials, inks, solvents and consumables.",
+    "new": "New material",
     "subtype": "Type",
     "hazardous": "Hazardous",
+    "msdsRef": "MSDS ref.",
+    "leadTimeDays": "Lead time (days)",
+    "shelfLifeDays": "Shelf life (days)",
+    "reorderPoint": "Reorder point",
+    "safetyStock": "Safety stock",
+    "minStock": "Min stock",
+    "maxStock": "Max stock",
+    "createdAt": "Created",
     "subtypes": {
       "RESIN_MASTERBATCH": "Resin / masterbatch",
       "INK": "Ink",
@@ -155,6 +174,11 @@
       "REGRIND": "Regrind",
       "SEMI_FINISHED": "Semi-finished",
       "FINISHED": "Finished"
+    },
+    "detail": {
+      "title": "Material details",
+      "back": "← Back to materials",
+      "notFound": "This material could not be found."
     }
   },
   "uoms": {
@@ -174,7 +198,12 @@
     "title": "Employees",
     "subtitle": "Minimal employee master.",
     "code": "Employee code",
-    "jobTitle": "Job title"
+    "jobTitle": "Job title",
+    "detail": {
+      "title": "Employee details",
+      "back": "← Back to employees",
+      "notFound": "This employee could not be found."
+    }
   },
   "engineering": {
     "activate": "Activate",
@@ -283,7 +312,12 @@
     "warehouses": {
       "title": "Warehouses",
       "subtitle": "Company/site-scoped storage locations and their store type.",
-      "new": "New warehouse"
+      "new": "New warehouse",
+      "detail": {
+        "title": "Warehouse details",
+        "back": "← Back to warehouses",
+        "notFound": "This warehouse could not be found."
+      }
     },
     "access": {
       "title": "Warehouse access",
@@ -294,7 +328,9 @@
       "storeType": "Store type",
       "warehouse": "Warehouse",
       "user": "User",
-      "accessLevel": "Access level"
+      "accessLevel": "Access level",
+      "createdAt": "Created",
+      "notes": "Notes"
     },
     "storeTypes": {
       "GENERAL": "General",

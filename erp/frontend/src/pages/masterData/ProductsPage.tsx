@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import type { Product } from '@/api/masterData';
@@ -15,6 +16,7 @@ const columns: Column<Product>[] = [
 
 export function ProductsPage(): JSX.Element {
   const collection = useCollection<Product>('/catalog/products/');
+  const navigate = useNavigate();
   return (
     <CollectionView
       titleKey="products.title"
@@ -22,6 +24,7 @@ export function ProductsPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
+      onRowClick={(row) => navigate(`/master-data/products/${row.id}`)}
     />
   );
 }

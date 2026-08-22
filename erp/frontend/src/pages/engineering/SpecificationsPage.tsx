@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
-import { Button } from '@/components/ui';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { Alert, Button } from '@/components/ui';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import { activateSpecification, type SpecificationRevision } from '@/api/engineering';
@@ -18,19 +18,15 @@ export function SpecificationsPage(): JSX.Element {
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const collection = useCollection<SpecificationRevision>('/engineering/specifications/');
-  const [activating, setActivating] = useState<string | null>(null);
+  const action = useAsyncAction();
 
   const canManage = hasPermission('engineering.specification.manage');
 
-  const handleActivate = async (id: string): Promise<void> => {
-    setActivating(id);
-    try {
+  const handleActivate = (id: string): Promise<boolean> =>
+    action.run(`activate:${id}`, async () => {
       await activateSpecification(id);
-      collection.reload();
-    } finally {
-      setActivating(null);
-    }
-  };
+      collection.reload()
+    });
 
   const columns: Column<SpecificationRevision>[] = [
     { headerKey: 'engineering.fields.revisionNumber', render: (r) => `#${r.revision_number}`, align: 'center' },
@@ -49,7 +45,7 @@ export function SpecificationsPage(): JSX.Element {
         canManage && r.status === 'DRAFT' ? (
           <Button
             size="sm"
-            loading={activating === r.id}
+            loading={action.busy === `activate:${r.id}`}
             onClick={() => void handleActivate(r.id)}
           >
             {t('engineering.activate')}
@@ -61,13 +57,23 @@ export function SpecificationsPage(): JSX.Element {
   ];
 
   return (
-    <CollectionView
-      titleKey="engineering.specifications.title"
-      subtitleKey="engineering.specifications.subtitle"
-      columns={columns}
-      rowKey={(r) => r.id}
-      collection={collection}
-      onRowClick={(r) => navigate(`/engineering/customer-products/${r.root}`)}
-    />
+    <div className="stack">
+      {action.error && (
+        <Alert variant="danger" title={t('common.error')}>
+          <p>{action.error.message}</p>
+          <Button variant="secondary" size="sm" onClick={action.clearError}>
+            {t('common.close')}
+          </Button>
+        </Alert>
+      )}
+      <CollectionView
+        titleKey="engineering.specifications.title"
+        subtitleKey="engineering.specifications.subtitle"
+        columns={columns}
+        rowKey={(r) => r.id}
+        collection={collection}
+        onRowClick={(r) => navigate(`/engineering/customer-products/${r.root}`)}
+      />
+    </div>
   );
 }

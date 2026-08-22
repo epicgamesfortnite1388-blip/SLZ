@@ -59,3 +59,16 @@ export async function fetchEntityHistory(
   const qs = `entity_type=${encodeURIComponent(entityType)}&entity_id=${encodeURIComponent(entityId)}&page_size=${pageSize}`;
   return apiClient.get<Paginated<AuditLogEntry>>(`/audit/logs/?${qs}`);
 }
+
+/**
+ * Most recent entries across the entire audit trail — powers the dashboard
+ * "Recent activity" widget. Requires `audit.log.view`. Returns only the
+ * top-level summary (no before/after state, same as the list view).
+ */
+export async function fetchRecentActivity(
+  limit = 10,
+): Promise<Paginated<AuditLogEntry>> {
+  return apiClient.get<Paginated<AuditLogEntry>>(
+    `/audit/logs/?ordering=-timestamp&page_size=${limit}`,
+  );
+}

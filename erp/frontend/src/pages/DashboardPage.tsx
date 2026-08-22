@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { Card, Spinner } from '@/components/ui';
 import { fetchCount, fetchStatusSummary, type StatusSummary } from '@/api/dashboard';
+import { fetchRecentActivity, type AuditLogEntry } from '@/api/audit';
+import { formatDateTime } from '@/i18n/dates';
 import type { PermissionCode } from '@/api/types';
 
 /** One live-count tile: which endpoint to count, and where the tile links. */
@@ -156,10 +158,63 @@ function OrderBookRow({ def }: { def: OrderBookDef }): JSX.Element {
 }
 
 /**
+ * Recent-activity widget: the newest entries in the append-only audit trail.
+ * Requires `audit.log.view` — the compliance surface is not shown to users who
+ * cannot already browse the audit log. Pure read; nothing is fabricated.
+ */
+function RecentActivity(): JSX.Element {
+  const { t, i18n } = useTranslation();
+  const [entries, setEntries] = useState<AuditLogEntry[] | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchRecentActivity(8)
+      .then((page) => {
+        if (active) setEntries(page.results);
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <Card title={t('dashboard.recentActivity.title')}>
+      {failed && <p>{t('dashboard.stats.error')}</p>}
+      {!failed && entries === null && (
+        <div className="table-state">
+          <Spinner label={t('common.loading')} />
+        </div>
+      )}
+      {!failed && entries !== null && entries.length === 0 && (
+        <p>{t('dashboard.recentActivity.empty')}</p>
+      )}
+      {!failed && entries !== null && entries.length > 0 && (
+        <ul className="history-list">
+          {entries.map((entry) => (
+            <li key={entry.id} className="history-list__item">
+              <span className="history-list__open">
+                {formatDateTime(entry.timestamp, i18n.language)} —{' '}
+                {t(`audit.actions.${entry.action}`)}
+                {entry.actor_label ? ` — ${entry.actor_label}` : ''} — {entry.entity_type}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+/**
  * Home dashboard: live record counts for every module the signed-in user has
- * view access to, plus the order book (per-status document breakdowns). If the
- * user can see nothing, an empty-state note is shown instead of fabricated
- * tiles. No metric is fabricated — every number comes from a real endpoint.
+ * view access to, plus the order book (per-status document breakdowns) and the
+ * recent-activity trail. If the user can see nothing, an empty-state note is
+ * shown instead of fabricated tiles. No metric is fabricated — every number
+ * comes from a real endpoint.
  */
 export function DashboardPage(): JSX.Element {
   const { t } = useTranslation();
@@ -171,6 +226,7 @@ export function DashboardPage(): JSX.Element {
 
   const visible = STAT_DEFS.filter((def) => hasPermission(def.permission));
   const bookVisible = ORDER_BOOK_DEFS.filter((def) => hasPermission(def.permission));
+  const canViewAudit = hasPermission('audit.log.view');
 
   return (
     <div className="stack">
@@ -200,6 +256,8 @@ export function DashboardPage(): JSX.Element {
           </div>
         </Card>
       )}
+
+      {canViewAudit && <RecentActivity />}
     </div>
   );
 }

@@ -24,11 +24,11 @@ This document is the single consolidated status view. Requirement *text* lives i
 | **BLOCKED** | Cannot proceed without an SLZ business decision (must not be invented). |
 | **DEFERRED** | Consciously out of scope for the current phase. |
 
-> **Verification status (2026-08-22, Task 012).** The codebase is now
+> **Verification status (2026-08-22, Task 023).** The codebase is now
 > **RUNTIME VERIFIED** on a Windows dev machine: flake8/black/isort clean, all
 > app migrations generated (`makemigrations --check` → no drift), backend suite
-> **203/203 OK**, frontend `tsc --noEmit` + ESLint (0 warnings) + vitest
-> **52/52 OK** + production build OK. Scope caveat: tests run on SQLite per
+> **245/245 OK**, frontend `tsc --noEmit` + ESLint (0 warnings) + vitest
+> **75/75 OK** + production build OK. Scope caveat: tests run on SQLite per
 > `config.settings.test`; the PostgreSQL/Redis/Celery stack via
 > `docker compose up --build` has **not** been exercised yet (no Docker on this
 > machine) and remains the only unverified deployment path.
@@ -38,9 +38,9 @@ This document is the single consolidated status view. Requirement *text* lives i
 ## Snapshot
 
 - **18 backend apps** implemented (8 foundation + 10 domain), **30+ test modules**
-  (210 tests at last count — suite kept green through concurrent additions).
-- **Frontend:** 15 domain page areas + login/dashboard/error pages; 16 API layers;
-  **18 test files / 52 tests** (all passing); production build verified.
+  (**245 tests** at last count — suite kept green through concurrent additions).
+- **Frontend:** 18 domain page areas + login/dashboard/error pages; 16 API layers;
+  **23 test files / 75 tests** (all passing); production build verified.
 - **23 architecture documents** + full requirements baseline, decision register,
   traceability, contradictions, and do-not-build-yet lists.
 - **Phase reached:** platform foundation + confirmed master-data / document /
@@ -422,6 +422,67 @@ Regression-tested against the live refresh endpoint.
 Verification: backend **237/237**, frontend **75/75**, migration check clean,
 flake8/black/isort green, typecheck/lint/build green.
 
+
+### QA cycle: object-level authorization regression test (2026-08-22)
+
+**Task 022 — Workflow decision guard pinned** (independent QA agent). The
+decision endpoint deliberately admits any authenticated user at the permission
+layer (approvers must not need broad instance rights); the actual guard lives
+in `record_decision` (only an assigned, still-pending approver may act).
+That security-relevant behavior had no direct regression test. Added
+`test_decision_by_unassigned_user_is_rejected`: an outsider POSTing a
+decision gets a 422 BusinessRuleError and the instance stays UNDER_REVIEW.
+Suite: backend 238/238.
+
+Audit sweeps this cycle found no defects requiring code changes: documents
+surface (sanitized names, opaque storage keys, escaped Content-Disposition,
+extension/size policy, permission-gated upload/download/delete — all covered
+by existing tests), auth endpoints (throttled login/refresh, refresh-token
+blacklist on logout, LOGIN/LOGOUT audited), transition concurrency
+(`select_for_update` in every domain service), and frontend error-contract
+interpretation (`ApiError` mirrors the envelope exactly).
+
+### Usability completion pass (2026-08-22)
+
+**Task 023 — Detail pages, create forms, dashboard activity, error rendering**
+(same day). Systematic completion of the user-facing surface where the backend
+was already complete.
+
+*Detail pages for all list entities.* Every master-data browse screen now has
+a read-only detail view: `MaterialDetailPage` (subtype, planning attrs, MSDS,
+attachments, audit history), `ProductsDetailPage`, `WarehouseDetailPage` (store
+type, site, notes), and `EmployeeDetailPage`. All follow the established
+`RecordDetail` + `AttachmentPanel` + `AuditHistoryPanel` pattern. Partner
+detail gained the audit-history panel it was missing.
+
+*Material create form.* `MaterialCreatePage` with company/UoM pickers, subtype
+dropdown, optional planning fields (lead time, shelf life, reorder point,
+safety/min/max stock), hazardous flag and MSDS ref. Routes through the audited
+service layer.
+
+*Dashboard recent activity.* A `RecentActivity` widget on the home dashboard
+shows the newest 8 audit-trail entries (permission-gated to `audit.log.view`).
+Pure read — no metric invented.
+
+*Error rendering on document list pages.* The three transactional document list
+pages that adopted `useAsyncAction` (Sales Orders, Production Orders, Purchase
+Requisitions) now show inline error alerts when a status transition fails —
+they were previously silent (the hook captured errors but the component never
+rendered them).
+
+*Encoding fix.* Repaired 3 mojibake artifacts (`Â±` → `±`, `â€¦` → `…`) in the
+CustomerProductDetailPage tolerance fields, a carryover from the earlier
+encoding repair pass.
+
+*Variable-shadowing fix.* Three document list pages (SalesOrdersPage,
+ProductionOrdersPage, PurchaseRequisitionsPage) had a `run(id, action)` function
+whose parameter `action` shadowed the outer `useAsyncAction()` result, causing
+`action.run()` to resolve to the string parameter instead of the hook. Renamed
+parameters to avoid shadowing.
+
+Verification: backend **238/238**, frontend **75/75**, migration check clean,
+flake8/black/isort green, typecheck/lint/build green.
+
 <!-- APPEND-MODULE-TABLE -->
 
 ## Module status matrix
@@ -490,9 +551,7 @@ rules); Q-019 (product coding/numbering scheme); Q-024 (spec-revision trigger ru
 
 Q-060 (hosting model & data residency — on-prem vs. cloud); Q-058 (authentication
 mechanism — local/SSO/AD/kiosk); Q-061 (migration from existing spreadsheets/
-tools); **NQ-001/DR-000 (build-vs-buy reaffirmation** — the feasibility study
-recommends buying Dynamics 365; the custom build should be explicitly reconfirmed
-before investing in the large execution layer).
+tools); **DR-000 is CONFIRMED (custom build)** — the D365 recommendation was considered and rejected.
 
 ### Deferred by choice (not blocking, out of scope for early phases)
 
@@ -514,12 +573,12 @@ pip install -r requirements/dev.txt
 flake8 apps config && black --check apps config && isort --check-only apps config
 python manage.py makemigrations        # done: 21 initial migration files committed
 python manage.py makemigrations --check --dry-run   # no drift
-python manage.py test --settings=config.settings.test --noinput   # 203/203 OK
+python manage.py test --settings=config.settings.test --noinput   # 238/238 OK
 
 # Frontend — all green
 cd ../frontend
 npm install
-npm run typecheck && npm run lint && npm run test && npm run build
+npm run typecheck && npm run lint && npm run test && npm run build  # 75/75 OK
 ```
 
 **Still pending (needs Docker on the dev machine / a host):**

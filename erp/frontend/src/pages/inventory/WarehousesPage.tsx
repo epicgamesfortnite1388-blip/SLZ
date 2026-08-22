@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { Button } from '@/components/ui';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
@@ -13,6 +13,7 @@ import type { Warehouse } from '@/api/inventory';
 export function WarehousesPage(): JSX.Element {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
+  const navigate = useNavigate();
   const collection = useCollection<Warehouse>('/inventory/warehouses/');
 
   const columns: Column<Warehouse>[] = [
@@ -36,6 +37,7 @@ export function WarehousesPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
+      onRowClick={(row) => navigate(`/inventory/warehouses/${row.id}`)}
       headerAction={
         hasPermission('inventory.warehouse.manage') ? (
           <Link to="/inventory/warehouses/new">

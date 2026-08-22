@@ -11,6 +11,11 @@ from django.urls import include, path
 
 from apps.core import health
 
+# Root error handlers: keep the JSON error envelope for /api/ paths even when a
+# request fails at the URL-resolver level (never reaches DRF).
+handler404 = "apps.core.error_views.handler404"
+handler500 = "apps.core.error_views.handler500"
+
 api_v1 = [
     path("auth/", include("apps.identity.urls")),
     path("organization/", include("apps.organization.urls")),

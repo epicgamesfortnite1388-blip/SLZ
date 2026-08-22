@@ -136,14 +136,14 @@ export function CustomerProductDetailPage(): JSX.Element {
           value:
             selected.width_mm == null
               ? '—'
-              : `${selected.width_mm} Â±${selected.width_tol_low ?? '?'}/${selected.width_tol_high ?? '?'}`,
+              : `${selected.width_mm} ±${selected.width_tol_low ?? '?'}/${selected.width_tol_high ?? '?'}`,
         },
         {
           labelKey: 'engineering.fields.length',
           value:
             selected.length_mm == null
               ? '—'
-              : `${selected.length_mm} Â±${selected.length_tol_low ?? '?'}/${selected.length_tol_high ?? '?'}`,
+              : `${selected.length_mm} ±${selected.length_tol_low ?? '?'}/${selected.length_tol_high ?? '?'}`,
         },
         { labelKey: 'engineering.fields.gusset', value: selected.gusset_mm ?? '—' },
         { labelKey: 'engineering.fields.printProcess', value: selected.print_process },
@@ -288,7 +288,7 @@ export function CustomerProductDetailPage(): JSX.Element {
                         <td>
                           {p.tol_low == null && p.tol_high == null
                             ? '—'
-                            : `${p.tol_low ?? ''} â€¦ ${p.tol_high ?? ''}`}
+                            : `${p.tol_low ?? ''} … ${p.tol_high ?? ''}`}
                         </td>
                       </tr>
                     ))}

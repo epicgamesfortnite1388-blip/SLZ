@@ -5,6 +5,7 @@ import { Alert, Card, Spinner } from '@/components/ui';
 import { BoolCell } from '@/components/CollectionView';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
+import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { useRecord } from '@/hooks/useRecord';
 import type { Partner } from '@/api/masterData';
 
@@ -74,6 +75,8 @@ export function PartnerDetailPage(): JSX.Element {
           {hasPermission('documents.attachment.view') && id && (
             <AttachmentPanel entityType={ENTITY_TYPE} entityId={id} />
           )}
+
+          <AuditHistoryPanel entityType={ENTITY_TYPE} entityId={id ?? ''} />
         </>
       )}
 

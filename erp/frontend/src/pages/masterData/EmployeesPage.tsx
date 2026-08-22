@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import type { Employee } from '@/api/masterData';
@@ -18,6 +19,7 @@ const columns: Column<Employee>[] = [
 
 export function EmployeesPage(): JSX.Element {
   const collection = useCollection<Employee>('/hr/employees/');
+  const navigate = useNavigate();
   return (
     <CollectionView
       titleKey="employees.title"
@@ -25,6 +27,7 @@ export function EmployeesPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
+      onRowClick={(row) => navigate(`/master-data/employees/${row.id}`)}
     />
   );
 }

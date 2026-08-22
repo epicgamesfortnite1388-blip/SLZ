@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
-import { Button } from '@/components/ui';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { Alert, Button } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import {
@@ -36,19 +36,15 @@ export function PurchaseRequisitionsPage(): JSX.Element {
   const collection = useCollection<PurchaseRequisition>(
     '/procurement/requisitions/',
   );
-  const [busy, setBusy] = useState<string | null>(null);
+  const asyncAct = useAsyncAction();
 
   const canManage = hasPermission('procurement.requisition.manage');
 
-  const run = async (id: string, action: ReqAction): Promise<void> => {
-    setBusy(`${id}:${action}`);
-    try {
-      await transitionRequisition(id, action);
-      collection.reload();
-    } finally {
-      setBusy(null);
-    }
-  };
+  const run = (id: string, act: ReqAction): Promise<boolean> =>
+    asyncAct.run(`${id}:${act}`, async () => {
+      await transitionRequisition(id, act);
+      collection.reload()
+    });
 
   const columns: Column<PurchaseRequisition>[] = [
     { headerKey: 'procurement.fields.number', render: (r) => r.number },
@@ -73,7 +69,7 @@ export function PurchaseRequisitionsPage(): JSX.Element {
                 key={a}
                 size="sm"
                 variant={a === 'cancel' || a === 'reject' ? 'secondary' : 'primary'}
-                loading={busy === `${r.id}:${a}`}
+                loading={asyncAct.busy === `${r.id}:${a}`}
                 onClick={() => void run(r.id, a)}
               >
                 {t(`procurement.actions.${a}`)}
@@ -86,20 +82,30 @@ export function PurchaseRequisitionsPage(): JSX.Element {
   ];
 
   return (
-    <CollectionView
-      titleKey="procurement.requisitions.title"
-      subtitleKey="procurement.requisitions.subtitle"
-      columns={columns}
-      rowKey={(r) => r.id}
-      collection={collection}
-      onRowClick={(r) => navigate('/procurement/requisitions/' + r.id)}
-      headerAction={
+    <div className="stack">
+      {asyncAct.error && (
+        <Alert variant="danger" title={t('common.error')}>
+          <p>{asyncAct.error.message}</p>
+          <Button variant="secondary" size="sm" onClick={asyncAct.clearError}>
+            {t('common.close')}
+          </Button>
+        </Alert>
+      )}
+      <CollectionView
+        titleKey="procurement.requisitions.title"
+        subtitleKey="procurement.requisitions.subtitle"
+        columns={columns}
+        rowKey={(r) => r.id}
+        collection={collection}
+        onRowClick={(r) => navigate('/procurement/requisitions/' + r.id)}
+        headerAction={
         canManage ? (
           <Link to="/procurement/requisitions/new">
             <Button size="sm">{t('procurement.requisitions.new')}</Button>
           </Link>
         ) : null
       }
-    />
+      />
+    </div>
   );
 }

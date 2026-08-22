@@ -45,6 +45,8 @@ export interface Product {
   family: string | null;
   base_uom: string;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Material {
@@ -55,8 +57,17 @@ export interface Material {
   name_en: string;
   subtype: string;
   base_uom: string;
+  reorder_point: number | null;
+  safety_stock: number | null;
+  min_stock: number | null;
+  max_stock: number | null;
+  lead_time_days: number | null;
+  shelf_life_days: number | null;
   is_hazardous: boolean;
+  msds_ref: string;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface UnitOfMeasure {
@@ -114,4 +125,9 @@ export function fetchCollection<T>(
 /** Create a partner (representative audited write path). */
 export function createPartner(payload: Partial<Partner>): Promise<Partner> {
   return apiClient.post<Partner>('/partners/partners/', payload);
+}
+
+/** Create a material via the audited service layer. */
+export function createMaterial(payload: Partial<Material>): Promise<Material> {
+  return apiClient.post<Material>('/catalog/materials/', payload);
 }

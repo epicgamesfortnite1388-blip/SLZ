@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
-import { Button } from '@/components/ui';
+import { useAsyncAction } from '@/hooks/useAsyncAction';
+import { Alert, Button } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import {
@@ -35,19 +35,15 @@ export function ProductionOrdersPage(): JSX.Element {
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const collection = useCollection<ProductionOrder>('/production/orders/');
-  const [busy, setBusy] = useState<string | null>(null);
+  const asyncAct = useAsyncAction();
 
   const canManage = hasPermission('production.order.manage');
 
-  const run = async (id: string, action: OrderAction): Promise<void> => {
-    setBusy(`${id}:${action}`);
-    try {
-      await transitionProductionOrder(id, action);
-      collection.reload();
-    } finally {
-      setBusy(null);
-    }
-  };
+  const run = (id: string, act: OrderAction): Promise<boolean> =>
+    asyncAct.run(`${id}:${act}`, async () => {
+      await transitionProductionOrder(id, act);
+      collection.reload()
+    });
 
   const columns: Column<ProductionOrder>[] = [
     { headerKey: 'production.fields.number', render: (r) => r.number },
@@ -77,7 +73,7 @@ export function ProductionOrdersPage(): JSX.Element {
                 key={a}
                 size="sm"
                 variant={a === 'cancel' ? 'secondary' : 'primary'}
-                loading={busy === `${r.id}:${a}`}
+                loading={asyncAct.busy === `${r.id}:${a}`}
                 onClick={() => void run(r.id, a)}
               >
                 {t(`production.actions.${a}`)}
@@ -90,20 +86,30 @@ export function ProductionOrdersPage(): JSX.Element {
   ];
 
   return (
-    <CollectionView
-      titleKey="production.orders.title"
-      subtitleKey="production.orders.subtitle"
-      columns={columns}
-      rowKey={(r) => r.id}
-      collection={collection}
-      onRowClick={(r) => navigate('/production/orders/' + r.id)}
-      headerAction={
+    <div className="stack">
+      {asyncAct.error && (
+        <Alert variant="danger" title={t('common.error')}>
+          <p>{asyncAct.error.message}</p>
+          <Button variant="secondary" size="sm" onClick={asyncAct.clearError}>
+            {t('common.close')}
+          </Button>
+        </Alert>
+      )}
+      <CollectionView
+        titleKey="production.orders.title"
+        subtitleKey="production.orders.subtitle"
+        columns={columns}
+        rowKey={(r) => r.id}
+        collection={collection}
+        onRowClick={(r) => navigate('/production/orders/' + r.id)}
+        headerAction={
         canManage ? (
           <Link to="/production/orders/new">
             <Button size="sm">{t('production.orders.new')}</Button>
           </Link>
         ) : null
       }
-    />
+      />
+    </div>
   );
 }
