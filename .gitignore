@@ -42,3 +42,6 @@ yarn-error.log*
 *.swp
 .DS_Store
 Thumbs.db
+
+# ---- Build caches ----
+*.tsbuildinfo
