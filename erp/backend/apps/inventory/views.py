@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from apps.core.exceptions import ConflictError
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from apps.core.exceptions import ConflictError
 from apps.core.viewsets import AuditedModelViewSet
+from apps.inventory import services
 from apps.inventory.models import (
     GenealogyLink,
     StockMovement,
@@ -13,7 +15,6 @@ from apps.inventory.models import (
     Warehouse,
     WarehouseAccess,
 )
-from apps.inventory import services
 from apps.inventory.serializers import (
     GenealogyLinkSerializer,
     StockMovementSerializer,

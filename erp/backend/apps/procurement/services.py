@@ -23,13 +23,27 @@ Deliberately NOT here (OPEN business decisions — do-not-build-yet):
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Iterable, Optional
 
-from django.db import models
+from django.db import models, transaction
 
-from apps.core.events import EntityUpdated
-from apps.core.exceptions import ConflictError
+from apps.core.events import EntityCreated, EntityUpdated
+from apps.core.exceptions import BusinessRuleError, ConflictError
 from apps.core.transactions import atomic_with_events
+from apps.inventory import services as inventory_services
+from apps.inventory.models import (
+    StockMovementDirection,
+    TraceabilityUnit,
+    TraceabilityUnitType,
+    WarehouseStoreType,
+)
+from apps.procurement.models import (
+    GoodsReceipt,
+    GoodsReceiptLine,
+    GoodsReceiptStatus,
+    PurchaseOrderStatus,
+)
 
 
 def _actor_id(actor) -> Optional[str]:
@@ -101,3 +115,159 @@ def transition(
             )
         )
     return document
+
+
+def _new_unit_identifier(company, unit_type: str) -> str:
+    """Collision-proof identifier for a newly received unit."""
+    import uuid as uuid_module
+
+    prefix = unit_type.capitalize()
+    while True:
+        candidate = prefix + "-" + uuid_module.uuid4().hex[:10].upper()
+        if not TraceabilityUnit.objects.filter(company=company, identifier=candidate).exists():
+            return candidate
+
+
+RECEIVABLE_PO_STATUSES = (
+    PurchaseOrderStatus.APPROVED,
+    PurchaseOrderStatus.SENT,
+)
+
+
+@transaction.atomic
+def create_goods_receipt(serializer, *, actor=None):
+    """Post one goods receipt atomically.
+
+    Per line (Q-049): creates the traceability unit (serialized roll / batch /
+    carton per material category) and an IN stock movement into the destination
+    warehouse. Guards: PO must be APPROVED or SENT; line material must match
+    the PO line; over-receipt is blocked; quarantine warehouses cannot receive.
+    Every created row emits its own audit event via the standard bus.
+    """
+    from apps.core.exceptions import AuthorizationError
+
+    payload = serializer.validated_data
+    company = payload["company"]
+    warehouse = payload["warehouse"]
+    purchase_order = payload.get("purchase_order")
+    lines = payload.get("lines") or []
+    if not lines:
+        raise BusinessRuleError("A goods receipt needs at least one line.", code="grn.empty")
+
+    if warehouse.store_type == WarehouseStoreType.QUARANTINE:
+        raise BusinessRuleError(
+            "Goods receipts cannot post into a quarantine store.",
+            code="grn.quarantine_destination",
+        )
+    if purchase_order is not None and purchase_order.company_id != company.id:
+        raise AuthorizationError("The purchase order belongs to another company.")
+    if purchase_order is not None and purchase_order.status not in RECEIVABLE_PO_STATUSES:
+        raise ConflictError(
+            "Only APPROVED or SENT purchase orders can be received.",
+            code="grn.po_not_receivable",
+        )
+
+    with atomic_with_events() as events:
+        grn = GoodsReceipt.objects.create(
+            company=company,
+            warehouse=warehouse,
+            supplier=payload.get("supplier"),
+            purchase_order=purchase_order,
+            number=payload["number"],
+            status=GoodsReceiptStatus.POSTED,
+            received_at=payload["received_at"],
+            notes=payload.get("notes", ""),
+            created_by=actor,
+            updated_by=actor,
+        )
+        events.append(
+            EntityCreated(
+                entity_type="procurement.GoodsReceipt",
+                entity_id=str(grn.pk),
+                actor_id=_actor_id(actor),
+                state={"number": grn.number},
+            )
+        )
+
+        for entry in lines:
+            po_line = entry.get("po_line")
+            if (
+                po_line is not None
+                and purchase_order is not None
+                and po_line.order_id != purchase_order.id
+            ):
+                raise BusinessRuleError(
+                    "The referenced PO line belongs to a different order.",
+                    code="grn.line_order_mismatch",
+                )
+            if po_line is not None and po_line.material_id != entry["material"].id:
+                raise BusinessRuleError(
+                    "Line material does not match the PO line.",
+                    code="grn.material_mismatch",
+                )
+            if po_line is not None:
+                already = (
+                    GoodsReceiptLine.objects.filter(po_line=po_line).aggregate(
+                        total=models.Sum("quantity")
+                    )["total"]
+                    or 0
+                )
+                if Decimal(str(already)) + Decimal(str(entry["quantity"])) > po_line.quantity:
+                    raise BusinessRuleError(
+                        "Over-receipt blocked: ordered %s, already received %s."
+                        % (po_line.quantity, already),
+                        code="grn.over_receipt",
+                    )
+
+            unit_type = entry["traceability_unit_type"]
+            if unit_type == TraceabilityUnitType.PALLET:
+                raise BusinessRuleError(
+                    "Pallets are handling units assembled from other units;",
+                    code="grn.unit_type_invalid",
+                )
+            unit = TraceabilityUnit.objects.create(
+                company=company,
+                material=entry["material"],
+                unit_type=unit_type,
+                identifier=_new_unit_identifier(company, unit_type),
+                quantity=entry["quantity"],
+                uom=entry["uom"],
+                created_by=actor,
+                updated_by=actor,
+            )
+            line_row = GoodsReceiptLine.objects.create(
+                grn=grn,
+                po_line=po_line,
+                material=entry["material"],
+                quantity=entry["quantity"],
+                uom=entry["uom"],
+                traceability_unit=unit,
+                created_by=actor,
+                updated_by=actor,
+            )
+            movement = inventory_services.post_movement(
+                company=company,
+                warehouse=warehouse,
+                direction=StockMovementDirection.IN,
+                quantity=entry["quantity"],
+                uom=entry["uom"],
+                material=entry["material"],
+                traceability_unit=unit,
+                reference_type="procurement.GoodsReceiptLine",
+                reference_id=line_row.id,
+                notes="GRN " + grn.number,
+                actor=actor,
+            )
+            events.append(
+                EntityCreated(
+                    entity_type="procurement.GoodsReceiptLine",
+                    entity_id=str(line_row.id),
+                    actor_id=_actor_id(actor),
+                    state={
+                        "quantity": str(entry["quantity"]),
+                        "movement_id": str(movement.id),
+                    },
+                )
+            )
+
+    return grn

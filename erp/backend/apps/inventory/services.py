@@ -23,11 +23,7 @@ from django.db.models import Case, DecimalField, F, Sum, Value, When
 
 from apps.core.exceptions import BusinessRuleError
 from apps.core.middleware import get_correlation_id
-from apps.inventory.models import (
-    StockMovement,
-    StockMovementDirection,
-    WarehouseStoreType,
-)
+from apps.inventory.models import StockMovement, StockMovementDirection, WarehouseStoreType
 
 _IN = StockMovementDirection.IN
 _OUT = StockMovementDirection.OUT

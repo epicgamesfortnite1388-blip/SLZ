@@ -116,7 +116,12 @@ PLATFORM_PERMISSIONS = [
     ("procurement.requisition.manage", "Manage purchase requisitions", "مدیریت درخواست‌های خرید"),
     ("procurement.order.view", "View purchase orders", "مشاهده سفارش‌های خرید"),
     ("procurement.order.manage", "Manage purchase orders", "مدیریت سفارش‌های خرید"),
-    # --- Task 010 Sales (customer orders) ----------------------------------
+    ("procurement.grn.view", "View goods receipts", "مشاهده رسیدهای خرید"),
+    (
+        "procurement.grn.manage",
+        "Post goods receipts",
+        "ثبت رسیدهای خرید",
+    ),  # --- Task 010 Sales (customer orders) ----------------------------------
     ("sales.order.view", "View sales orders", "مشاهده سفارش‌های فروش"),
     ("sales.order.manage", "Manage sales orders", "مدیریت سفارش‌های فروش"),
     # --- Task 011 Production (work orders) ---------------------------------

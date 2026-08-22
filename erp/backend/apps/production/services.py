@@ -9,8 +9,8 @@ from django.db import models
 from apps.core.events import EntityCreated, EntityUpdated
 from apps.core.exceptions import ConflictError
 from apps.core.transactions import atomic_with_events
-from apps.inventory.models import StockMovementDirection
 from apps.inventory import services as inventory_services
+from apps.inventory.models import StockMovementDirection
 
 
 def _actor_id(actor) -> Optional[str]:

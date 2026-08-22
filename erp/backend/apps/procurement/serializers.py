@@ -11,9 +11,15 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from apps.catalog.models import Material, UnitOfMeasure
 from apps.core.exceptions import ConflictError
 from apps.core.validation import PositiveDecimalField
+from apps.inventory.models import TraceabilityUnitType, Warehouse
+from apps.organization.models import Company
+from apps.partners.models import Supplier
 from apps.procurement.models import (
+    GoodsReceipt,
+    GoodsReceiptLine,
     PurchaseOrder,
     PurchaseOrderLine,
     PurchaseRequisition,
@@ -162,3 +168,61 @@ class PurchaseOrderLineSerializer(_LineOfDocumentSerializer):
 
     # An ordered quantity of zero or less is internally contradictory.
     quantity = PositiveDecimalField()
+
+
+class GoodsReceiptLineInputSerializer(serializers.Serializer):
+    """One received line; the service creates the traceability unit."""
+
+    po_line = serializers.PrimaryKeyRelatedField(
+        queryset=PurchaseOrderLine.objects.all(), required=False, allow_null=True
+    )
+    material = serializers.PrimaryKeyRelatedField(queryset=Material.objects.all())
+    quantity = PositiveDecimalField()
+    uom = serializers.PrimaryKeyRelatedField(queryset=UnitOfMeasure.objects.all())
+    traceability_unit_type = serializers.ChoiceField(choices=TraceabilityUnitType.choices)
+
+
+class GoodsReceiptCreateSerializer(serializers.Serializer):
+    """Wire shape for posting a goods receipt (atomic service create)."""
+
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
+    supplier = serializers.PrimaryKeyRelatedField(
+        queryset=Supplier.objects.all(), required=False, allow_null=True
+    )
+    purchase_order = serializers.PrimaryKeyRelatedField(
+        queryset=PurchaseOrder.objects.all(), required=False, allow_null=True
+    )
+    number = serializers.CharField(max_length=40)
+    received_at = serializers.DateField()
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+    lines = GoodsReceiptLineInputSerializer(many=True)
+
+
+class GoodsReceiptLineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoodsReceiptLine
+        fields = ["id", "grn", "po_line", "material", "quantity", "uom", "traceability_unit"]
+        read_only_fields = fields
+
+
+class GoodsReceiptSerializer(serializers.ModelSerializer):
+    lines = GoodsReceiptLineSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = GoodsReceipt
+        fields = [
+            "id",
+            "company",
+            "warehouse",
+            "supplier",
+            "purchase_order",
+            "number",
+            "status",
+            "received_at",
+            "notes",
+            "lines",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields

@@ -10,12 +10,14 @@ actions require the ``*.manage`` permission (POST → manage in ``permission_map
 
 from __future__ import annotations
 
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.viewsets import AuditedModelViewSet, StatusSummaryMixin
 from apps.procurement import services
 from apps.procurement.models import (
+    GoodsReceipt,
     PurchaseOrder,
     PurchaseOrderLine,
     PurchaseOrderStatus,
@@ -24,6 +26,8 @@ from apps.procurement.models import (
     PurchaseRequisitionStatus,
 )
 from apps.procurement.serializers import (
+    GoodsReceiptCreateSerializer,
+    GoodsReceiptSerializer,
     PurchaseOrderLineSerializer,
     PurchaseOrderSerializer,
     PurchaseRequisitionLineSerializer,
@@ -180,3 +184,37 @@ class PurchaseOrderLineViewSet(AuditedModelViewSet):
     def perform_destroy(self, instance):
         services.assert_document_editable(instance.order)
         super().perform_destroy(instance)
+
+
+class GoodsReceiptViewSet(AuditedModelViewSet):
+    """Immutable goods receipts: list / retrieve / post. No edit or delete."""
+
+    http_method_names = ["get", "post", "head", "options"]
+
+    queryset = (
+        GoodsReceipt.objects.all()
+        .select_related("company", "warehouse", "supplier", "purchase_order")
+        .prefetch_related("lines")
+    )
+    company_scope_lookup = "company"
+    serializer_class = GoodsReceiptSerializer
+    permission_map = {"POST": "procurement.grn.manage"}
+    required_permission = "procurement.grn.view"
+    filterset_fields = ["company", "warehouse", "supplier", "purchase_order", "status"]
+    search_fields = ["number", "notes"]
+
+    def perform_create(self, serializer):
+        actor = getattr(self.request, "user", None)
+        grn = services.create_goods_receipt(serializer, actor=actor)
+        serializer.instance = grn
+
+    def create(self, request, *args, **kwargs):
+        """Return the fully-populated receipt (with lines) after posting."""
+        create_serializer = GoodsReceiptCreateSerializer(
+            data=request.data, context={"request": request}
+        )
+        create_serializer.is_valid(raise_exception=True)
+        self.perform_create(create_serializer)
+        grn = create_serializer.instance
+        read_serializer = GoodsReceiptSerializer(grn, context={"request": request})
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)

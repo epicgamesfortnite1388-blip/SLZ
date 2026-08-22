@@ -41,6 +41,7 @@ Deliberately NOT built (OPEN gates — do-not-build-yet):
 from __future__ import annotations
 
 from django.db import models
+from django.db.models import Q
 
 from apps.core.models import SoftDeleteModel
 
@@ -249,3 +250,96 @@ class PurchaseOrderLine(SoftDeleteModel):
 
     def __str__(self) -> str:
         return f"{self.order_id} L{self.sequence}:{self.material_id}"
+
+
+class GoodsReceiptStatus(models.TextChoices):
+    """Receipts are immutable execution records (like stock movements).
+
+    A receipt is created directly in ``POSTED`` state: the posting atomically
+    creates traceability units and IN stock movements. Corrections happen
+    through new, reversing documents - never by editing history.
+    """
+
+    POSTED = "POSTED", "Posted"
+    VOIDED = "VOIDED", "Voided (reversal pending)"
+
+
+class GoodsReceipt(SoftDeleteModel):
+    """Goods receipt note (SR-09): received materials against a PO.
+
+    Created directly in POSTED state through the sanctioned service; lines
+    are immutable. ``purchase_order`` is optional so unplanned receipts are
+    possible, but when present every line must reference one of its lines
+    and over-receipt is blocked.
+    """
+
+    company = models.ForeignKey(
+        "organization.Company", on_delete=models.PROTECT, related_name="goods_receipts"
+    )
+    warehouse = models.ForeignKey(
+        "inventory.Warehouse", on_delete=models.PROTECT, related_name="goods_receipts"
+    )
+    supplier = models.ForeignKey(
+        "partners.Supplier",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="goods_receipts",
+    )
+    purchase_order = models.ForeignKey(
+        PurchaseOrder,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="goods_receipts",
+    )
+    number = models.CharField(max_length=40)
+    status = models.CharField(
+        max_length=10,
+        choices=GoodsReceiptStatus.choices,
+        default=GoodsReceiptStatus.POSTED,
+    )
+    received_at = models.DateField()
+    notes = models.CharField(max_length=500, blank=True, default="")
+
+    class Meta:
+        db_table = "procurement_goods_receipt"
+        ordering = ["-received_at", "-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["company", "number"], name="uq_grn_company_number"),
+        ]
+
+    def __str__(self) -> str:
+        return f"GRN {self.number}"
+
+
+class GoodsReceiptLine(SoftDeleteModel):
+    """One received material line; creates a traceability unit on posting."""
+
+    grn = models.ForeignKey(GoodsReceipt, on_delete=models.CASCADE, related_name="lines")
+    po_line = models.ForeignKey(
+        PurchaseOrderLine,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="receipt_lines",
+    )
+    material = models.ForeignKey(
+        "catalog.Material", on_delete=models.PROTECT, related_name="receipt_lines"
+    )
+    quantity = models.DecimalField(max_digits=18, decimal_places=6)
+    uom = models.ForeignKey(
+        "catalog.UnitOfMeasure", on_delete=models.PROTECT, related_name="grn_lines"
+    )
+    traceability_unit = models.ForeignKey(
+        "inventory.TraceabilityUnit",
+        on_delete=models.PROTECT,
+        related_name="receipt_lines",
+    )
+
+    class Meta:
+        db_table = "procurement_goods_receipt_line"
+        ordering = ["grn", "pk"]
+        constraints = [
+            models.CheckConstraint(check=Q(quantity__gt=0), name="ck_grn_line_quantity_positive"),
+        ]

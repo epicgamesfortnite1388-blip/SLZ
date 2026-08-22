@@ -11,6 +11,7 @@ router.register(
     basename="requisitionline",
 )
 router.register("orders", views.PurchaseOrderViewSet, basename="order")
+router.register("goods-receipts", views.GoodsReceiptViewSet, basename="goodsreceipt")
 router.register("order-lines", views.PurchaseOrderLineViewSet, basename="orderline")
 
 urlpatterns = [path("", include(router.urls))]
