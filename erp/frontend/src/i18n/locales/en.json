@@ -177,6 +177,22 @@
       "customer": "Customer",
       "supplier": "Supplier"
     },
+    "customerProfile": {
+      "title": "Customer profile",
+      "missing": "No customer profile",
+      "missingHint": "This partner is not marked as a customer. Enable the customer role to manage profile data.",
+      "salesLine": "Sales line",
+      "tolerance": "Tolerance",
+      "requiresCoa": "Requires COA"
+    },
+    "supplierProfile": {
+      "title": "Supplier profile",
+      "missing": "No supplier profile",
+      "missingHint": "This partner is not marked as a supplier. Enable the supplier role to manage profile data.",
+      "isApproved": "Approved",
+      "evaluationScore": "Evaluation score",
+      "leadTime": "Lead time (days)"
+    },
     "fields": {
       "legalName": "Legal name",
       "nationalId": "National ID",
@@ -201,6 +217,22 @@
       "line1": "Address line",
       "city": "City",
       "country": "Country"
+    },
+    "customerProfile": {
+      "title": "Customer profile",
+      "salesLine": "Sales line",
+      "tolerance": "Delivery tolerance %",
+      "requiresCoa": "Requires COA",
+      "missing": "No customer profile yet",
+      "missingHint": "Saving this form creates the customer role profile for this partner."
+    },
+    "supplierProfile": {
+      "title": "Supplier profile",
+      "isApproved": "Approved supplier",
+      "evaluationScore": "Evaluation score",
+      "leadTime": "Lead time (days)",
+      "missing": "No supplier profile yet",
+      "missingHint": "Saving this form creates the supplier role profile for this partner."
     },
     "kinds": {
       "GENERAL": "General",

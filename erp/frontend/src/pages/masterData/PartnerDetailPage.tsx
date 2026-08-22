@@ -7,6 +7,7 @@ import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { PartnerAddressesPanel, PartnerContactsPanel } from './PartnerSubPanels';
+import { CustomerProfilePanel, SupplierProfilePanel } from './PartnerRoleProfilePanels';
 import { useRecord } from '@/hooks/useRecord';
 import type { Partner } from '@/api/masterData';
 
@@ -90,6 +91,13 @@ export function PartnerDetailPage(): JSX.Element {
           )}
           {(hasPermission('partners.address.view') || hasPermission('partners.address.manage')) && id && (
             <PartnerAddressesPanel partnerId={id} />
+          )}
+
+          {data.is_customer && id && (
+            <CustomerProfilePanel partnerId={id} enabled={data.is_customer} />
+          )}
+          {data.is_supplier && id && (
+            <SupplierProfilePanel partnerId={id} enabled={data.is_supplier} />
           )}
 
           <AuditHistoryPanel entityType={ENTITY_TYPE} entityId={id ?? ''} />
