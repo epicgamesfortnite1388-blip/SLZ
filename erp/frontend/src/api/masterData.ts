@@ -304,3 +304,72 @@ export function createPartnerAddress(
 ): Promise<PartnerAddress> {
   return apiClient.post<PartnerAddress>('/partners/addresses/', payload);
 }
+
+/** Customer role-profile extension of a partner (mirrors ``CustomerSerializer``). */
+export interface CustomerProfile {
+  id: string;
+  partner: string;
+  sales_line: string | null;
+  delivery_tolerance_pct: string | null;
+  requires_coa: boolean;
+  notes: string;
+}
+
+/** Supplier role-profile extension of a partner (mirrors ``SupplierSerializer``). */
+export interface SupplierProfile {
+  id: string;
+  partner: string;
+  is_approved: boolean;
+  evaluation_score: string | null;
+  lead_time_days: number | null;
+  notes: string;
+}
+
+/**
+ * The 1:1 role profile of a partner (`/partners/customers/?partner=` /
+ * `/partners/suppliers/?partner=`); `null` when the partner has no such
+ * profile yet.
+ */
+async function fetchRoleProfile<T>(
+  base: 'customers' | 'suppliers',
+  partnerId: string,
+): Promise<T | null> {
+  const page = await apiClient.get<Paginated<T>>(
+    `/partners/${base}/?partner=${encodeURIComponent(partnerId)}&page_size=1`,
+  );
+  return page.results[0] ?? null;
+}
+
+export function fetchCustomerProfile(partnerId: string): Promise<CustomerProfile | null> {
+  return fetchRoleProfile<CustomerProfile>('customers', partnerId);
+}
+
+export function fetchSupplierProfile(partnerId: string): Promise<SupplierProfile | null> {
+  return fetchRoleProfile<SupplierProfile>('suppliers', partnerId);
+}
+
+export function createCustomerProfile(
+  payload: Partial<CustomerProfile> & { partner: string },
+): Promise<CustomerProfile> {
+  return apiClient.post<CustomerProfile>('/partners/customers/', payload);
+}
+
+export function updateCustomerProfile(
+  id: string,
+  payload: Partial<CustomerProfile>,
+): Promise<CustomerProfile> {
+  return apiClient.patch<CustomerProfile>(`/partners/customers/${id}/`, payload);
+}
+
+export function createSupplierProfile(
+  payload: Partial<SupplierProfile> & { partner: string },
+): Promise<SupplierProfile> {
+  return apiClient.post<SupplierProfile>('/partners/suppliers/', payload);
+}
+
+export function updateSupplierProfile(
+  id: string,
+  payload: Partial<SupplierProfile>,
+): Promise<SupplierProfile> {
+  return apiClient.patch<SupplierProfile>(`/partners/suppliers/${id}/`, payload);
+}
