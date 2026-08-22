@@ -205,3 +205,46 @@ class QualityPlanItem(SoftDeleteModel):
 
     def __str__(self) -> str:
         return f"{self.revision_id} I{self.sequence}:{self.characteristic_id}"
+
+
+class QualityCheckResult(BaseModel):
+    """One measured value for a plan item against a traceability unit.
+
+    Roll-level QC (Q-046): every produced roll can be checked.
+    Results are append-only — corrections come as new rows.
+    The disposition status (PASS/FAIL/HOLD) integrates with inventory.
+    """
+
+    class Disposition(models.TextChoices):
+        PASS = "PASS", "Pass"
+        FAIL = "FAIL", "Fail"
+        HOLD = "HOLD", "Hold / Quarantine"
+
+    plan_item = models.ForeignKey(
+        QualityPlanItem, on_delete=models.PROTECT, related_name="check_results"
+    )
+    traceability_unit = models.ForeignKey(
+        "inventory.TraceabilityUnit",
+        on_delete=models.PROTECT,
+        related_name="qc_results",
+    )
+    measured_value = models.CharField(max_length=120)
+    disposition = models.CharField(
+        max_length=5, choices=Disposition.choices, default=Disposition.PASS
+    )
+    checked_at = models.DateTimeField()
+    checked_by = models.ForeignKey(
+        "hr.Employee",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="qc_results",
+    )
+    notes = models.CharField(max_length=500, blank=True, default="")
+
+    class Meta:
+        db_table = "quality_check_result"
+        ordering = ["-checked_at"]
+
+    def __str__(self) -> str:
+        return f"QC {self.disposition} on {self.traceability_unit_id}"

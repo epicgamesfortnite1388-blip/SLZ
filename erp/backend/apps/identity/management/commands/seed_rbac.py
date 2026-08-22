@@ -129,6 +129,13 @@ PLATFORM_PERMISSIONS = [
     ("production.order.manage", "Manage production orders", "مدیریت سفارش‌های تولید"),
     ("production.execution.view", "View production execution", "مشاهده اجرای تولید"),
     ("production.execution.manage", "Post production execution", "ثبت اجرای تولید"),
+    # --- Task 012 Costing (dated weighted-average valuation) ---------------
+    ("costing.layer.view", "View cost layers", "مشاهده لایه‌های هزینه"),
+    # --- Task 013 Shipment (allocation + delivery) --------------------------
+    ("shipment.allocation.view", "View allocations", "مشاهده تخصیص‌ها"),
+    ("shipment.allocation.manage", "Manage allocations", "مدیریت تخصیص‌ها"),
+    ("shipment.delivery.view", "View deliveries", "مشاهده تحویل‌ها"),
+    ("shipment.delivery.manage", "Post deliveries", "ثبت تحویل‌ها"),
 ]
 
 

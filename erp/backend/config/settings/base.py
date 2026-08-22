@@ -65,6 +65,10 @@ LOCAL_APPS = [
     "apps.sales",
     # Task 011 — Production (work orders).
     "apps.production",
+    # Task 012 — Costing (dated weighted-average valuation).
+    "apps.costing",
+    # Task 013 — Shipment (allocation + delivery).
+    "apps.shipment",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

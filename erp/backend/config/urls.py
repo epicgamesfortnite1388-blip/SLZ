@@ -42,6 +42,10 @@ api_v1 = [
     path("sales/", include("apps.sales.urls")),
     # Task 011 — Production (work orders).
     path("production/", include("apps.production.urls")),
+    # Task 012 — Costing (dated weighted-average valuation).
+    path("costing/", include("apps.costing.urls")),
+    # Task 013 — Shipment (allocation + delivery).
+    path("shipment/", include("apps.shipment.urls")),
 ]
 
 urlpatterns = [
