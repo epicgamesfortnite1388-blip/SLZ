@@ -62,6 +62,7 @@ import { QualityPlanRevisionsPage } from '@/pages/quality/QualityPlanRevisionsPa
 import { QualityPlanRootsPage } from '@/pages/quality/QualityPlanRootsPage';
 import { QualityPlanRootCreatePage } from '@/pages/quality/QualityPlanRootCreatePage';
 import { QualityPlanRootDetailPage } from '@/pages/quality/QualityPlanRootDetailPage';
+import { QualityCheckResultsPage } from '@/pages/quality/QualityCheckResultsPage';
 import { PurchaseRequisitionsPage } from '@/pages/procurement/PurchaseRequisitionsPage';
 import { PurchaseRequisitionCreatePage } from '@/pages/procurement/PurchaseRequisitionCreatePage';
 import { PurchaseOrdersPage } from '@/pages/procurement/PurchaseOrdersPage';
@@ -74,6 +75,8 @@ import { SalesOrderDetailPage } from '@/pages/sales/SalesOrderDetailPage';
 import { ProductionOrdersPage } from '@/pages/production/ProductionOrdersPage';
 import { ProductionOrderCreatePage } from '@/pages/production/ProductionOrderCreatePage';
 import { ProductionOrderDetailPage } from '@/pages/production/ProductionOrderDetailPage';
+import { AllocationsPage } from '@/pages/shipment/AllocationsPage';
+import { CostSummaryPage } from '@/pages/costing/CostSummaryPage';
 import { ApprovalsPage } from '@/pages/workflow/ApprovalsPage';
 import { WorkflowDefinitionsPage } from '@/pages/workflow/WorkflowDefinitionsPage';
 import { WorkflowDefinitionCreatePage } from '@/pages/workflow/WorkflowDefinitionCreatePage';
@@ -579,6 +582,14 @@ export default function App(): JSX.Element {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="check-results"
+            element={
+              <ProtectedRoute requiredPermission="quality.results.view">
+                <QualityCheckResultsPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         <Route path="procurement">
@@ -840,6 +851,28 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="audit.log.view">
                 <AuditLogPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="costing">
+          <Route
+            path="summary"
+            element={
+              <ProtectedRoute requiredPermission="costing.layer.view">
+                <CostSummaryPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="shipment">
+          <Route
+            path="allocations"
+            element={
+              <ProtectedRoute requiredPermission="shipment.allocation.view">
+                <AllocationsPage />
               </ProtectedRoute>
             }
           />

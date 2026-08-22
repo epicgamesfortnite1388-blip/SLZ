@@ -102,7 +102,43 @@ def create_material_issue(serializer, *, actor=None):
                 state={"direction": movement.direction, "quantity": str(movement.quantity)},
             )
         )
+
+        # Q-034: auto-post an ISSUE cost layer at the current weighted-average.
+        _post_issue_cost_layer(
+            company=issue.production_order.company,
+            material=issue.material,
+            date=issue.created_at.date() if issue.created_at else None,
+            quantity=issue.quantity,
+            reference_id=issue.id,
+            actor=actor,
+        )
+
     return issue
+
+
+def _post_issue_cost_layer(*, company, material, date, quantity, reference_id=None, actor=None):
+    """Post a costing ISSUE layer. Best-effort — costing failures never break the issue."""
+    try:
+        from apps.costing.integration import post_cost_on_issue
+
+        post_cost_on_issue(
+            company=company,
+            material=material,
+            date=date,
+            quantity=quantity,
+            reference_type="production.MaterialIssue",
+            reference_id=reference_id,
+            actor=actor,
+        )
+    except Exception:
+        import logging
+
+        logger = logging.getLogger("apps.production")
+        logger.warning(
+            "Cost layer posting skipped for material issue %s",
+            reference_id,
+            exc_info=True,
+        )
 
 
 def create_production_output(serializer, *, actor=None):

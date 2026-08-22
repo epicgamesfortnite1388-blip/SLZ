@@ -270,4 +270,49 @@ def create_goods_receipt(serializer, *, actor=None):
                 )
             )
 
+            # Q-034: auto-post a RECEIPT cost layer for dated weighted-average.
+            _post_grn_cost_layer(
+                company=company,
+                material=entry["material"],
+                date=payload["received_at"],
+                quantity=entry["quantity"],
+                unit_price=getattr(po_line, "unit_price", None) if po_line else None,
+                po_line_id=str(po_line.id) if po_line else None,
+                reference_id=line_row.id,
+                actor=actor,
+            )
+
     return grn
+
+
+def _post_grn_cost_layer(
+    *,
+    company,
+    material,
+    date,
+    quantity,
+    unit_price=None,
+    po_line_id=None,
+    reference_id=None,
+    actor=None,
+):
+    """Post a costing RECEIPT layer for one GRN line. Best-effort — costing failures never break the receipt."""
+    try:
+        from apps.costing.integration import post_cost_on_receipt
+
+        post_cost_on_receipt(
+            company=company,
+            material=material,
+            date=date,
+            quantity=quantity,
+            unit_price=unit_price,
+            po_line_id=po_line_id,
+            reference_type="procurement.GoodsReceiptLine",
+            reference_id=reference_id,
+            actor=actor,
+        )
+    except Exception:
+        import logging
+
+        logger = logging.getLogger("apps.procurement")
+        logger.warning("Cost layer posting skipped for GRN line %s", reference_id, exc_info=True)
