@@ -65,6 +65,41 @@ class PartnerApiTests(TestCase):
         self.assertTrue(Partner.all_objects.filter(id=pk).exists())
         self.assertTrue(AuditLog.objects.filter(action="DELETE", entity_id=str(pk)).exists())
 
+    def test_partial_update_persists_and_audits(self):
+        """The UI edit flow PATCHes name/roles; the change must persist and land
+        in the audit trail with before/after snapshots."""
+        create = self.client.post("/api/v1/partners/partners/", self._payload(), format="json")
+        pk = create.json()["id"]
+        resp = self.client.patch(
+            f"/api/v1/partners/partners/{pk}/",
+            {"name_en": "Renamed Partner", "is_supplier": True},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 200, resp.content)
+        partner = Partner.objects.get(id=pk)
+        self.assertEqual(partner.name_en, "Renamed Partner")
+        self.assertTrue(partner.is_customer and partner.is_supplier)
+        update_row = (
+            AuditLog.objects.filter(action="UPDATE", entity_type="partners.Partner", entity_id=pk)
+            .order_by("-timestamp")
+            .first()
+        )
+        self.assertIsNotNone(update_row)
+        self.assertIsNotNone(update_row.after_state)
+
+    def test_update_cannot_drop_the_last_role(self):
+        """PATCHing both role flags off would orphan the partner — same rule as
+        create must hold on the update path."""
+        create = self.client.post("/api/v1/partners/partners/", self._payload(), format="json")
+        pk = create.json()["id"]
+        resp = self.client.patch(
+            f"/api/v1/partners/partners/{pk}/",
+            {"is_customer": False},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 400, resp.content)
+        self.assertFalse(Partner.objects.get(id=pk).is_supplier)
+
 
 class PartnerPermissionTests(TestCase):
     def setUp(self):
