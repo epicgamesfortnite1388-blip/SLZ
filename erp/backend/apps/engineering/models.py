@@ -77,6 +77,18 @@ class CustomerProduct(VersionedRoot):
         on_delete=models.PROTECT,
         related_name="customer_products",
     )
+    # Finished bags/pouches are carton-tracked; film products are roll/pallet
+    # tracked. The setting is explicit per customer product and nullable while
+    # older master records are classified.
+    traceability_mode = models.CharField(
+        max_length=20,
+        choices=(
+            ("SERIALIZED_ROLL", "Serialized roll"),
+            ("CARTON", "Carton"),
+        ),
+        null=True,
+        blank=True,
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:

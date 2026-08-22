@@ -35,6 +35,7 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    companies = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
     roles = serializers.SlugRelatedField(slug_field="code", many=True, read_only=True)
 
@@ -52,9 +53,14 @@ class UserSerializer(serializers.ModelSerializer):
             "is_superuser",
             "roles",
             "permissions",
+            "companies",
             "date_joined",
         ]
         read_only_fields = ["is_staff", "is_superuser", "date_joined"]
 
     def get_permissions(self, obj) -> list[str]:
         return sorted(obj.permission_codes())
+
+    def get_companies(self, obj) -> list[str]:
+        """IDs of the companies this user is a member of (Q-055)."""
+        return [str(m.company_id) for m in obj.company_memberships.select_related("company")]

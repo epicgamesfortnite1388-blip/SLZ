@@ -15,7 +15,7 @@ from __future__ import annotations
 from rest_framework import serializers
 
 from apps.core.validation import PositiveDecimalField
-from apps.production.models import ProductionOrder
+from apps.production.models import MaterialIssue, ProductionOrder, ProductionOutput
 
 
 class ProductionOrderSerializer(serializers.ModelSerializer):
@@ -99,6 +99,108 @@ class ProductionOrderSerializer(serializers.ModelSerializer):
                     "Routing revision is not built for this specification " "revision."
                 )
 
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
+
+class MaterialIssueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaterialIssue
+        fields = [
+            "id",
+            "production_order",
+            "routing_operation_id",
+            "material",
+            "traceability_unit",
+            "warehouse",
+            "quantity",
+            "uom",
+            "method",
+            "operation_label",
+            "notes",
+            "created_at",
+            "updated_at",
+        ]
+
+    quantity = PositiveDecimalField()
+
+    def validate(self, attrs):
+        order = attrs.get("production_order")
+        material = attrs.get("material")
+        unit = attrs.get("traceability_unit")
+        warehouse = attrs.get("warehouse")
+        method = attrs.get("method")
+        operation_id = attrs.get("routing_operation_id")
+        errors = {}
+        if order is not None and order.status != "RELEASED":
+            errors["production_order"] = "Material may be issued only for a RELEASED order."
+        if order is not None and material is not None and material.company_id != order.company_id:
+            errors["material"] = "Material must belong to the production order company."
+        if order is not None and warehouse is not None and warehouse.company_id != order.company_id:
+            errors["warehouse"] = "Warehouse must belong to the production order company."
+        if unit is not None and order is not None and unit.company_id != order.company_id:
+            errors["traceability_unit"] = (
+                "Traceability unit must belong to the production order company."
+            )
+        if method == "EXPLICIT" and unit is None:
+            errors["traceability_unit"] = "EXPLICIT issue requires a roll, batch, or carton unit."
+        if method == "BACKFLUSH" and unit is not None:
+            errors["traceability_unit"] = (
+                "BACKFLUSH issue identifies material, not a selected unit."
+            )
+        if operation_id is not None:
+            from apps.manufacturing.models import RoutingOperation
+
+            operation = RoutingOperation.objects.filter(id=operation_id).first()
+            if operation is None:
+                errors["routing_operation_id"] = "Routing operation does not exist."
+            elif operation.issue_method is not None and operation.issue_method != method:
+                errors["method"] = "Issue method does not match the configured routing operation."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
+
+class ProductionOutputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductionOutput
+        fields = [
+            "id",
+            "production_order",
+            "traceability_unit",
+            "warehouse",
+            "quantity",
+            "uom",
+            "operation_label",
+            "notes",
+            "created_at",
+            "updated_at",
+        ]
+
+    quantity = PositiveDecimalField()
+
+    def validate(self, attrs):
+        order = attrs.get("production_order")
+        unit = attrs.get("traceability_unit")
+        warehouse = attrs.get("warehouse")
+        errors = {}
+        if order is not None and order.status != "RELEASED":
+            errors["production_order"] = "Output may be recorded only for a RELEASED order."
+        if order is not None and warehouse is not None and warehouse.company_id != order.company_id:
+            errors["warehouse"] = "Warehouse must belong to the production order company."
+        if order is not None and unit is not None and unit.company_id != order.company_id:
+            errors["traceability_unit"] = (
+                "Traceability unit must belong to the production order company."
+            )
+        if (
+            unit is not None
+            and order is not None
+            and unit.customer_product_id not in (None, order.customer_product_id)
+        ):
+            errors["traceability_unit"] = (
+                "Output unit must belong to the production customer product."
+            )
         if errors:
             raise serializers.ValidationError(errors)
         return attrs

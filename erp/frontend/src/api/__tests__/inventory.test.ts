@@ -8,7 +8,13 @@ vi.mock('../client', () => ({
 }));
 
 import { apiClient } from '../client';
-import { createWarehouse, WAREHOUSE_STORE_TYPES } from '../inventory';
+import {
+  createTraceabilityUnit,
+  createWarehouse,
+  fetchStockMovements,
+  fetchTraceabilityUnits,
+  WAREHOUSE_STORE_TYPES,
+} from '../inventory';
 
 describe('inventory API', () => {
   beforeEach(() => {
@@ -27,6 +33,27 @@ describe('inventory API', () => {
       code: 'WH-RM',
       name_fa: 'انبار مواد اولیه',
       store_type: 'RAW_MATERIAL',
+    });
+  });
+
+  it('targets traceability and movement endpoints', async () => {
+    await fetchTraceabilityUnits('?company=co1&page_size=100');
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/inventory/traceability-units/?company=co1&page_size=100',
+    );
+    await fetchStockMovements();
+    expect(apiClient.get).toHaveBeenCalledWith('/inventory/movements/?page_size=100');
+    await createTraceabilityUnit({
+      company: 'co1',
+      material: 'mat-1',
+      unit_type: 'ROLL',
+      identifier: 'R-001',
+    });
+    expect(apiClient.post).toHaveBeenCalledWith('/inventory/traceability-units/', {
+      company: 'co1',
+      material: 'mat-1',
+      unit_type: 'ROLL',
+      identifier: 'R-001',
     });
   });
 

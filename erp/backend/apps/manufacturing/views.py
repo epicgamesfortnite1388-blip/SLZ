@@ -66,6 +66,7 @@ class MachineViewSet(AuditedModelViewSet):
 
 
 class BillOfMaterialsViewSet(AuditedModelViewSet):
+    company_scope_lookup = "spec_revision__root__company"
     queryset = BillOfMaterials.objects.all().select_related("spec_revision", "output_material")
     serializer_class = BillOfMaterialsSerializer
     permission_map = {
@@ -75,10 +76,12 @@ class BillOfMaterialsViewSet(AuditedModelViewSet):
         "DELETE": "manufacturing.bom.manage",
     }
     required_permission = "manufacturing.bom.view"
+    company_scope_lookup = "spec_revision__root__company"
     filterset_fields = ["spec_revision", "output_material", "is_active"]
 
 
 class BomRevisionViewSet(AuditedModelViewSet):
+    company_scope_lookup = "root__spec_revision__root__company"
     queryset = BomRevision.objects.all().select_related("root")
     serializer_class = BomRevisionSerializer
     permission_map = {
@@ -88,6 +91,7 @@ class BomRevisionViewSet(AuditedModelViewSet):
         "DELETE": "manufacturing.bom.manage",
     }
     required_permission = "manufacturing.bom.view"
+    company_scope_lookup = "root__spec_revision__root__company"
     filterset_fields = ["root", "status"]
 
     def perform_create(self, serializer):
@@ -123,6 +127,7 @@ class BomRevisionViewSet(AuditedModelViewSet):
 
 
 class BomLineViewSet(AuditedModelViewSet):
+    company_scope_lookup = "revision__root__spec_revision__root__company"
     queryset = BomLine.objects.all().select_related("revision", "material", "uom")
     serializer_class = BomLineSerializer
     permission_map = {
@@ -132,6 +137,7 @@ class BomLineViewSet(AuditedModelViewSet):
         "DELETE": "manufacturing.bom.manage",
     }
     required_permission = "manufacturing.bom.view"
+    company_scope_lookup = "revision__root__spec_revision__root__company"
     filterset_fields = ["revision", "material"]
 
     def perform_destroy(self, instance):
@@ -141,6 +147,7 @@ class BomLineViewSet(AuditedModelViewSet):
 
 
 class RoutingViewSet(AuditedModelViewSet):
+    company_scope_lookup = "spec_revision__root__company"
     queryset = Routing.objects.all().select_related("spec_revision")
     serializer_class = RoutingSerializer
     permission_map = {
@@ -150,10 +157,12 @@ class RoutingViewSet(AuditedModelViewSet):
         "DELETE": "manufacturing.routing.manage",
     }
     required_permission = "manufacturing.routing.view"
+    company_scope_lookup = "spec_revision__root__company"
     filterset_fields = ["spec_revision", "is_active"]
 
 
 class RoutingRevisionViewSet(AuditedModelViewSet):
+    company_scope_lookup = "root__spec_revision__root__company"
     queryset = RoutingRevision.objects.all().select_related("root")
     serializer_class = RoutingRevisionSerializer
     permission_map = {
@@ -163,6 +172,7 @@ class RoutingRevisionViewSet(AuditedModelViewSet):
         "DELETE": "manufacturing.routing.manage",
     }
     required_permission = "manufacturing.routing.view"
+    company_scope_lookup = "root__spec_revision__root__company"
     filterset_fields = ["root", "status"]
 
     def perform_create(self, serializer):
@@ -198,6 +208,7 @@ class RoutingRevisionViewSet(AuditedModelViewSet):
 
 
 class RoutingOperationViewSet(AuditedModelViewSet):
+    company_scope_lookup = "revision__root__spec_revision__root__company"
     queryset = RoutingOperation.objects.all().select_related(
         "revision", "work_center", "output_material"
     )
@@ -209,6 +220,7 @@ class RoutingOperationViewSet(AuditedModelViewSet):
         "DELETE": "manufacturing.routing.manage",
     }
     required_permission = "manufacturing.routing.view"
+    company_scope_lookup = "revision__root__spec_revision__root__company"
     filterset_fields = ["revision", "work_center"]
 
     def perform_destroy(self, instance):

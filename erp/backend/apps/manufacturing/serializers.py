@@ -192,6 +192,7 @@ class RoutingOperationSerializer(_ChildOfRevisionSerializer):
             "setup_time_minutes",
             "run_rate",
             "run_rate_basis",
+            "issue_method",
             "notes",
             "created_at",
             "updated_at",

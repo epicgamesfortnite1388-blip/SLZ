@@ -270,6 +270,15 @@ class RoutingOperation(SoftDeleteModel):
     setup_time_minutes = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     run_rate = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
     run_rate_basis = models.CharField(max_length=30, blank=True, default="")
+    issue_method = models.CharField(
+        max_length=10,
+        choices=(
+            ("EXPLICIT", "Explicit lot/roll issue"),
+            ("BACKFLUSH", "Backflush"),
+        ),
+        null=True,
+        blank=True,
+    )
     notes = models.CharField(max_length=500, blank=True, default="")
 
     class Meta:

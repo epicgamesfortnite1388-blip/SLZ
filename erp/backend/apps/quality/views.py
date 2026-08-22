@@ -44,6 +44,7 @@ class QualityCharacteristicViewSet(AuditedModelViewSet):
 
 
 class QualityPlanViewSet(AuditedModelViewSet):
+    company_scope_lookup = "spec_revision__root__company"
     queryset = QualityPlan.objects.all().select_related("spec_revision")
     serializer_class = QualityPlanSerializer
     permission_map = {
@@ -57,6 +58,7 @@ class QualityPlanViewSet(AuditedModelViewSet):
 
 
 class QualityPlanRevisionViewSet(AuditedModelViewSet):
+    company_scope_lookup = "root__spec_revision__root__company"
     queryset = QualityPlanRevision.objects.all().select_related("root")
     serializer_class = QualityPlanRevisionSerializer
     permission_map = {
@@ -101,6 +103,7 @@ class QualityPlanRevisionViewSet(AuditedModelViewSet):
 
 
 class QualityPlanItemViewSet(AuditedModelViewSet):
+    company_scope_lookup = "revision__root__spec_revision__root__company"
     queryset = QualityPlanItem.objects.all().select_related(
         "revision", "characteristic", "work_center"
     )

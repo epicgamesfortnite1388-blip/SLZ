@@ -94,6 +94,18 @@ PLATFORM_PERMISSIONS = [
         "Manage warehouse access",
         "مدیریت دسترسی انبار",
     ),
+    (
+        "inventory.traceability.view",
+        "View traceability units and genealogy",
+        "مشاهده ردیابی و شجره‌نامه",
+    ),
+    (
+        "inventory.traceability.manage",
+        "Manage traceability units and genealogy",
+        "مدیریت ردیابی و شجره‌نامه",
+    ),
+    ("inventory.movement.view", "View stock movements", "مشاهده گردش موجودی"),
+    ("inventory.movement.manage", "Post stock movements", "ثبت گردش موجودی"),
     # --- Task 008 Quality (inspection / quality plan definition) -----------
     ("quality.characteristic.view", "View quality characteristics", "مشاهده مشخصه‌های کیفی"),
     ("quality.characteristic.manage", "Manage quality characteristics", "مدیریت مشخصه‌های کیفی"),
@@ -110,6 +122,8 @@ PLATFORM_PERMISSIONS = [
     # --- Task 011 Production (work orders) ---------------------------------
     ("production.order.view", "View production orders", "مشاهده سفارش‌های تولید"),
     ("production.order.manage", "Manage production orders", "مدیریت سفارش‌های تولید"),
+    ("production.execution.view", "View production execution", "مشاهده اجرای تولید"),
+    ("production.execution.manage", "Post production execution", "ثبت اجرای تولید"),
 ]
 
 

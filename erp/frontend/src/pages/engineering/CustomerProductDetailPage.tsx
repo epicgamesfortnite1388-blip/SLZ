@@ -13,6 +13,13 @@ import {
   type SpecParameter,
   type SpecificationRevision,
 } from '@/api/engineering';
+import {
+  fetchMaterial,
+  fetchPartner,
+  fetchProductFamily,
+  fetchProductGroup,
+  fetchUom,
+} from '@/api/masterData';
 import { isApiError } from '@/api/types';
 import { formatDateTime } from '@/i18n/dates';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
@@ -42,6 +49,7 @@ export function CustomerProductDetailPage(): JSX.Element {
   const [layers, setLayers] = useState<SpecLayer[]>([]);
   const [colors, setColors] = useState<SpecColor[]>([]);
   const [params, setParams] = useState<SpecParameter[]>([]);
+  const [referenceLabels, setReferenceLabels] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   // Load the root record + its whole revision chain once.
@@ -63,6 +71,79 @@ export function CustomerProductDetailPage(): JSX.Element {
       active = false;
     };
   }, [id, t]);
+
+  // Resolve existing FK ids so the sample structure can be read without UUID knowledge.
+  useEffect(() => {
+    if (!product) return;
+    let active = true;
+    const groupRequest = product.product_group
+      ? fetchProductGroup(product.product_group)
+      : Promise.resolve(null);
+    const familyRequest = product.family
+      ? fetchProductFamily(product.family)
+      : Promise.resolve(null);
+    Promise.all([
+      fetchPartner(product.customer),
+      fetchUom(product.base_uom),
+      groupRequest,
+      familyRequest,
+    ])
+      .then(([customer, uom, group, family]) => {
+        if (!active) return;
+        setReferenceLabels((current) => ({
+          ...current,
+          [customer.id]: customer.name_fa || customer.name_en || customer.code,
+          [uom.id]: uom.name_fa || uom.name_en || uom.code,
+          ...(group ? { [group.id]: group.name_fa || group.name_en || group.code } : {}),
+          ...(family ? { [family.id]: family.name_fa || family.name_en || family.code } : {}),
+        }));
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [product]);
+
+  // Resolve layer/color material ids for the selected revision.
+  useEffect(() => {
+    const ids = [...new Set([
+      ...layers.map((layer) => layer.material),
+      ...colors.flatMap((color) => [color.ink, color.alternative_ink]),
+    ].filter((value): value is string => Boolean(value)))];
+    if (ids.length === 0) return;
+    let active = true;
+    Promise.all(ids.map((materialId) => fetchMaterial(materialId)))
+      .then((materials) => {
+        if (!active) return;
+        setReferenceLabels((current) => ({
+          ...current,
+          ...Object.fromEntries(
+            materials.map((material) => [
+              material.id,
+              material.name_fa || material.name_en || material.code,
+            ]),
+          ),
+        }));
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [layers, colors]);
+
+  const labelFor = (id: string | null): string =>
+    id ? referenceLabels[id] ?? id : '—';
+
+  const formatTolerance = (low: string | null, high: string | null): string => {
+    if (low == null && high == null) return '—';
+    return `${low ?? '…'} / ${high ?? '…'}`;
+  };
+
+  const formatParameterValue = (parameter: SpecParameter): string => {
+    if (parameter.datatype === 'BOOL') return parameter.value_bool == null ? '—' : String(parameter.value_bool);
+    if (parameter.datatype === 'NUMBER') return parameter.value_number ?? '—';
+    return parameter.value_text || '—';
+  };
 
   // Load the selected revision's child collections.
   useEffect(() => {
@@ -115,10 +196,10 @@ export function CustomerProductDetailPage(): JSX.Element {
     { labelKey: 'engineering.fields.code', value: product.code },
     { labelKey: 'engineering.fields.nameFa', value: product.name_fa },
     { labelKey: 'engineering.fields.nameEn', value: product.name_en },
-    { labelKey: 'engineering.fields.customer', value: product.customer },
-    { labelKey: 'engineering.fields.productGroup', value: product.product_group ?? '—' },
-    { labelKey: 'engineering.fields.family', value: product.family ?? '—' },
-    { labelKey: 'engineering.fields.baseUom', value: product.base_uom },
+    { labelKey: 'engineering.fields.customer', value: labelFor(product.customer) },
+    { labelKey: 'engineering.fields.productGroup', value: labelFor(product.product_group) },
+    { labelKey: 'engineering.fields.family', value: labelFor(product.family) },
+    { labelKey: 'engineering.fields.baseUom', value: labelFor(product.base_uom) },
     {
       labelKey: 'engineering.fields.isActive',
       value: t(product.is_active ? 'common.yes' : 'common.no'),
@@ -139,14 +220,14 @@ export function CustomerProductDetailPage(): JSX.Element {
           value:
             selected.width_mm == null
               ? '—'
-              : `${selected.width_mm} ±${selected.width_tol_low ?? '?'}/${selected.width_tol_high ?? '?'}`,
+              : `${selected.width_mm} (${formatTolerance(selected.width_tol_low, selected.width_tol_high)})`,
         },
         {
           labelKey: 'engineering.fields.length',
           value:
             selected.length_mm == null
               ? '—'
-              : `${selected.length_mm} ±${selected.length_tol_low ?? '?'}/${selected.length_tol_high ?? '?'}`,
+              : `${selected.length_mm} (${formatTolerance(selected.length_tol_low, selected.length_tol_high)})`,
         },
         { labelKey: 'engineering.fields.gusset', value: selected.gusset_mm ?? '—' },
         { labelKey: 'engineering.fields.printProcess', value: selected.print_process },
@@ -222,15 +303,17 @@ export function CustomerProductDetailPage(): JSX.Element {
                       <th>{t('engineering.layers.material')}</th>
                       <th>{t('engineering.layers.function')}</th>
                       <th>{t('engineering.layers.micron')}</th>
+                      <th>{t('engineering.layers.tolerance')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {layers.map((l) => (
                       <tr key={l.id}>
                         <td>{l.sequence}</td>
-                        <td>{l.material}</td>
+                        <td>{labelFor(l.material)}</td>
                         <td>{l.function}</td>
                         <td>{l.micron ?? '—'}</td>
+                        <td>{formatTolerance(l.micron_tol_low, l.micron_tol_high)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -250,7 +333,9 @@ export function CustomerProductDetailPage(): JSX.Element {
                       <th>#</th>
                       <th>{t('engineering.colors.colorName')}</th>
                       <th>{t('engineering.colors.ink')}</th>
+                      <th>{t('engineering.colors.alternativeInk')}</th>
                       <th>{t('engineering.colors.coverage')}</th>
+                      <th>{t('engineering.colors.deltaETolerance')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -258,8 +343,10 @@ export function CustomerProductDetailPage(): JSX.Element {
                       <tr key={c.id}>
                         <td>{c.sequence}</td>
                         <td>{c.color_name}</td>
-                        <td>{c.ink ?? '—'}</td>
+                        <td>{labelFor(c.ink)}</td>
+                        <td>{labelFor(c.alternative_ink)}</td>
                         <td>{c.coverage_pct ?? '—'}</td>
+                        <td>{c.delta_e_tol ?? '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -277,6 +364,7 @@ export function CustomerProductDetailPage(): JSX.Element {
                   <thead>
                     <tr>
                       <th>{t('engineering.params.key')}</th>
+                      <th>{t('engineering.params.datatype')}</th>
                       <th>{t('engineering.params.value')}</th>
                       <th>{t('engineering.params.unit')}</th>
                       <th>{t('engineering.params.tolerance')}</th>
@@ -286,7 +374,8 @@ export function CustomerProductDetailPage(): JSX.Element {
                     {params.map((p) => (
                       <tr key={p.id}>
                         <td>{p.key}</td>
-                        <td>{p.value_bool === null ? p.value_number ?? p.value_text : String(p.value_bool)}</td>
+                        <td>{p.datatype}</td>
+                        <td>{formatParameterValue(p)}</td>
                         <td>{p.unit || '—'}</td>
                         <td>
                           {p.tol_low == null && p.tol_high == null

@@ -30,6 +30,7 @@ class UnitOfMeasureViewSet(AuditedModelViewSet):
     serializer_class = UnitOfMeasureSerializer
     permission_map = {m: "catalog.uom.manage" for m in ("POST", "PUT", "PATCH", "DELETE")}
     required_permission = "catalog.uom.view"
+    company_scope_lookup = None
     filterset_fields = ["dimension", "is_active"]
     search_fields = ["code", "name_fa", "name_en"]
 
@@ -39,6 +40,7 @@ class UomConversionViewSet(AuditedModelViewSet):
     serializer_class = UomConversionSerializer
     permission_map = {m: "catalog.uom.manage" for m in ("POST", "PUT", "PATCH", "DELETE")}
     required_permission = "catalog.uom.view"
+    company_scope_lookup = None
     filterset_fields = ["from_uom", "to_uom"]
 
 
@@ -47,6 +49,7 @@ class ProductGroupViewSet(AuditedModelViewSet):
     serializer_class = ProductGroupSerializer
     permission_map = {m: "catalog.productgroup.manage" for m in ("POST", "PUT", "PATCH", "DELETE")}
     required_permission = "catalog.productgroup.view"
+    company_scope_lookup = None
     filterset_fields = ["is_active"]
     search_fields = ["code", "name_fa", "name_en"]
 
@@ -58,6 +61,7 @@ class ProductTypeViewSet(AuditedModelViewSet):
         m: "catalog.producttaxonomy.manage" for m in ("POST", "PUT", "PATCH", "DELETE")
     }
     required_permission = "catalog.producttaxonomy.view"
+    company_scope_lookup = None
     filterset_fields = ["is_active"]
     search_fields = ["code", "name_fa", "name_en"]
 
@@ -69,6 +73,7 @@ class ProductClassViewSet(AuditedModelViewSet):
         m: "catalog.producttaxonomy.manage" for m in ("POST", "PUT", "PATCH", "DELETE")
     }
     required_permission = "catalog.producttaxonomy.view"
+    company_scope_lookup = None
     filterset_fields = ["product_type", "is_active"]
     search_fields = ["code", "name_fa", "name_en"]
 
@@ -82,6 +87,7 @@ class ProductFamilyViewSet(AuditedModelViewSet):
         m: "catalog.producttaxonomy.manage" for m in ("POST", "PUT", "PATCH", "DELETE")
     }
     required_permission = "catalog.producttaxonomy.view"
+    company_scope_lookup = None
     filterset_fields = ["product_class", "is_active"]
     search_fields = ["code", "name_fa", "name_en"]
 

@@ -132,6 +132,11 @@ export function createPartner(payload: Partial<Partner>): Promise<Partner> {
   return apiClient.post<Partner>('/partners/partners/', payload);
 }
 
+/** Fetch one partner by id for human-readable FK labels. */
+export function fetchPartner(id: string): Promise<Partner> {
+  return apiClient.get<Partner>(`/partners/partners/${id}/`);
+}
+
 /** Update a partner (audited PATCH; the reference master-data edit flow). */
 export function updatePartner(id: string, payload: Partial<Partner>): Promise<Partner> {
   return apiClient.patch<Partner>(`/partners/partners/${id}/`, payload);
@@ -140,6 +145,11 @@ export function updatePartner(id: string, payload: Partial<Partner>): Promise<Pa
 /** Create a material via the audited service layer. */
 export function createMaterial(payload: Partial<Material>): Promise<Material> {
   return apiClient.post<Material>('/catalog/materials/', payload);
+}
+
+/** Fetch one material by id for engineering detail labels. */
+export function fetchMaterial(id: string): Promise<Material> {
+  return apiClient.get<Material>(`/catalog/materials/${id}/`);
 }
 
 /** Create a product via the audited service layer. */
@@ -152,6 +162,11 @@ export function createUom(
   payload: Partial<UnitOfMeasure>,
 ): Promise<UnitOfMeasure> {
   return apiClient.post<UnitOfMeasure>('/catalog/uoms/', payload);
+}
+
+/** Fetch one unit of measure by id for engineering detail labels. */
+export function fetchUom(id: string): Promise<UnitOfMeasure> {
+  return apiClient.get<UnitOfMeasure>(`/catalog/uoms/${id}/`);
 }
 
 /** Create an employee (audited write path). */

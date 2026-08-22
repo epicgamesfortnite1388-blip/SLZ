@@ -186,6 +186,14 @@ class Product(SoftDeleteModel):
         return self.code or self.name_fa
 
 
+class TraceabilityMode(models.TextChoices):
+    """The confirmed SLZ tracking mode configured per material/product."""
+
+    BATCH = "BATCH", "Batch"
+    SERIALIZED_ROLL = "SERIALIZED_ROLL", "Serialized roll"
+    CARTON = "CARTON", "Carton"
+
+
 class MaterialSubtype(models.TextChoices):
     """Material subtypes MRP/formulation/QC treat distinctly (SR-04 / DR-042)."""
 
@@ -213,6 +221,14 @@ class Material(SoftDeleteModel):
     name_fa = models.CharField(max_length=255)
     name_en = models.CharField(max_length=255, blank=True, default="")
     subtype = models.CharField(max_length=20, choices=MaterialSubtype.choices)
+    # Traceability is configured per material because SLZ's rule differs for
+    # film rolls and purchased granules; null preserves existing unclassified data.
+    traceability_mode = models.CharField(
+        max_length=20,
+        choices=TraceabilityMode.choices,
+        null=True,
+        blank=True,
+    )
     base_uom = models.ForeignKey(UnitOfMeasure, on_delete=models.PROTECT, related_name="materials")
 
     # Optional planning / handling attributes (R-MD-10) — nullable, no defaults.

@@ -43,6 +43,7 @@ class CustomerViewSet(AuditedModelViewSet):
         "DELETE": "partners.partner.manage",
     }
     required_permission = "partners.partner.view"
+    company_scope_lookup = "partner__company"
     filterset_fields = ["partner", "sales_line", "requires_coa"]
 
 
@@ -56,6 +57,7 @@ class SupplierViewSet(AuditedModelViewSet):
         "DELETE": "partners.partner.manage",
     }
     required_permission = "partners.partner.view"
+    company_scope_lookup = "partner__company"
     filterset_fields = ["partner", "is_approved"]
 
 
@@ -69,6 +71,7 @@ class ContactViewSet(AuditedModelViewSet):
         "DELETE": "partners.contact.manage",
     }
     required_permission = "partners.contact.view"
+    company_scope_lookup = "partner__company"
     filterset_fields = ["partner", "kind", "is_primary"]
     search_fields = ["name", "email", "phone"]
 
@@ -83,5 +86,6 @@ class AddressViewSet(AuditedModelViewSet):
         "DELETE": "partners.address.manage",
     }
     required_permission = "partners.address.view"
+    company_scope_lookup = "partner__company"
     filterset_fields = ["partner", "kind", "is_primary"]
     search_fields = ["line1", "city", "province", "postal_code"]

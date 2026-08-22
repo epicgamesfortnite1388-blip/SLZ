@@ -32,7 +32,7 @@ Legend: BE = backend · API = REST surface · FE = frontend · T = tests · AUD 
 | partners | VERIFIED | Partner create/list/edit/detail + contacts/addresses sub-panels + RBAC tests |
 | catalog | VERIFIED | Products, materials, UoM, UoM conversions, product taxonomy (group/type/class/family) — full CRUD UI + FK name resolution on detail pages |
 | hr | VERIFIED | Employee list/create/detail with attachments + audit |
-| engineering | VERIFIED | CustomerProduct + SpecificationRevision detail with revision chain, spec layers/colors/parameters; ToolingAsset list/create/detail with attachments + audit |
+| engineering | VERIFIED | CustomerProduct + SpecificationRevision detail with revision chain, human-readable FK labels, layer/color/parameter tolerances and typed values; ToolingAsset list/create/detail with attachments + audit |
 | manufacturing | VERIFIED | WorkCenter/Machine list/create/detail; BOM + Routing roots + revisions with inline material lines / operations tables + FK name resolution |
 | inventory | VERIFIED | Warehouse list/create/detail + per-user access grants |
 | quality | VERIFIED | Characteristic list/create; QualityPlan list/create/root detail with revision chain + plan items table + FK name resolution |
@@ -66,6 +66,18 @@ Legend: BE = backend · API = REST surface · FE = frontend · T = tests · AUD 
 | Q-046 (+048/049/026) | entire execution/traceability layer | blocks MES go-live |
 | Q-034/Q-031/Q-033 | costing/valuation | blocks financial accuracy |
 | DR-000/NQ-001 | build-vs-buy reaffirmation | program-level risk (CONFIRMED: custom build) |
+
+## Sample-product validation
+
+`docs/architecture/sample-product-model-validation.md` validates both real sample
+product sheets against the definition-layer architecture. The core
+CustomerProduct/specification/layer/color/parameter model is sufficient to
+preserve the evidence; no backend schema or authoritative sample fixture was
+added. The detail UI now exposes existing tolerances, typed parameter values,
+color alternatives/ΔE, and human-readable material/customer/UoM labels.
+Semantic lamination interfaces, print-reference metadata, converting-feature
+vocabulary, packaging hierarchy, alternate identifier ownership, and source
+field provenance remain documented gaps or business-gated decisions.
 
 ## Infrastructure
 

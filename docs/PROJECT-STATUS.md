@@ -4,7 +4,7 @@
 made-to-order flexible-packaging manufacturer, one of six NEPTA-group companies
 (phase-1 = SLZ/Tehran + Helena/Saveh).
 **Workspace:** `E:\Code\Project\ERP` (backend `erp/backend`, frontend `erp/frontend`).
-**Last updated:** 2026-08-22 (autonomous implementation batch #2).
+**Last updated:** 2026-08-22 (sample-product model validation batch).
 
 This document is the single consolidated status view. Requirement *text* lives in
 `docs/requirements/requirements-baseline.md`; per-decision history in
@@ -23,14 +23,14 @@ This document is the single consolidated status view. Requirement *text* lives i
 | **BLOCKED** | Cannot proceed without an SLZ business decision (must not be invented). |
 | **DEFERRED** | Consciously out of scope for the current phase. |
 
-> **Verification status (2026-08-22, end of autonomous batch #2).** The codebase is
+> **Verification status (2026-08-22, sample-product validation batch).** The codebase is
 > **RUNTIME VERIFIED** on a Windows dev machine: flake8/black/isort clean, all
 > app migrations generated (`makemigrations --check` → no drift), backend suite
-> **245/245 OK**, frontend `tsc --noEmit` + ESLint (0 warnings) + vitest
-> **25 files / 83 tests OK** + production build OK. Scope caveat: tests run on SQLite per
-> `config.settings.test`; the PostgreSQL/Redis/Celery stack via
-> `docker compose up --build` has **not** been exercised yet (no Docker on this
-> machine) and remains the only unverified deployment path.
+> **247/247 OK**, frontend `tsc --noEmit` + ESLint (0 warnings) + vitest
+> **26 files / 88 tests OK** + production build OK. Scope caveat: tests run on SQLite per
+> `config.settings.test`; Docker is unavailable, so the PostgreSQL/Redis/Celery
+> stack via `docker compose up --build` has not been exercised and remains the
+> only unverified deployment path.
 
 ---
 
@@ -128,6 +128,35 @@ revision chain, engineering API foundation, security hardening, silent-action-fa
 fix, Jalali date presentation, CI hardening, auth brute-force resistance,
 self-profile validation, Q-055 multi-tenancy dependency map, and two QA cycles
 (input-fuzz hardening, workflow-decision guard regression).
+
+### Sample-product model validation (2026-08-22)
+
+Validated the two real SLZ product sheets in
+`docs/architecture/sample-product-model-validation.md` against the current
+CustomerProduct, SpecificationRevision, SpecLayer, SpecColor, SpecParameter,
+ToolingAsset, BOM, Routing, material, UoM, quality-plan, attachment, and audit
+models. The core definition layer represents both samples without a new backend
+schema: product 1 maps to an ordered BOPP/PET/PE laminate-roll specification;
+product 2 maps to a single PE, seven-color converting specification.
+
+The safe implementation was frontend-only: the Customer Product detail view now
+resolves existing customer/material/UoM references to readable labels and shows
+layer tolerances, color alternatives/ΔE, and typed parameter values. No sample
+fixture or seed data was created because customer identity, alternate identifier
+ownership, coded dimensions, BOM semantics, and production quantities remain
+uncertain in the PDFs.
+
+Remaining gaps are semantic rather than safe schema additions: pairwise
+lamination, print-reference metadata, layer treatments, converting-feature
+vocabulary, packaging hierarchy, and page-level field provenance. Q-019/NQ-005,
+Q-024, Q-026, Q-039/Q-040, Q-046/Q-048/Q-049, Q-053/Q-055, and costing gates
+remain untouched. See the validation document for field-by-field evidence and
+classification.
+
+**Verification for this batch:** backend 247/247 tests green on SQLite;
+frontend 26 files / 88 tests green; typecheck, ESLint, production build,
+flake8, black, isort, and `makemigrations --check` all passed. Docker is
+unavailable, so PostgreSQL/Redis/container verification remains unexecuted.
 
 ### Autonomous implementation batch #2 (2026-08-22, afternoon)
 

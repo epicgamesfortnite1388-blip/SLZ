@@ -50,7 +50,18 @@ class OnCommitExecutingClient(APIClient):
 
 
 def make_user(email="user@slz.test", password="pass1234", **extra):
-    return User.objects.create_user(email=email, password=password, **extra)
+    user = User.objects.create_user(email=email, password=password, **extra)
+    # Company-scoped API tests need a default membership; callers that need an
+    # outsider can remove it explicitly. This keeps legacy fixtures compatible
+    # with the confirmed Q-055 fail-closed read/write guard.
+    from apps.identity.models import CompanyMembership
+    from apps.organization.models import Company
+
+    companies = list(Company.objects.all())
+    CompanyMembership.objects.bulk_create(
+        [CompanyMembership(user=user, company=company) for company in companies]
+    )
+    return user
 
 
 def make_superuser(email="admin@slz.test", password="pass1234"):
@@ -95,3 +106,14 @@ def make_site(company=None, code="TEH", name_en="Tehran", name_fa="تهران"):
 
     company = company or make_company()
     return Site.objects.create(company=company, code=code, name_en=name_en, name_fa=name_fa)
+
+
+def member_of(user, *companies):
+    """Grant the user membership in the given companies (Q-055)."""
+    from apps.identity.models import CompanyMembership
+
+    out = []
+    for company in companies:
+        membership, _ = CompanyMembership.objects.get_or_create(user=user, company=company)
+        out.append(membership)
+    return out

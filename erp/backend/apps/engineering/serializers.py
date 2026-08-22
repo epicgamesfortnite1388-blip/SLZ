@@ -35,6 +35,7 @@ class CustomerProductSerializer(serializers.ModelSerializer):
             "product_group",
             "family",
             "base_uom",
+            "traceability_mode",
             "is_active",
             "created_at",
             "updated_at",

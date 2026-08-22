@@ -54,6 +54,26 @@ class CompanyViewSet(AuditedModelViewSet):
         "DELETE": "organization.company.manage",
     }
     required_permission = "organization.company.view"
+
+    def get_queryset(self):
+        """Members see only companies they belong to (Q-055);
+        superusers see every company."""
+        user = self.request.user
+        if user.is_superuser or not getattr(user, "is_authenticated", False):
+            return super().get_queryset()
+        return Company.objects.filter(memberships__user=user)
+
+    def perform_create(self, serializer):
+        """Bootstrap rule (Q-055): whoever creates a company becomes its
+        first member — otherwise they would immediately lose sight of the
+        record they just made."""
+        from apps.identity.models import CompanyMembership
+
+        super().perform_create(serializer)
+        company = getattr(serializer.instance, "pk", None) and serializer.instance
+        if company is not None:
+            CompanyMembership.objects.get_or_create(user=self.request.user, company=company)
+
     search_fields = ["code", "name_en", "name_fa"]
 
 
@@ -81,6 +101,7 @@ class DepartmentViewSet(AuditedModelViewSet):
         "DELETE": "organization.department.manage",
     }
     required_permission = "organization.department.view"
+    company_scope_lookup = "site__company"
     filterset_fields = ["site", "parent", "is_active"]
     search_fields = ["code", "name_en", "name_fa"]
 
@@ -111,5 +132,6 @@ class SiteCapabilityViewSet(AuditedModelViewSet):
         "DELETE": "organization.sitecapability.manage",
     }
     required_permission = "organization.sitecapability.view"
+    company_scope_lookup = "site__company"
     filterset_fields = ["site", "capability", "is_active"]
     search_fields = ["capability", "notes"]

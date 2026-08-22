@@ -1,11 +1,9 @@
-"""Production tests: production-order (work-order) document, status state
-machine, DRAFT-only editability, RBAC.
+"""Production tests for work orders and confirmed execution postings.
 
-Covers the manufacturing commercial-document layer only — manual document
-numbers, the guarded status transitions (release/complete/close/cancel), the
-header-editable-only-while-DRAFT rule, and permission gating. NO material
-issue / confirmation / genealogy / QC-result layer exists to test, by design
-(gated on Q-046 and later phases — see apps/production/models.py).
+Covers lifecycle integrity, RBAC, explicit and backflush material issues,
+produced outputs, atomic stock movements, and append-only execution records.
+Confirmation detail, QC results, receipts, valuation, and recall remain out of
+scope for this slice.
 """
 
 from __future__ import annotations
@@ -14,6 +12,8 @@ from django.test import TestCase
 
 from apps.audit.models import AuditLog
 from apps.catalog.models import (
+    Material,
+    MaterialSubtype,
     ProductClass,
     ProductFamily,
     ProductGroup,
@@ -21,10 +21,11 @@ from apps.catalog.models import (
     UnitOfMeasure,
     UomDimension,
 )
-from apps.core.tests.factories import auth_client, grant, make_company, make_user
+from apps.core.tests.factories import auth_client, grant, make_company, make_superuser, make_user
 from apps.engineering.models import CustomerProduct, SpecificationRevision
+from apps.inventory.models import TraceabilityUnit, TraceabilityUnitType, Warehouse
 from apps.partners.models import Customer, Partner
-from apps.production.models import ProductionOrder
+from apps.production.models import MaterialIssue, ProductionOrder, ProductionOutput
 
 
 def build_prereqs(company):
@@ -224,3 +225,103 @@ class ProductionOrderPermissionTests(TestCase):
         client = auth_client(make_user(email="nobody@slz.test"))
         resp = client.get("/api/v1/production/orders/")
         self.assertEqual(resp.status_code, 403, resp.content)
+
+
+class ProductionExecutionTests(TestCase):
+    def setUp(self):
+        self.company = make_company()
+        self.p = build_prereqs(self.company)
+        self.user = make_superuser(email="execution-admin@slz.test")
+        self.client = auth_client(self.user)
+        self.warehouse = Warehouse.objects.create(
+            company=self.company, code="WIP-01", name_fa="انبار WIP", store_type="WIP"
+        )
+        self.resin = Material.objects.create(
+            company=self.company,
+            code="RESIN-EXEC",
+            name_fa="گرانول اجرا",
+            subtype=MaterialSubtype.RESIN_MASTERBATCH,
+            traceability_mode="BATCH",
+            base_uom=self.p["uom"],
+        )
+        self.unit = TraceabilityUnit.objects.create(
+            company=self.company,
+            material=self.resin,
+            unit_type=TraceabilityUnitType.BATCH,
+            identifier="BATCH-EXEC",
+            quantity="1000.000000",
+            uom=self.p["uom"],
+        )
+        self.order = ProductionOrder.objects.create(
+            company=self.company,
+            number="WO-EXEC",
+            customer_product=self.p["product"],
+            spec_revision=self.p["spec"],
+            planned_quantity="1000.000000",
+            uom=self.p["uom"],
+            status="RELEASED",
+        )
+
+    def test_explicit_issue_requires_unit_and_posts_movement(self):
+        response = self.client.post(
+            "/api/v1/production/material-issues/",
+            {
+                "production_order": str(self.order.id),
+                "material": str(self.resin.id),
+                "traceability_unit": str(self.unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "10.000000",
+                "uom": str(self.p["uom"].id),
+                "method": "EXPLICIT",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(MaterialIssue.objects.count(), 1)
+        self.assertEqual(self.unit.stock_movements.count(), 1)
+
+    def test_backflush_does_not_accept_selected_unit(self):
+        response = self.client.post(
+            "/api/v1/production/material-issues/",
+            {
+                "production_order": str(self.order.id),
+                "material": str(self.resin.id),
+                "traceability_unit": str(self.unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "10.000000",
+                "uom": str(self.p["uom"].id),
+                "method": "BACKFLUSH",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400, response.content)
+
+    def test_output_posts_in_movement_and_is_append_only(self):
+        output_unit = TraceabilityUnit.objects.create(
+            company=self.company,
+            customer_product_id=self.p["product"].id,
+            unit_type=TraceabilityUnitType.BATCH,
+            identifier="OUTPUT-001",
+            quantity="25.000000",
+            uom=self.p["uom"],
+        )
+        response = self.client.post(
+            "/api/v1/production/outputs/",
+            {
+                "production_order": str(self.order.id),
+                "traceability_unit": str(output_unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "25.000000",
+                "uom": str(self.p["uom"].id),
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(ProductionOutput.objects.count(), 1)
+        self.assertEqual(output_unit.stock_movements.count(), 1)
+        patched = self.client.patch(
+            f"/api/v1/production/outputs/{response.data['id']}/",
+            {"notes": "no"},
+            format="json",
+        )
+        self.assertEqual(patched.status_code, 409, patched.content)

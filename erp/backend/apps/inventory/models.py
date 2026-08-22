@@ -1,6 +1,6 @@
 """Inventory Foundation — Warehouses, store types & per-user access (Task 007).
 
-This app owns the **confirmed master-data foundation** of the Inventory domain:
+This app owns the inventory master data and the confirmed traceability/execution foundation:
 *where* stock can live (warehouses, typed by their special store role) and *who*
 may access each warehouse (SR-10). It deliberately does **not** yet model any
 stock quantity, movement, lot, roll, batch, genealogy or kardex.
@@ -47,6 +47,19 @@ from django.db import models
 from apps.core.models import BaseModel, SoftDeleteModel
 
 
+class TraceabilityUnitType(models.TextChoices):
+    BATCH = "BATCH", "Batch"
+    ROLL = "ROLL", "Roll"
+    PALLET = "PALLET", "Pallet"
+    CARTON = "CARTON", "Carton"
+
+
+class StockMovementDirection(models.TextChoices):
+    IN = "IN", "In"
+    OUT = "OUT", "Out"
+    TRANSFER = "TRANSFER", "Transfer"
+
+
 class WarehouseStoreType(models.TextChoices):
     """The special store types SLZ warehouses carry (SR-10).
 
@@ -80,6 +93,117 @@ class WarehouseAccessLevel(models.TextChoices):
 
     VIEW = "VIEW", "View"
     OPERATE = "OPERATE", "Operate"
+
+
+class TraceabilityUnit(BaseModel):
+    """A serialized or batch handling unit used by the confirmed traceability policy.
+
+    Roll IDs are unique physical entities. Pallets and cartons are handling units
+    with explicit parent links; the model does not infer packing quantities.
+    """
+
+    company = models.ForeignKey(
+        "organization.Company", on_delete=models.PROTECT, related_name="traceability_units"
+    )
+    material = models.ForeignKey(
+        "catalog.Material",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="traceability_units",
+    )
+    # UUID provenance reference avoids a catalog/engineering/inventory migration
+    # cycle; the production and engineering APIs validate the owning record.
+    customer_product_id = models.UUIDField(null=True, blank=True)
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.PROTECT, related_name="children"
+    )
+    unit_type = models.CharField(max_length=10, choices=TraceabilityUnitType.choices)
+    identifier = models.CharField(max_length=80)
+    quantity = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
+    uom = models.ForeignKey(
+        "catalog.UnitOfMeasure",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="traceability_units",
+    )
+    weight = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
+    length = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
+    width = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
+    core = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
+    notes = models.CharField(max_length=500, blank=True, default="")
+
+    class Meta:
+        db_table = "inventory_traceability_unit"
+        ordering = ["company", "identifier"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["company", "identifier"], name="uq_traceability_unit_company_identifier"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.identifier} [{self.unit_type}]"
+
+
+class GenealogyLink(BaseModel):
+    """Directed parent/child genealogy between traceability units."""
+
+    parent = models.ForeignKey(
+        TraceabilityUnit, on_delete=models.PROTECT, related_name="genealogy_parents"
+    )
+    child = models.ForeignKey(
+        TraceabilityUnit, on_delete=models.PROTECT, related_name="genealogy_children"
+    )
+    production_order_id = models.UUIDField(null=True, blank=True)
+    operation_label = models.CharField(max_length=120, blank=True, default="")
+
+    class Meta:
+        db_table = "inventory_genealogy_link"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["parent", "child", "production_order_id"],
+                name="uq_genealogy_parent_child_order",
+            ),
+        ]
+
+
+class StockMovement(BaseModel):
+    """Append-only quantity movement; balance is derived from these rows."""
+
+    company = models.ForeignKey(
+        "organization.Company", on_delete=models.PROTECT, related_name="stock_movements"
+    )
+    warehouse = models.ForeignKey(
+        "inventory.Warehouse", on_delete=models.PROTECT, related_name="stock_movements"
+    )
+    traceability_unit = models.ForeignKey(
+        TraceabilityUnit,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="stock_movements",
+    )
+    material = models.ForeignKey(
+        "catalog.Material",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="stock_movements",
+    )
+    direction = models.CharField(max_length=10, choices=StockMovementDirection.choices)
+    quantity = models.DecimalField(max_digits=18, decimal_places=6)
+    uom = models.ForeignKey(
+        "catalog.UnitOfMeasure", on_delete=models.PROTECT, related_name="stock_movements"
+    )
+    reference_type = models.CharField(max_length=120)
+    reference_id = models.UUIDField(null=True, blank=True)
+    notes = models.CharField(max_length=500, blank=True, default="")
+
+    class Meta:
+        db_table = "inventory_stock_movement"
+        ordering = ["created_at", "id"]
 
 
 class Warehouse(SoftDeleteModel):

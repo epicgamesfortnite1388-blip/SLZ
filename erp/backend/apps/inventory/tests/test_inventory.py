@@ -1,9 +1,8 @@
-"""Inventory-foundation tests: warehouses, store types, per-user access, RBAC.
+"""Inventory tests for warehouse masters and confirmed traceability records.
 
-Covers only the CONFIRMED master-data slice that is implemented (SR-10 special
-store types + per-user warehouse access). No gated behaviour (stock movements,
-lots/rolls, genealogy, kardex, two-stage receipt) is tested because none is
-implemented — those are blocked on Q-046 (roll serialization) and related gates.
+The traceability tests cover serialized rolls, batches, carton/pallet handling
+units, and the append-only movement/genealogy foundation. Receipt, valuation,
+reservation, QC release, and recall workflows remain outside this slice.
 """
 
 from __future__ import annotations
@@ -11,8 +10,15 @@ from __future__ import annotations
 from django.test import TestCase
 
 from apps.audit.models import AuditLog
-from apps.core.tests.factories import auth_client, grant, make_company, make_user
-from apps.inventory.models import Warehouse, WarehouseAccess, WarehouseStoreType
+from apps.catalog.models import Material, MaterialSubtype, UnitOfMeasure, UomDimension
+from apps.core.tests.factories import auth_client, grant, make_company, make_superuser, make_user
+from apps.inventory.models import (
+    TraceabilityUnit,
+    TraceabilityUnitType,
+    Warehouse,
+    WarehouseAccess,
+    WarehouseStoreType,
+)
 
 
 class WarehouseApiTests(TestCase):
@@ -165,3 +171,91 @@ class InventoryPermissionTests(TestCase):
         client = auth_client(make_user(email="nobody@slz.test"))
         resp = client.get("/api/v1/inventory/warehouses/")
         self.assertEqual(resp.status_code, 403, resp.content)
+
+
+class TraceabilityUnitApiTests(TestCase):
+    def setUp(self):
+        self.company = make_company()
+        self.user = make_superuser(email="traceability-admin@slz.test")
+        self.client = auth_client(self.user)
+        self.uom = UnitOfMeasure.objects.create(
+            code="KG", name_fa="کیلوگرم", dimension=UomDimension.MASS
+        )
+        self.resin = Material.objects.create(
+            company=self.company,
+            code="PE-001",
+            name_fa="گرانول PE",
+            subtype=MaterialSubtype.RESIN_MASTERBATCH,
+            traceability_mode="BATCH",
+            base_uom=self.uom,
+        )
+        self.film = Material.objects.create(
+            company=self.company,
+            code="FILM-001",
+            name_fa="فیلم تولیدی",
+            subtype=MaterialSubtype.SEMI_FINISHED,
+            traceability_mode="SERIALIZED_ROLL",
+            base_uom=self.uom,
+        )
+
+    def test_material_mode_requires_matching_unit_type(self):
+        ok = self.client.post(
+            "/api/v1/inventory/traceability-units/",
+            {
+                "company": str(self.company.id),
+                "material": str(self.resin.id),
+                "unit_type": TraceabilityUnitType.BATCH,
+                "identifier": "BATCH-001",
+                "quantity": "100.000000",
+                "uom": str(self.uom.id),
+            },
+            format="json",
+        )
+        self.assertEqual(ok.status_code, 201, ok.content)
+        bad = self.client.post(
+            "/api/v1/inventory/traceability-units/",
+            {
+                "company": str(self.company.id),
+                "material": str(self.film.id),
+                "unit_type": TraceabilityUnitType.BATCH,
+                "identifier": "WRONG-001",
+                "quantity": "10.000000",
+                "uom": str(self.uom.id),
+            },
+            format="json",
+        )
+        self.assertEqual(bad.status_code, 400, bad.content)
+
+    def test_pallet_parent_and_serialized_roll_are_preserved(self):
+        roll = self.client.post(
+            "/api/v1/inventory/traceability-units/",
+            {
+                "company": str(self.company.id),
+                "material": str(self.film.id),
+                "unit_type": TraceabilityUnitType.ROLL,
+                "identifier": "ROLL-001",
+                "quantity": "50.000000",
+                "uom": str(self.uom.id),
+                "weight": "52.500000",
+                "length": "500.000000",
+                "width": "500.000000",
+                "core": "76.000000",
+            },
+            format="json",
+        )
+        self.assertEqual(roll.status_code, 201, roll.content)
+        pallet = self.client.post(
+            "/api/v1/inventory/traceability-units/",
+            {
+                "company": str(self.company.id),
+                "parent": roll.data["id"],
+                "unit_type": TraceabilityUnitType.PALLET,
+                "identifier": "PALLET-001",
+            },
+            format="json",
+        )
+        self.assertEqual(pallet.status_code, 201, pallet.content)
+        self.assertEqual(
+            str(TraceabilityUnit.objects.get(identifier="PALLET-001").parent_id),
+            roll.data["id"],
+        )

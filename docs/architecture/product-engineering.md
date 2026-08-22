@@ -167,6 +167,29 @@ a `DRAFT` row, to a user with `manage` — an **Activate** button that calls the
 lifecycle endpoint and reloads. All business rules stay server-side; the UI
 surfaces the backend's error message rather than duplicating any rule.
 
+## Real sample-product validation
+
+The two extracted real SLZ product sheets are validated in
+[`sample-product-model-validation.md`](./sample-product-model-validation.md).
+The current definition-layer model represents both products as a
+`CustomerProduct` plus a versioned `SpecificationRevision` with ordered
+`SpecLayer` rows, `SpecColor` rows, and typed `SpecParameter` values. No sample
+was loaded as authoritative database data because both PDFs contain blank
+customer fields and unresolved source identifiers/quantities.
+
+The validation found no safe backend schema addition. Pairwise lamination,
+print-reference metadata, layer treatments, converting-feature vocabulary,
+packaging hierarchy, alternate identifiers, and page-level field provenance can
+be preserved as raw parameters or attachments, but dedicated models/fields
+would require confirmed vocabulary or business decisions. BOM/routing and
+execution records were deliberately not generated from the sheets; Q-026,
+Q-046, Q-048, and Q-049 remain authoritative gates.
+
+The Customer Product detail UI now displays human-readable existing FK labels,
+layer tolerances, alternate inks, ΔE tolerances, and parameter datatypes/typed
+values so real packaging specifications can be reviewed without hiding
+information already present in the API.
+
 ## Verification status
 
 The source is `py_compile`-clean and mirrors the established Task 004 patterns.

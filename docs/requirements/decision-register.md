@@ -27,9 +27,9 @@ Status values: `OPEN` (no decision) · `PROPOSED` (software-team recommendation,
 
 | ID | Decision | Options | Recommended | Business Owner | Status | Date |
 |----|----------|---------|-------------|----------------|--------|------|
-| DR-020 | Roll tracking model *(Q-046)* | Serialize each roll · Lot + count | Serialize rolls (weights/lengths differ, drive genealogy) | Production + Warehouse | OPEN | 2026-08-20 |
-| DR-021 | Inventoried intermediates / BOM levels *(Q-026)* | Track all stages · Track selected · Flow-through | Track stages that are physically stored/QC'd | Planning + Production | OPEN | 2026-08-20 |
-| DR-022 | Traceability granularity *(Q-049)* | Roll · Pallet · Carton | At least lot/roll (food-contact) | Quality + Warehouse | OPEN | 2026-08-20 |
+| DR-020 | Roll tracking model *(Q-046)* | **Serialize each roll** · Lot + count | Serialize rolls (weights/lengths differ, drive genealogy) | Production + Warehouse | **CONFIRMED — serialize rolls; QC per produced reel** | 2026-08-22 |
+| DR-021 | Inventoried intermediates / BOM levels *(Q-026)* | **Track all required staged WIP** · Track selected · Flow-through | Stocked intermediates in WIP storage at each production step | Planning + Production | **CONFIRMED — stocked intermediates/WIP** | 2026-08-22 |
+| DR-022 | Traceability granularity *(Q-049)* | **Category-specific: roll/pallet for film; carton for cartonized products; batch for purchased granules** | Category-specific handling-unit policy confirmed by SLZ | Quality + Warehouse | **CONFIRMED — category-specific granularity** | 2026-08-22 |
 | DR-023 | Product coding scheme *(Q-019)* | Internal code + customer code · Customer code only | Internal code independent of customer | Sales + Engineering | OPEN | 2026-08-20 |
 | DR-024 | Spec revision trigger rule *(Q-024)* | Any change = new rev · Threshold-based | Define per attribute class; approver named | Engineering + Management | OPEN | 2026-08-20 |
 | DR-025 | BOM consumption basis & waste *(Q-027)* | Per-piece · Per-area/weight/length | Area/weight for film, per-piece for packaging | Engineering | OPEN | 2026-08-20 |
@@ -38,7 +38,7 @@ Status values: `OPEN` (no decision) · `PROPOSED` (software-team recommendation,
 | DR-028 | Over/under-delivery tolerance *(Q-006/037)* | Exact qty · ± % tolerance | ± % per industry norm — SLZ to set value | Management + Sales | OPEN | 2026-08-20 |
 | DR-029 | Sampling / first-article policy *(Q-003)* | Mandatory new jobs · Mandatory all · Optional | Mandatory for new products | Sales + Quality | OPEN | 2026-08-20 |
 | DR-030 | Tooling ownership & cost *(Q-004/036)* | Customer-paid · Amortized · Mixed | Confirm per commercial policy | Prepress + Finance | OPEN | 2026-08-20 |
-| DR-031 | Material issue method *(Q-048)* | Explicit lot/roll issue · Backflush · Hybrid | Explicit for traceable, backflush for bulk | Production + Warehouse | OPEN | 2026-08-20 |
+| DR-031 | Material issue method *(Q-048)* | **Mixed by process: backflush for film production; explicit for printing, lamination, slitting, sealing** · Explicit lot/roll issue · Backflush · Hybrid | Mixed policy, configured per routing operation | Production + Warehouse | **CONFIRMED — mixed process policy** | 2026-08-22 |
 | DR-032 | Approval hierarchy & thresholds *(Q-054/056)* | Single-step · Tiered/multi-step | Tiered with maker≠checker on critical docs | Management + Finance | OPEN | 2026-08-20 |
 | DR-033 | Role catalogue *(Q-053)* | Proposed 16-role set · SLZ-specific | Validate against real org | Management | OPEN | 2026-08-20 |
 | DR-034 | Required KPIs & profitability dimensions *(Q-038)* | TBD | Define with management | Management + Finance | OPEN | 2026-08-20 |
@@ -71,7 +71,13 @@ Source of change: `docs/reference/NEPTA_ERP_Feasibility_Study.md` (official SLZ 
 | DR-036 Shelf-life/FEFO | OPEN | **OPEN (evidence added)** | Doc confirms expiry tracked in material planning; enforcement policy still open (Q-051). |
 | DR-007 Accounting integration | OPEN | **OPEN (tension recorded)** | Doc shows a full finance domain is expected (reinforces C-006 / NQ-010); still deferred for now. |
 
-*No existing decision is moved to CONFIRMED by the document except the newly added business facts (DR-040, DR-042, DR-044). All parametric business rules (valuation, tolerances, thresholds) remain OPEN — the document gives requirements, not the numbers.*
+*The 2026-08-22 SLZ reply explicitly confirms DR-020, DR-021, DR-022, and DR-031. The reply also selects WA Dated for material valuation, but the costing/valuation implementation remains separately gated until its full accounting behavior and effective-date rules are reconciled with Finance.*
+
+### 2026-08-22 — Business decision on Q-046/Q-048/Q-049/Q-026
+
+**DECISION (CONFIRMED by SLZ business):** Rolls are serialized and QC is expected per produced reel. Traceability is category-specific: film materials use roll/pallet tracking and labeling, cartonized products use carton tracking and labeling, and purchased PE granules use batch tracking. Material issue is mixed by process: film production may use backflush, while printing, lamination, slitting, and sealing require explicit issue. Production stages create stocked WIP in a WIP warehouse for later conversion.
+
+**Implementation boundary:** this closes the traceability foundation gates and authorizes handling units, append-only movements, genealogy links, execution issue/output postings, and WIP-stock-compatible BOM/output references. It does not decide goods receipt temporary/definitive transitions, QC result/disposition workflows, reservations, recall automation, barcode hardware, or costing/valuation behavior.
 
 ### 2026-08-21 — Business decision on NQ-001 (Build vs Buy)
 

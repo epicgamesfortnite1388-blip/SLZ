@@ -1,20 +1,16 @@
 /**
- * Inventory foundation (Task 007) API layer: typed entity shapes for the
- * CONFIRMED, un-gated master-data slice — Warehouse (with SR-10 special store
- * types) and per-user WarehouseAccess.
- *
- * Types mirror the backend DRF serializers in ``apps.inventory``. NO stock
- * movement / kardex / lot-roll / genealogy shape is declared here because that
- * transactional + traceability layer is gated (Q-046 roll serialization and
- * related open decisions) and is not implemented server-side.
+ * Inventory API layer: warehouse masters plus the confirmed traceability
+ * execution records.
  */
 import { apiClient } from './client';
 
-/**
- * Special store types (SR-10). Mirrors ``WarehouseStoreType`` on the backend;
- * the option list is data the UI surfaces — the enum itself is enforced
- * server-side (an invalid value is rejected with a 400).
- */
+export interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export type WarehouseStoreType =
   | 'GENERAL'
   | 'RAW_MATERIAL'
@@ -29,7 +25,6 @@ export type WarehouseStoreType =
   | 'SHIPPING_STAGING'
   | 'RETURNS';
 
-/** Ordered list of store types for select inputs (labels come from i18n). */
 export const WAREHOUSE_STORE_TYPES: WarehouseStoreType[] = [
   'GENERAL',
   'RAW_MATERIAL',
@@ -45,10 +40,8 @@ export const WAREHOUSE_STORE_TYPES: WarehouseStoreType[] = [
   'RETURNS',
 ];
 
-/** Per-user access level to a warehouse (SR-10). */
 export type WarehouseAccessLevel = 'VIEW' | 'OPERATE';
 
-/** A company/site-scoped storage location master record. */
 export interface Warehouse {
   id: string;
   company: string;
@@ -63,7 +56,6 @@ export interface Warehouse {
   updated_at: string;
 }
 
-/** An explicit grant of a user's access to a single warehouse (SR-10). */
 export interface WarehouseAccess {
   id: string;
   warehouse: string;
@@ -73,9 +65,63 @@ export interface WarehouseAccess {
   updated_at: string;
 }
 
-/** Create a warehouse (representative audited write path). */
-export function createWarehouse(
-  payload: Partial<Warehouse>,
-): Promise<Warehouse> {
+export type TraceabilityUnitType = 'BATCH' | 'ROLL' | 'PALLET' | 'CARTON';
+
+export interface TraceabilityUnit {
+  id: string;
+  company: string;
+  material: string | null;
+  customer_product_id: string | null;
+  parent: string | null;
+  unit_type: TraceabilityUnitType;
+  identifier: string;
+  quantity: string | null;
+  uom: string | null;
+  weight: string | null;
+  length: string | null;
+  width: string | null;
+  core: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type StockMovementDirection = 'IN' | 'OUT' | 'TRANSFER';
+
+export interface StockMovement {
+  id: string;
+  company: string;
+  warehouse: string;
+  traceability_unit: string | null;
+  material: string | null;
+  direction: StockMovementDirection;
+  quantity: string;
+  uom: string;
+  reference_type: string;
+  reference_id: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function createWarehouse(payload: Partial<Warehouse>): Promise<Warehouse> {
   return apiClient.post<Warehouse>('/inventory/warehouses/', payload);
+}
+
+export function fetchTraceabilityUnits(
+  query = '?page_size=100',
+): Promise<Paginated<TraceabilityUnit>> {
+  return apiClient.get<Paginated<TraceabilityUnit>>(`/inventory/traceability-units/${query}`);
+}
+
+export function createTraceabilityUnit(
+  payload: Partial<TraceabilityUnit>,
+): Promise<TraceabilityUnit> {
+  return apiClient.post<TraceabilityUnit>('/inventory/traceability-units/', payload);
+}
+
+export function fetchStockMovements(
+  query = '?page_size=100',
+): Promise<Paginated<StockMovement>> {
+  return apiClient.get<Paginated<StockMovement>>(`/inventory/movements/${query}`);
 }

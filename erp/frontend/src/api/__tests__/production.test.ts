@@ -8,7 +8,14 @@ vi.mock('../client', () => ({
 }));
 
 import { apiClient } from '../client';
-import { createProductionOrder, transitionProductionOrder } from '../production';
+import {
+  createMaterialIssue,
+  createProductionOrder,
+  createProductionOutput,
+  fetchMaterialIssues,
+  fetchProductionOutputs,
+  transitionProductionOrder,
+} from '../production';
 
 describe('production API', () => {
   beforeEach(() => {
@@ -37,6 +44,49 @@ describe('production API', () => {
       scheduled_start: null,
       scheduled_end: null,
       notes: '',
+    });
+  });
+
+  it('targets execution list and create endpoints', async () => {
+    await fetchMaterialIssues('po-1');
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/production/material-issues/?production_order=po-1&page_size=100',
+    );
+    await fetchProductionOutputs('po-1');
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/production/outputs/?production_order=po-1&page_size=100',
+    );
+    await createMaterialIssue({
+      production_order: 'po-1',
+      material: 'mat-1',
+      warehouse: 'wh-1',
+      quantity: '10.000000',
+      uom: 'uom-1',
+      method: 'BACKFLUSH',
+      traceability_unit: null,
+    });
+    expect(apiClient.post).toHaveBeenCalledWith('/production/material-issues/', {
+      production_order: 'po-1',
+      material: 'mat-1',
+      warehouse: 'wh-1',
+      quantity: '10.000000',
+      uom: 'uom-1',
+      method: 'BACKFLUSH',
+      traceability_unit: null,
+    });
+    await createProductionOutput({
+      production_order: 'po-1',
+      traceability_unit: 'unit-1',
+      warehouse: 'wh-1',
+      quantity: '25.000000',
+      uom: 'uom-1',
+    });
+    expect(apiClient.post).toHaveBeenCalledWith('/production/outputs/', {
+      production_order: 'po-1',
+      traceability_unit: 'unit-1',
+      warehouse: 'wh-1',
+      quantity: '25.000000',
+      uom: 'uom-1',
     });
   });
 

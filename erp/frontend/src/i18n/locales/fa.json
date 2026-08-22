@@ -396,15 +396,19 @@
     "layers": {
       "material": "متریال",
       "function": "کارکرد",
-      "micron": "میکرون"
+      "micron": "میکرون",
+      "tolerance": "رواداری"
     },
     "colors": {
       "colorName": "رنگ",
       "ink": "جوهر",
-      "coverage": "پوشش ٪"
+      "alternativeInk": "جوهر جایگزین",
+      "coverage": "پوشش ٪",
+      "deltaETolerance": "رواداری ΔE"
     },
     "params": {
       "key": "پارامتر",
+      "datatype": "نوع داده",
       "value": "مقدار",
       "unit": "یکا",
       "tolerance": "رواداری"
@@ -712,6 +716,35 @@
       "title": "دستور تولید {number}",
       "subtitle": "تعریف منجمدِ مبنای این دستور کار، به‌همراه تاریخچهٔ آن.",
       "headerTitle": "سربرگ دستور کار"
+    },
+    "execution": {
+      "title": "ردیابی و اجرای تولید",
+      "issueTitle": "ثبت مصرف ماده",
+      "outputTitle": "ثبت خروجی تولید",
+      "newUnitTitle": "ثبت واحد ردیابی",
+      "issuesTitle": "مصرف‌های ثبت‌شده",
+      "outputsTitle": "خروجی‌های تولید",
+      "method": "روش مصرف",
+      "material": "ماده",
+      "warehouse": "انبار",
+      "unit": "واحد ردیابی",
+      "uom": "واحد اندازه‌گیری",
+      "quantity": "مقدار",
+      "identifier": "شناسه",
+      "unitType": "نوع واحد",
+      "postIssue": "ثبت مصرف",
+      "postOutput": "ثبت خروجی",
+      "createUnit": "ثبت واحد",
+      "methods": {
+        "EXPLICIT": "مصرف صریح لات/رول",
+        "BACKFLUSH": "مصرف پس‌نگر"
+      },
+      "unitTypes": {
+        "BATCH": "بچ",
+        "ROLL": "رول",
+        "CARTON": "کارتن",
+        "PALLET": "پالت"
+      }
     }
   },
   "tooling": {

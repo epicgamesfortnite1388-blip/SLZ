@@ -396,15 +396,19 @@
     "layers": {
       "material": "Material",
       "function": "Function",
-      "micron": "Micron"
+      "micron": "Micron",
+      "tolerance": "Tolerance"
     },
     "colors": {
       "colorName": "Color",
       "ink": "Ink",
-      "coverage": "Coverage %"
+      "alternativeInk": "Alternative ink",
+      "coverage": "Coverage %",
+      "deltaETolerance": "ΔE tolerance"
     },
     "params": {
       "key": "Parameter",
+      "datatype": "Datatype",
       "value": "Value",
       "unit": "Unit",
       "tolerance": "Tolerance"
@@ -712,6 +716,35 @@
       "title": "Production order {number}",
       "subtitle": "The frozen definition this work order is built to, plus its history.",
       "headerTitle": "Work-order header"
+    },
+    "execution": {
+      "title": "Traceability and execution",
+      "issueTitle": "Post material issue",
+      "outputTitle": "Post production output",
+      "newUnitTitle": "Register traceability unit",
+      "issuesTitle": "Material issues",
+      "outputsTitle": "Production outputs",
+      "method": "Issue method",
+      "material": "Material",
+      "warehouse": "Warehouse",
+      "unit": "Traceability unit",
+      "uom": "Unit of measure",
+      "quantity": "Quantity",
+      "identifier": "Identifier",
+      "unitType": "Unit type",
+      "postIssue": "Post issue",
+      "postOutput": "Post output",
+      "createUnit": "Register unit",
+      "methods": {
+        "EXPLICIT": "Explicit lot/roll issue",
+        "BACKFLUSH": "Backflush"
+      },
+      "unitTypes": {
+        "BATCH": "Batch",
+        "ROLL": "Roll",
+        "CARTON": "Carton",
+        "PALLET": "Pallet"
+      }
     }
   },
   "tooling": {

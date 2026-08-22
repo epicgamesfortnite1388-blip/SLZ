@@ -9,13 +9,14 @@ import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { Alert, Button, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
+import { ProductionExecutionPanel } from './ProductionExecutionPanel';
 
 
 /**
  * Read-only detail of one production order. The document is header-only by
  * design (Task 011): it pins WHAT to make and to WHICH frozen definition —
- * material issue / confirmations are gated execution-layer work, so there are
- * no line rows here. What/how-much references and the audit history are shown.
+ * execution records are shown in the permission-gated traceability panel below.
+ * What/how-much references and the audit history remain visible on the header.
  */
 export function ProductionOrderDetailPage(): JSX.Element {
   const { t, i18n } = useTranslation();
@@ -88,6 +89,13 @@ export function ProductionOrderDetailPage(): JSX.Element {
       </div>
 
       <RecordDetail title={t('production.detail.headerTitle')} fields={fields} />
+
+      <ProductionExecutionPanel
+        orderId={order.id}
+        companyId={order.company}
+        customerProductId={order.customer_product}
+        uomId={order.uom}
+      />
 
       <AuditHistoryPanel entityType="production.ProductionOrder" entityId={order.id} />
 

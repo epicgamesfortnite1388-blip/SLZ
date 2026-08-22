@@ -76,6 +76,7 @@ class WorkflowDefinitionViewSet(AuditedModelViewSet):
         "DELETE": "workflow.definition.manage",
     }
     required_permission = "workflow.definition.view"
+    company_scope_lookup = None
 
 
 class WorkflowInstanceViewSet(

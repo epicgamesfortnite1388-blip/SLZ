@@ -129,3 +129,25 @@ class UserRole(TimeStampedModel):
     class Meta:
         db_table = "identity_user_role"
         unique_together = ("user", "role")
+
+
+class CompanyMembership(TimeStampedModel):
+    """Which companies a user may access (Q-055 answer).
+
+    A user may belong to **multiple** companies; visibility is company-granular
+    (each company currently has one site). Memberships are administered by IT —
+    there is deliberately no self-service or business-side write path.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="company_memberships")
+    company = models.ForeignKey(
+        "organization.Company", on_delete=models.CASCADE, related_name="memberships"
+    )
+
+    class Meta:
+        db_table = "identity_company_membership"
+        unique_together = ("user", "company")
+
+    def __str__(self) -> str:
+        return f"{self.user_id} → {self.company_id}"

@@ -27,9 +27,11 @@ ENDPOINTS = {
 
 class StatusSummaryTests(TestCase):
     def setUp(self):
-        self.user = make_user()
         self.company = make_company()
         self.site = make_site(company=self.company)
+        # User created after the company so the factory's default membership
+        # covers it (Q-055 scoping).
+        self.user = make_user()
 
     def _make_sales_orders(self):
         """Two sales orders in different statuses, persisted directly."""

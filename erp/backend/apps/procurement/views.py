@@ -90,6 +90,7 @@ class PurchaseRequisitionViewSet(StatusSummaryMixin, AuditedModelViewSet):
 
 
 class PurchaseRequisitionLineViewSet(AuditedModelViewSet):
+    company_scope_lookup = "requisition__company"
     queryset = PurchaseRequisitionLine.objects.all().select_related(
         "requisition", "material", "uom"
     )
@@ -162,6 +163,7 @@ class PurchaseOrderViewSet(StatusSummaryMixin, AuditedModelViewSet):
 
 
 class PurchaseOrderLineViewSet(AuditedModelViewSet):
+    company_scope_lookup = "order__company"
     queryset = PurchaseOrderLine.objects.all().select_related(
         "order", "material", "uom", "requisition_line"
     )

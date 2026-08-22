@@ -138,6 +138,7 @@ class MaterialSerializer(serializers.ModelSerializer):
             "name_fa",
             "name_en",
             "subtype",
+            "traceability_mode",
             "base_uom",
             "reorder_point",
             "safety_stock",

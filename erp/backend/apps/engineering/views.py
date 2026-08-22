@@ -57,6 +57,7 @@ class SpecificationRevisionViewSet(AuditedModelViewSet):
         "DELETE": "engineering.specification.manage",
     }
     required_permission = "engineering.specification.view"
+    company_scope_lookup = "root__company"
     filterset_fields = ["root", "status", "spec_format", "print_process"]
 
     def perform_create(self, serializer):
@@ -83,6 +84,7 @@ class SpecificationRevisionViewSet(AuditedModelViewSet):
 
 
 class _SpecChildViewSet(AuditedModelViewSet):
+    company_scope_lookup = "revision__root__company"
     """Base for spec child-row viewsets.
 
     Serializers already reject *attaching/moving* a child to a non-DRAFT

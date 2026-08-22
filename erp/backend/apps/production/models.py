@@ -49,7 +49,12 @@ from __future__ import annotations
 
 from django.db import models
 
-from apps.core.models import SoftDeleteModel
+from apps.core.models import BaseModel, SoftDeleteModel
+
+
+class MaterialIssueMethod(models.TextChoices):
+    EXPLICIT = "EXPLICIT", "Explicit lot/roll issue"
+    BACKFLUSH = "BACKFLUSH", "Backflush"
 
 
 class ProductionOrderStatus(models.TextChoices):
@@ -66,6 +71,68 @@ class ProductionOrderStatus(models.TextChoices):
     COMPLETED = "COMPLETED", "Completed"
     CLOSED = "CLOSED", "Closed"
     CANCELLED = "CANCELLED", "Cancelled"
+
+
+class MaterialIssue(BaseModel):
+    """Immutable material consumption record for a released production order.
+
+    EXPLICIT rows name the consumed roll/batch; BACKFLUSH rows may omit the unit
+    and identify the source material. The selected method is recorded on every
+    row so the audit trail does not depend on a later routing interpretation.
+    """
+
+    production_order = models.ForeignKey(
+        "production.ProductionOrder", on_delete=models.PROTECT, related_name="material_issues"
+    )
+    routing_operation_id = models.UUIDField(null=True, blank=True)
+    material = models.ForeignKey(
+        "catalog.Material", on_delete=models.PROTECT, related_name="material_issues"
+    )
+    traceability_unit = models.ForeignKey(
+        "inventory.TraceabilityUnit",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="material_issues",
+    )
+    warehouse = models.ForeignKey(
+        "inventory.Warehouse", on_delete=models.PROTECT, related_name="material_issues"
+    )
+    quantity = models.DecimalField(max_digits=18, decimal_places=6)
+    uom = models.ForeignKey(
+        "catalog.UnitOfMeasure", on_delete=models.PROTECT, related_name="material_issues"
+    )
+    method = models.CharField(max_length=10, choices=MaterialIssueMethod.choices)
+    operation_label = models.CharField(max_length=120, blank=True, default="")
+    notes = models.CharField(max_length=500, blank=True, default="")
+
+    class Meta:
+        db_table = "production_material_issue"
+        ordering = ["created_at", "id"]
+
+
+class ProductionOutput(BaseModel):
+    """Immutable produced handling-unit record for a production order."""
+
+    production_order = models.ForeignKey(
+        "production.ProductionOrder", on_delete=models.PROTECT, related_name="outputs"
+    )
+    traceability_unit = models.ForeignKey(
+        "inventory.TraceabilityUnit", on_delete=models.PROTECT, related_name="production_outputs"
+    )
+    warehouse = models.ForeignKey(
+        "inventory.Warehouse", on_delete=models.PROTECT, related_name="production_outputs"
+    )
+    quantity = models.DecimalField(max_digits=18, decimal_places=6)
+    uom = models.ForeignKey(
+        "catalog.UnitOfMeasure", on_delete=models.PROTECT, related_name="production_outputs"
+    )
+    operation_label = models.CharField(max_length=120, blank=True, default="")
+    notes = models.CharField(max_length=500, blank=True, default="")
+
+    class Meta:
+        db_table = "production_output"
+        ordering = ["created_at", "id"]
 
 
 class ProductionOrder(SoftDeleteModel):

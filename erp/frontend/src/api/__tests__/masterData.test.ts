@@ -8,7 +8,13 @@ vi.mock('../client', () => ({
 }));
 
 import { apiClient } from '../client';
-import { fetchCollection, createPartner } from '../masterData';
+import {
+  fetchCollection,
+  createPartner,
+  fetchPartner,
+  fetchMaterial,
+  fetchUom,
+} from '../masterData';
 
 describe('masterData API', () => {
   beforeEach(() => {
@@ -43,5 +49,14 @@ describe('masterData API', () => {
       name_fa: 'الف',
       is_customer: true,
     });
+  });
+
+  it('fetches reference records by id for detail labels', async () => {
+    await fetchPartner('partner-1');
+    expect(apiClient.get).toHaveBeenCalledWith('/partners/partners/partner-1/');
+    await fetchMaterial('material-1');
+    expect(apiClient.get).toHaveBeenCalledWith('/catalog/materials/material-1/');
+    await fetchUom('uom-1');
+    expect(apiClient.get).toHaveBeenCalledWith('/catalog/uoms/uom-1/');
   });
 });

@@ -72,6 +72,7 @@ class SalesOrderViewSet(StatusSummaryMixin, AuditedModelViewSet):
 
 
 class SalesOrderLineViewSet(AuditedModelViewSet):
+    company_scope_lookup = "order__company"
     queryset = SalesOrderLine.objects.all().select_related("order", "customer_product", "uom")
     serializer_class = SalesOrderLineSerializer
     permission_map = {
