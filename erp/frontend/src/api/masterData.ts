@@ -220,6 +220,16 @@ export function createProductFamily(payload: Partial<ProductFamily>): Promise<Pr
   return apiClient.post<ProductFamily>('/catalog/product-families/', payload);
 }
 
+/** Fetch one product group by id (for FK name resolution). */
+export function fetchProductGroup(id: string): Promise<ProductGroup> {
+  return apiClient.get<ProductGroup>(`/catalog/product-groups/${id}/`);
+}
+
+/** Fetch one product family by id (for FK name resolution). */
+export function fetchProductFamily(id: string): Promise<ProductFamily> {
+  return apiClient.get<ProductFamily>(`/catalog/product-families/${id}/`);
+}
+
 // ── Unit of measure conversions ──
 
 /** 1 from_uom = factor × to_uom (same dimension enforced server-side). */

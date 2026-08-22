@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
@@ -8,7 +9,11 @@ import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { useRecord } from '@/hooks/useRecord';
 import { formatDateTime } from '@/i18n/dates';
-import type { Product } from '@/api/masterData';
+import {
+  type Product,
+  fetchProductGroup,
+  fetchProductFamily,
+} from '@/api/masterData';
 
 const ENTITY_TYPE = 'catalog.Product';
 
@@ -20,6 +25,33 @@ export function ProductsDetailPage(): JSX.Element {
     id ? `/catalog/products/${id}/` : null,
   );
 
+  const [groupLabel, setGroupLabel] = useState<string | null>(null);
+  const [familyLabel, setFamilyLabel] = useState<string | null>(null);
+
+  // Resolve FK UUIDs to human-readable names.
+  useEffect(() => {
+    if (!data) return;
+    let active = true;
+
+    if (data.product_group) {
+      fetchProductGroup(data.product_group)
+        .then((g) => { if (active) setGroupLabel(g.name_fa || g.code); })
+        .catch(() => { if (active) setGroupLabel(data.product_group); });
+    } else {
+      setGroupLabel(null);
+    }
+
+    if (data.family) {
+      fetchProductFamily(data.family)
+        .then((f) => { if (active) setFamilyLabel(f.name_fa || f.code); })
+        .catch(() => { if (active) setFamilyLabel(data.family); });
+    } else {
+      setFamilyLabel(null);
+    }
+
+    return () => { active = false; };
+  }, [data]);
+
   const dash = (value: string | null): string => value || '—';
 
   const fields: DetailField[] = data
@@ -27,8 +59,8 @@ export function ProductsDetailPage(): JSX.Element {
         { labelKey: 'masterData.fields.code', value: dash(data.code) },
         { labelKey: 'masterData.fields.nameFa', value: dash(data.name_fa) },
         { labelKey: 'masterData.fields.nameEn', value: dash(data.name_en) },
-        { labelKey: 'engineering.fields.productGroup', value: data.product_group ?? '—' },
-        { labelKey: 'engineering.fields.family', value: data.family ?? '—' },
+        { labelKey: 'engineering.fields.productGroup', value: groupLabel ?? '…' },
+        { labelKey: 'engineering.fields.family', value: familyLabel ?? '…' },
         { labelKey: 'masterData.fields.baseUom', value: data.base_uom },
         { labelKey: 'products.createdAt', value: formatDateTime(data.created_at, i18n.language) },
         { labelKey: 'masterData.fields.active', value: <BoolCell value={data.is_active} /> },
