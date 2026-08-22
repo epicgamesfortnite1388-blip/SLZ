@@ -8,14 +8,16 @@ import {
 } from '@/api/procurement';
 import { isApiError } from '@/api/types';
 import { formatDateTime } from '@/i18n/dates';
+import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { Alert, Button, Card, Spinner } from '@/components/ui';
-
+import { useAuth } from '@/auth/AuthContext';
 
 /** Read-only detail of one purchase order: header, lines, audit history. */
 export function PurchaseOrderDetailPage(): JSX.Element {
   const { t, i18n } = useTranslation();
+  const { hasPermission } = useAuth();
 
   /** Locale-aware timestamp rendering (Jalali for fa). */
   const when = (iso: string | null): string => formatDateTime(iso, i18n.language);
@@ -118,6 +120,10 @@ export function PurchaseOrderDetailPage(): JSX.Element {
       </Card>
 
       <AuditHistoryPanel entityType="procurement.PurchaseOrder" entityId={order.id} />
+
+      {hasPermission('documents.attachment.view') && (
+        <AttachmentPanel entityType="procurement.PurchaseOrder" entityId={order.id} />
+      )}
 
       <div className="form-actions">
         <a className="link-back" onClick={() => window.history.back()} href="#back">

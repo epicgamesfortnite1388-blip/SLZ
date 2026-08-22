@@ -9,10 +9,12 @@ import {
   type StructureRevision,
 } from '@/api/manufacturing';
 import { isApiError } from '@/api/types';
+import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { BoolCell } from '@/components/CollectionView';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { useAuth } from '@/auth/AuthContext';
 
 const when = (iso: string | null): string => (iso ? iso.replace('T', ' ').slice(0, 10) : '—');
 
@@ -23,6 +25,7 @@ const when = (iso: string | null): string => (iso ? iso.replace('T', ' ').slice(
  */
 export function BomRootDetailPage(): JSX.Element {
   const { t } = useTranslation();
+  const { hasPermission } = useAuth();
   const { id: rootId = '' } = useParams();
   const [bom, setBom] = useState<Awaited<ReturnType<typeof fetchBom>> | null>(null);
   const [revisions, setRevisions] = useState<StructureRevision[] | null>(null);
@@ -187,6 +190,10 @@ export function BomRootDetailPage(): JSX.Element {
       )}
 
       <AuditHistoryPanel entityType="manufacturing.BillOfMaterials" entityId={bom.id} />
+
+      {hasPermission('documents.attachment.view') && (
+        <AttachmentPanel entityType="manufacturing.BillOfMaterials" entityId={bom.id} />
+      )}
 
       <div className="form-actions">
         <Link to="/manufacturing/boms" className="link-back">

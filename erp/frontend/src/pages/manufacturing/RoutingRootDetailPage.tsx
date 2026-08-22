@@ -9,10 +9,12 @@ import {
   type StructureRevision,
 } from '@/api/manufacturing';
 import { isApiError } from '@/api/types';
+import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { BoolCell } from '@/components/CollectionView';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { useAuth } from '@/auth/AuthContext';
 
 const when = (iso: string | null): string => (iso ? iso.replace('T', ' ').slice(0, 10) : '—');
 
@@ -23,6 +25,7 @@ const when = (iso: string | null): string => (iso ? iso.replace('T', ' ').slice(
  */
 export function RoutingRootDetailPage(): JSX.Element {
   const { t } = useTranslation();
+  const { hasPermission } = useAuth();
   const { rootId = '' } = useParams();
   const [routing, setRouting] = useState<Awaited<ReturnType<typeof fetchRouting>> | null>(null);
   const [revisions, setRevisions] = useState<StructureRevision[] | null>(null);
@@ -189,6 +192,10 @@ export function RoutingRootDetailPage(): JSX.Element {
       )}
 
       <AuditHistoryPanel entityType="manufacturing.Routing" entityId={routing.id} />
+
+      {hasPermission('documents.attachment.view') && (
+        <AttachmentPanel entityType="manufacturing.Routing" entityId={routing.id} />
+      )}
 
       <div className="form-actions">
         <Link to="/manufacturing/routings" className="link-back">

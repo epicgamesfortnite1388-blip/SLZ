@@ -4,9 +4,11 @@ import { useParams } from 'react-router-dom';
 import { fetchProductionOrder } from '@/api/production';
 import { isApiError } from '@/api/types';
 import { formatDateTime } from '@/i18n/dates';
+import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { Alert, Button, Spinner } from '@/components/ui';
+import { useAuth } from '@/auth/AuthContext';
 
 
 /**
@@ -17,6 +19,7 @@ import { Alert, Button, Spinner } from '@/components/ui';
  */
 export function ProductionOrderDetailPage(): JSX.Element {
   const { t, i18n } = useTranslation();
+  const { hasPermission } = useAuth();
 
   /** Locale-aware timestamp rendering (Jalali for fa). */
   const when = (iso: string | null): string => formatDateTime(iso, i18n.language);
@@ -87,6 +90,10 @@ export function ProductionOrderDetailPage(): JSX.Element {
       <RecordDetail title={t('production.detail.headerTitle')} fields={fields} />
 
       <AuditHistoryPanel entityType="production.ProductionOrder" entityId={order.id} />
+
+      {hasPermission('documents.attachment.view') && (
+        <AttachmentPanel entityType="production.ProductionOrder" entityId={order.id} />
+      )}
 
       <div className="form-actions">
         <a className="link-back" onClick={() => window.history.back()} href="#back">
