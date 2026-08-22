@@ -12,6 +12,14 @@ import { PartnerDetailPage } from '@/pages/masterData/PartnerDetailPage';
 import { ProductsPage } from '@/pages/masterData/ProductsPage';
 import { ProductCreatePage } from '@/pages/masterData/ProductCreatePage';
 import { ProductsDetailPage } from '@/pages/masterData/ProductsDetailPage';
+import { ProductGroupsPage } from '@/pages/masterData/ProductGroupsPage';
+import { ProductGroupCreatePage } from '@/pages/masterData/ProductGroupCreatePage';
+import { ProductTypesPage } from '@/pages/masterData/ProductTypesPage';
+import { ProductTypeCreatePage } from '@/pages/masterData/ProductTypeCreatePage';
+import { ProductClassesPage } from '@/pages/masterData/ProductClassesPage';
+import { ProductClassCreatePage } from '@/pages/masterData/ProductClassCreatePage';
+import { ProductFamiliesPage } from '@/pages/masterData/ProductFamiliesPage';
+import { ProductFamilyCreatePage } from '@/pages/masterData/ProductFamilyCreatePage';
 import { MaterialsPage } from '@/pages/masterData/MaterialsPage';
 import { MaterialCreatePage } from '@/pages/masterData/MaterialCreatePage';
 import { MaterialDetailPage } from '@/pages/masterData/MaterialDetailPage';
@@ -26,6 +34,7 @@ import { CustomerProductDetailPage } from '@/pages/engineering/CustomerProductDe
 import { SpecificationsPage } from '@/pages/engineering/SpecificationsPage';
 import { ToolingAssetsPage } from '@/pages/engineering/ToolingAssetsPage';
 import { ToolingAssetCreatePage } from '@/pages/engineering/ToolingAssetCreatePage';
+import { ToolingAssetDetailPage } from '@/pages/engineering/ToolingAssetDetailPage';
 import { WorkCentersPage } from '@/pages/manufacturing/WorkCentersPage';
 import { WorkCenterCreatePage } from '@/pages/manufacturing/WorkCenterCreatePage';
 import { MachinesPage } from '@/pages/manufacturing/MachinesPage';
@@ -143,6 +152,70 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="product-groups"
+            element={
+              <ProtectedRoute requiredPermission="catalog.productgroup.view">
+                <ProductGroupsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-groups/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.productgroup.manage">
+                <ProductGroupCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-types"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.view">
+                <ProductTypesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-types/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
+                <ProductTypeCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-classes"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.view">
+                <ProductClassesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-classes/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
+                <ProductClassCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-families"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.view">
+                <ProductFamiliesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-families/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
+                <ProductFamilyCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="materials"
             element={
               <ProtectedRoute requiredPermission="catalog.material.view">
@@ -254,6 +327,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="engineering.tooling.manage">
                 <ToolingAssetCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="tooling/:id"
+            element={
+              <ProtectedRoute requiredPermission="engineering.tooling.view">
+                <ToolingAssetDetailPage />
               </ProtectedRoute>
             }
           />

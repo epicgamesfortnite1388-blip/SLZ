@@ -177,6 +177,26 @@
       "notFound": "This partner could not be found."
     }
   },
+  "productGroups": {
+    "title": "Product groups",
+    "subtitle": "Top commercial grouping for CRM and sales lines (SR-02).",
+    "new": "New product group"
+  },
+  "productTypes": {
+    "title": "Product types",
+    "subtitle": "Level 1 — broad product categories (نوع).",
+    "new": "New product type"
+  },
+  "productClasses": {
+    "title": "Product classes",
+    "subtitle": "Level 2 — sub-categories within a type (طبقه).",
+    "new": "New product class"
+  },
+  "productFamilies": {
+    "title": "Product families",
+    "subtitle": "Level 3 — families within a class (خانواده).",
+    "new": "New product family"
+  },
   "products": {
     "title": "Products",
     "subtitle": "Finished-goods identity and taxonomy.",
@@ -611,7 +631,8 @@
       "usageLifeLimit": "Usage-life limit",
       "warehouse": "Cliché store",
       "notes": "Notes",
-      "actions": "Actions"
+      "actions": "Actions",
+      "lifeExceeded": "Life exceeded"
     },
     "types": {
       "CLICHE": "Cliché",
@@ -625,6 +646,10 @@
     "actions": {
       "retire": "Retire",
       "reactivate": "Reactivate"
+    },
+    "detail": {
+      "subtitle": "Lifecycle, storage and usage-life of one tooling asset.",
+      "headerTitle": "Asset details"
     }
   },
   "approvals": {

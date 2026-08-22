@@ -63,3 +63,8 @@ export function transitionToolingAsset(
     {},
   );
 }
+
+/** Retrieve one tooling asset by id (detail-page header). */
+export function fetchToolingAsset(id: string): Promise<ToolingAsset> {
+  return apiClient.get<ToolingAsset>(`/engineering/tooling-assets/${id}/`);
+}

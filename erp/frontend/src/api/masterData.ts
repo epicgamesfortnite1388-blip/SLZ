@@ -155,3 +155,67 @@ export function createEmployee(
 ): Promise<Employee> {
   return apiClient.post<Employee>('/hr/employees/', payload);
 }
+
+// ── Product taxonomy (SR-02 — multi-level classification) ──
+
+/** Top commercial grouping (groups on sales lines & CRM). */
+export interface ProductGroup {
+  id: string;
+  code: string;
+  name_fa: string;
+  name_en: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Level 1 of the product taxonomy (نوع). */
+export interface ProductType {
+  id: string;
+  code: string;
+  name_fa: string;
+  name_en: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Level 2 of the taxonomy (طبقه), under a ProductType. */
+export interface ProductClass {
+  id: string;
+  product_type: string;
+  code: string;
+  name_fa: string;
+  name_en: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Level 3 of the taxonomy (خانواده), under a ProductClass. */
+export interface ProductFamily {
+  id: string;
+  product_class: string;
+  code: string;
+  name_fa: string;
+  name_en: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function createProductGroup(payload: Partial<ProductGroup>): Promise<ProductGroup> {
+  return apiClient.post<ProductGroup>('/catalog/product-groups/', payload);
+}
+
+export function createProductType(payload: Partial<ProductType>): Promise<ProductType> {
+  return apiClient.post<ProductType>('/catalog/product-types/', payload);
+}
+
+export function createProductClass(payload: Partial<ProductClass>): Promise<ProductClass> {
+  return apiClient.post<ProductClass>('/catalog/product-classes/', payload);
+}
+
+export function createProductFamily(payload: Partial<ProductFamily>): Promise<ProductFamily> {
+  return apiClient.post<ProductFamily>('/catalog/product-families/', payload);
+}
