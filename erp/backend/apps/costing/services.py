@@ -120,26 +120,48 @@ def cost_summary(company, as_of_date=None):
     """Per-material cost summary: WA cost, total quantity, total cost.
 
     Returns a list of dicts with {material_id, wa_unit_cost, on_hand_qty, on_hand_cost}.
+    Uses a single bulk aggregation pass instead of N+1 per-material queries.
     """
     from apps.catalog.models import Material
 
-    materials = Material.objects.filter(company=company).values_list("id", flat=True)
+    # Bulk-fetch materials in one query
+    materials = list(Material.objects.filter(company=company).values_list("id", flat=True))
+    if not materials:
+        return []
+
+    # Single aggregation pass: per-material cost totals
+    qs = CostLayer.objects.filter(company=company, material_id__in=materials)
+    if as_of_date is not None:
+        qs = qs.filter(date__lte=as_of_date)
+
+    add_qs = qs.filter(layer_type__in=[CostLayerType.RECEIPT, CostLayerType.ADJUSTMENT])
+    iss_qs = qs.filter(layer_type=CostLayerType.ISSUE)
+
+    add_totals = {
+        row["material_id"]: {
+            "total_cost": row["tc"] or Decimal("0"),
+            "quantity": row["q"] or Decimal("0"),
+        }
+        for row in add_qs.values("material_id").annotate(tc=Sum("total_cost"), q=Sum("quantity"))
+    }
+    iss_totals = {
+        row["material_id"]: {
+            "total_cost": row["tc"] or Decimal("0"),
+            "quantity": row["q"] or Decimal("0"),
+        }
+        for row in iss_qs.values("material_id").annotate(tc=Sum("total_cost"), q=Sum("quantity"))
+    }
+
     results = []
     for mid in materials:
-        wa = wa_unit_cost(
-            company=company, material=Material.objects.get(pk=mid), as_of_date=as_of_date
-        )
-        qs = CostLayer.objects.filter(company=company, material_id=mid)
-        if as_of_date is not None:
-            qs = qs.filter(date__lte=as_of_date)
+        add = add_totals.get(mid, {"total_cost": Decimal("0"), "quantity": Decimal("0")})
+        iss = iss_totals.get(mid, {"total_cost": Decimal("0"), "quantity": Decimal("0")})
 
-        add_qty = qs.filter(
-            layer_type__in=[CostLayerType.RECEIPT, CostLayerType.ADJUSTMENT]
-        ).aggregate(t=Sum("quantity"))["t"] or Decimal("0")
-        iss_qty = qs.filter(layer_type=CostLayerType.ISSUE).aggregate(t=Sum("quantity"))[
-            "t"
-        ] or Decimal("0")
-        on_hand = add_qty - iss_qty
+        net_cost = add["total_cost"] - iss["total_cost"]
+        net_qty = add["quantity"] - iss["quantity"]
+
+        wa = (net_cost / net_qty).quantize(Decimal("0.000001")) if net_qty > 0 else Decimal("0")
+        on_hand = net_qty
 
         if on_hand > 0 or wa > 0:
             results.append(
