@@ -34,13 +34,14 @@ Legend: BE = backend · API = REST surface · FE = frontend · T = tests · AUD 
 | hr | VERIFIED | Employee list/create/detail with attachments + audit |
 | engineering | VERIFIED | CustomerProduct + SpecificationRevision detail with revision chain, human-readable FK labels, layer/color/parameter tolerances and typed values; ToolingAsset list/create/detail with attachments + audit |
 | manufacturing | VERIFIED | WorkCenter/Machine list/create/detail; BOM + Routing roots + revisions with inline material lines / operations tables + FK name resolution |
-| inventory | VERIFIED | Warehouse list/create/detail + per-user access grants |
+| inventory | VERIFIED | Warehouse list/create/detail + per-user access grants + traceability units + stock movements/ledger + balances + kardex + genealogy links
 | quality | VERIFIED | Characteristic list/create; QualityPlan list/create/root detail with revision chain + plan items table + FK name resolution |
-| procurement | VERIFIED | Requisition + PO list/create (with inline lines)/detail + status transitions + attachments + audit + order-book summary |
+| procurement | VERIFIED | Requisition + PO list/create (with inline lines)/detail + status transitions + attachments + audit + order-book summary + GRN (goods receipt with PO matching, over-receipt guard, traceability-unit creation, IN stock movements) |
 | sales | VERIFIED | SalesOrder list/create (with inline lines)/detail + confirm/close/cancel + attachments + audit + order-book summary |
-| production | VERIFIED | ProductionOrder list/create/detail + release/complete/close/cancel + attachments + audit + order-book summary |
+| production | VERIFIED | ProductionOrder list/create/detail + release/complete/close/cancel + attachments + audit + order-book summary + material issues (explicit/backflush) + production outputs + execution panel with inventory integration |
 | identity admin | VERIFIED | Roles list/create, Users list, Permissions catalogue |
-| reporting | VERIFIED | Dashboard live counts + order-book status summaries (pure read of existing data) |
+| costing | VERIFIED | CostLayer model for dated weighted-average valuation, WA calculation service, read-only API with wa-cost/summary endpoints — 13 tests |
+| shipment | VERIFIED | Allocation (reserve/release), Shipment delivery posting with atomic OUT movements, over-allocation guard — 4 tests |
 | execution layer | GATED | stock/GRN/issue/genealogy/QC-exec/allocation/shipment — all gated by Q-026/046/048/049 |
 
 ## Gated remainder by module
@@ -52,11 +53,11 @@ Legend: BE = backend · API = REST surface · FE = frontend · T = tests · AUD 
 | hr | Role catalogue | Q-053 |
 | engineering | Tooling cost model, spec-revision trigger rule, auto usage capture | Q-004/036, Q-024, Q-046 |
 | manufacturing | Consumption bases/waste factors, routing templates | Q-027, Q-016/042, Q-029 |
-| inventory | Stock movements, kardex, lots/rolls, genealogy | Q-046, Q-048/049 |
+| inventory | Genealogy recall/mock-recall queries | Q-044 |
 | quality | Check execution, results, NCR/hold, scrap/rework, COA, recall | Q-039/040/043/044, Q-046 |
-| procurement | GRN, MRP, RFQ, thresholds, invoice matching, valuation | #7/#14/#17/#23, Q-034 |
+| procurement | MRP, RFQ, thresholds, invoice matching, valuation | #7/#14/#17/#23, Q-034 |
 | sales | Pricing/proforma, ATP, allocation, shipment, invoicing, credit | Q-046, #11/#12/#18 |
-| production | Material issue, genealogy, confirmations, scrap/downtime, QC results | Q-046, SR-05/06/08 |
+| production | Operation confirmations, scrap/downtime, auto-rework | SR-05/06/08 |
 
 ## Cross-cutting gates
 

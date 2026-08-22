@@ -148,3 +148,39 @@ class QualityPlanItemSerializer(_ChildOfRevisionSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class QualityCheckResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        from apps.quality.models import QualityCheckResult
+
+        model = QualityCheckResult
+        fields = [
+            "id",
+            "plan_item",
+            "traceability_unit",
+            "measured_value",
+            "disposition",
+            "checked_at",
+            "checked_by",
+            "notes",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        plan_item = attrs.get(
+            "plan_item", getattr(self.instance, "plan_item", None)
+        )
+        unit = attrs.get(
+            "traceability_unit",
+            getattr(self.instance, "traceability_unit", None),
+        )
+        if plan_item and unit:
+            plan_comp = plan_item.revision.root.spec_revision.root.company_id
+            if unit.company_id != plan_comp:
+                raise serializers.ValidationError(
+                    "Traceability unit must belong to the same company as the plan."
+                )
+        return attrs

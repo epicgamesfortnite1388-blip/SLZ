@@ -13,16 +13,19 @@ from __future__ import annotations
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.exceptions import ConflictError
 from apps.core.viewsets import AuditedModelViewSet
 from apps.quality import services
 from apps.quality.models import (
     QualityCharacteristic,
+    QualityCheckResult,
     QualityPlan,
     QualityPlanItem,
     QualityPlanRevision,
 )
 from apps.quality.serializers import (
     QualityCharacteristicSerializer,
+    QualityCheckResultSerializer,
     QualityPlanItemSerializer,
     QualityPlanRevisionSerializer,
     QualityPlanSerializer,
@@ -116,3 +119,41 @@ class QualityPlanItemViewSet(AuditedModelViewSet):
     }
     required_permission = "quality.plan.view"
     filterset_fields = ["revision", "characteristic", "work_center"]
+
+
+class QualityCheckResultViewSet(AuditedModelViewSet):
+    """Append-only QC results: list / retrieve / post. No edit or delete."""
+
+    http_method_names = ["get", "post", "head", "options"]
+
+    company_scope_lookup = "plan_item__revision__root__spec_revision__root__company"
+    queryset = QualityCheckResult.objects.all().select_related(
+        "plan_item", "traceability_unit", "checked_by"
+    )
+    serializer_class = QualityCheckResultSerializer
+    permission_map = {"POST": "quality.results.manage"}
+    required_permission = "quality.results.view"
+    filterset_fields = [
+        "plan_item",
+        "traceability_unit",
+        "disposition",
+    ]
+
+    def perform_create(self, serializer):
+        result = services.post_check_result(
+            plan_item=serializer.validated_data["plan_item"],
+            traceability_unit=serializer.validated_data["traceability_unit"],
+            measured_value=serializer.validated_data["measured_value"],
+            disposition=serializer.validated_data["disposition"],
+            checked_at=serializer.validated_data["checked_at"],
+            checked_by=serializer.validated_data.get("checked_by"),
+            notes=serializer.validated_data.get("notes", ""),
+            actor=self.request.user,
+        )
+        serializer.instance = result
+
+    def perform_update(self, serializer):
+        raise ConflictError("QC results are append-only.", code="append_only")
+
+    def perform_destroy(self, instance):
+        raise ConflictError("QC results are append-only.", code="append_only")

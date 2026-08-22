@@ -4,7 +4,7 @@
 made-to-order flexible-packaging manufacturer, one of six NEPTA-group companies
 (phase-1 = SLZ/Tehran + Helena/Saveh).
 **Workspace:** `E:\Code\Project\ERP` (backend `erp/backend`, frontend `erp/frontend`).
-**Last updated:** 2026-08-22 (sample-product model validation batch).
+**Last updated:** 2026-08-23 (execution-layer hardening batch #2: costing + shipment + QC results + GRN RBAC fix).
 
 This document is the single consolidated status view. Requirement *text* lives in
 `docs/requirements/requirements-baseline.md`; per-decision history in
@@ -36,8 +36,8 @@ This document is the single consolidated status view. Requirement *text* lives i
 
 ## Snapshot
 
-- **18 backend apps** implemented (8 foundation + 10 domain). **245 backend tests** (all passing).
-- **Frontend:** ~80 page components across all 18 domain areas; **25 test files / 83 tests** (all passing); production build verified.
+- **20 backend apps** implemented (8 foundation + 10 domain + 2 execution). **292 backend tests** (all passing).
+- **Frontend:** ~80 page components across all 18 domain areas; **26 test files / 90 tests** (all passing); production build verified.
 - **All 15+ confirmed backend entities have list + create + detail (where applicable) frontend surfaces.**
 - **All documented API enums have type-checked covering tests** (translation-key guard, permission-code guard, API-contract regression tests).
 - **24 architecture documents**, full requirements baseline, decision register, traceability, contradictions, do-not-build-yet lists, execution-preparation map.

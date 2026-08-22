@@ -150,3 +150,62 @@ def activate_revision(
             )
         )
     return revision
+
+
+# ---------------------------------------------------------------------------
+# QC execution results (append-only, per-roll/batch)
+# ---------------------------------------------------------------------------
+
+
+def post_check_result(
+    *,
+    plan_item,
+    traceability_unit,
+    measured_value: str,
+    disposition: str,
+    checked_at,
+    checked_by=None,
+    notes: str = "",
+    actor=None,
+):
+    """Record one QC measurement for a traceability unit against a plan item.
+
+    Guards:
+    - Unit must belong to the same company as the plan item's product.
+    - PASS/FAIL/HOLD disposition. HOLD tags the unit's notes for quarantine.
+    Result rows are append-only.
+    """
+    from apps.quality.models import QualityCheckResult
+
+    plan_company = plan_item.revision.root.spec_revision.root.company_id
+    unit_company = traceability_unit.company_id
+    if plan_company != unit_company:
+        from apps.core.exceptions import BusinessRuleError
+
+        raise BusinessRuleError(
+            "Plan item and traceability unit must belong to the same company.",
+            code="qc.cross_company",
+        )
+
+    result = QualityCheckResult.objects.create(
+        plan_item=plan_item,
+        traceability_unit=traceability_unit,
+        measured_value=measured_value,
+        disposition=disposition,
+        checked_at=checked_at,
+        checked_by=checked_by,
+        notes=notes,
+        created_by=actor,
+        updated_by=actor,
+    )
+
+    if disposition == "HOLD":
+        if not traceability_unit.notes:
+            traceability_unit.notes = ""
+        traceability_unit.notes = (
+            traceability_unit.notes
+            + f" [QC HOLD: {checked_at.isoformat()}]"
+        ).strip()
+        traceability_unit.save(update_fields=["notes", "updated_at"])
+
+    return result

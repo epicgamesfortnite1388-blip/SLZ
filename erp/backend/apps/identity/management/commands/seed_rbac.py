@@ -111,6 +111,8 @@ PLATFORM_PERMISSIONS = [
     ("quality.characteristic.manage", "Manage quality characteristics", "مدیریت مشخصه‌های کیفی"),
     ("quality.plan.view", "View quality plans", "مشاهده طرح‌های کنترل کیفیت"),
     ("quality.plan.manage", "Manage quality plans", "مدیریت طرح‌های کنترل کیفیت"),
+    ("quality.results.view", "View QC check results", "مشاهده نتایج کنترل کیفیت"),
+    ("quality.results.manage", "Post QC check results", "ثبت نتایج کنترل کیفیت"),
     # --- Task 009 Procurement (requisitions & purchase orders) -------------
     ("procurement.requisition.view", "View purchase requisitions", "مشاهده درخواست‌های خرید"),
     ("procurement.requisition.manage", "Manage purchase requisitions", "مدیریت درخواست‌های خرید"),
