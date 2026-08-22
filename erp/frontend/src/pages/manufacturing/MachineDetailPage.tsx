@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
@@ -8,16 +9,14 @@ import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { useRecord } from '@/hooks/useRecord';
 import { formatDateTime } from '@/i18n/dates';
-import type { Machine } from '@/api/manufacturing';
+import { fetchWorkCenter, type Machine } from '@/api/manufacturing';
 
 const ENTITY_TYPE = 'manufacturing.Machine';
 
 function capabilitySummary(profile: Record<string, unknown>): string {
   const keys = Object.keys(profile);
   if (keys.length === 0) return '—';
-  return keys
-    .map((k) => `${k}: ${String(profile[k])}`)
-    .join(', ');
+  return keys.map((k) => `${k}: ${String(profile[k])}`).join(', ');
 }
 
 export function MachineDetailPage(): JSX.Element {
@@ -28,6 +27,18 @@ export function MachineDetailPage(): JSX.Element {
     id ? `/manufacturing/machines/${id}/` : null,
   );
 
+  const [wcLabel, setWcLabel] = useState<string | null>(null);
+
+  // Resolve work_center UUID to readable name.
+  useEffect(() => {
+    if (!data?.work_center) return;
+    let active = true;
+    fetchWorkCenter(data.work_center)
+      .then((wc) => { if (active) setWcLabel(wc.name_fa || wc.code); })
+      .catch(() => { if (active) setWcLabel(data.work_center); });
+    return () => { active = false; };
+  }, [data]);
+
   const dash = (value: string | null): string => value || '—';
 
   const fields: DetailField[] = data
@@ -35,7 +46,7 @@ export function MachineDetailPage(): JSX.Element {
         { labelKey: 'masterData.fields.code', value: data.code },
         { labelKey: 'masterData.fields.nameFa', value: dash(data.name_fa) },
         { labelKey: 'masterData.fields.nameEn', value: dash(data.name_en) },
-        { labelKey: 'manufacturing.fields.opWorkCenter', value: data.work_center },
+        { labelKey: 'manufacturing.fields.opWorkCenter', value: wcLabel ?? '…' },
         { labelKey: 'manufacturing.fields.site', value: data.site ?? '—' },
         { labelKey: 'manufacturing.fields.capabilities', value: capabilitySummary(data.capability_profile) },
         { labelKey: 'products.createdAt', value: formatDateTime(data.created_at, i18n.language) },
@@ -57,7 +68,6 @@ export function MachineDetailPage(): JSX.Element {
       </div>
 
       {loading && <Spinner />}
-
       {error && <Alert variant="danger" title={t('common.error')}>{error.message}</Alert>}
 
       {data && (

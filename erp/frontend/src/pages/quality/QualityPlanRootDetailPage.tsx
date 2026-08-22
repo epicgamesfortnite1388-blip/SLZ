@@ -8,7 +8,9 @@ import {
   type QualityPlanItem,
   type QualityPlanRevision,
 } from '@/api/quality';
+import { apiClient } from '@/api/client';
 import { isApiError } from '@/api/types';
+import type { Paginated } from '@/api/masterData';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { BoolCell } from '@/components/CollectionView';
@@ -24,10 +26,39 @@ const when = (iso: string | null): string => (iso ? iso.replace('T', ' ').slice(
  * items. Execution/sampling enforcement is gated (Q-039/040); this page only
  * presents the confirmed plan definition.
  */
+interface IdName {
+  id: string;
+  code: string;
+  name_fa: string;
+}
+
 export function QualityPlanRootDetailPage(): JSX.Element {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const { id: rootId = '' } = useParams();
+
+  const [nameMap, setNameMap] = useState<Map<string, string>>(new Map());
+
+  // Pre-fetch characteristics + work centers for FK name resolution.
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      apiClient.get<Paginated<IdName>>('/quality/characteristics/?page_size=500'),
+      apiClient.get<Paginated<IdName>>('/manufacturing/work-centers/?page_size=500'),
+    ])
+      .then(([chars, wcs]) => {
+        if (!active) return;
+        const map = new Map<string, string>();
+        chars.results.forEach((c) => map.set(c.id, c.name_fa || c.code));
+        wcs.results.forEach((w) => map.set(w.id, w.name_fa || w.code));
+        setNameMap(map);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const displayName = (id: string | null, fallback: string): string =>
+    id ? (nameMap.get(id) ?? id) : fallback;
   const [plan, setPlan] = useState<Awaited<ReturnType<typeof fetchQualityPlan>> | null>(null);
   const [revisions, setRevisions] = useState<QualityPlanRevision[] | null>(null);
   const [selected, setSelected] = useState<QualityPlanRevision | null>(null);
@@ -162,8 +193,8 @@ export function QualityPlanRootDetailPage(): JSX.Element {
                   {items.map((item) => (
                     <tr key={item.id}>
                       <td>{item.sequence}</td>
-                      <td>{item.characteristic}</td>
-                      <td>{item.work_center || '—'}</td>
+                      <td>{displayName(item.characteristic, item.characteristic)}</td>
+                      <td>{displayName(item.work_center, '—')}</td>
                       <td>{item.stage_label || '—'}</td>
                       <td>
                         {item.target == null

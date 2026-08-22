@@ -555,7 +555,7 @@
       "requestedBy": "درخواست‌دهنده",
       "orderDate": "تاریخ سفارش",
       "lineSequence": "#",
-      "lineMaterial": "موجودی اولیه",
+      "lineMaterial": "ماده",
       "lineQuantity": "مقدار",
       "lineUom": "یکا",
       "lineUnitPrice": "قیمت واحد",

@@ -8,7 +8,9 @@ import {
   type RoutingOperation,
   type StructureRevision,
 } from '@/api/manufacturing';
+import { apiClient } from '@/api/client';
 import { isApiError } from '@/api/types';
+import type { Paginated } from '@/api/masterData';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { BoolCell } from '@/components/CollectionView';
@@ -17,6 +19,13 @@ import { Alert, Button, Card, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 
 const when = (iso: string | null): string => (iso ? iso.replace('T', ' ').slice(0, 10) : '—');
+
+interface WcLookup {
+  id: string;
+  code: string;
+  name_fa: string;
+  name_en: string;
+}
 
 /**
  * Read-only detail of one routing root: identity header, the full revision
@@ -27,6 +36,19 @@ export function RoutingRootDetailPage(): JSX.Element {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const { rootId = '' } = useParams();
+
+  const [wcMap, setWcMap] = useState<Map<string, string>>(new Map());
+
+  // Pre-fetch all work centers for FK name resolution.
+  useEffect(() => {
+    let active = true;
+    apiClient.get<Paginated<WcLookup>>('/manufacturing/work-centers/?page_size=500')
+      .then((res) => { if (active) setWcMap(new Map(res.results.map((w) => [w.id, w.name_fa || w.code]))); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const wcName = (id: string): string => wcMap.get(id) ?? id;
   const [routing, setRouting] = useState<Awaited<ReturnType<typeof fetchRouting>> | null>(null);
   const [revisions, setRevisions] = useState<StructureRevision[] | null>(null);
   const [selected, setSelected] = useState<StructureRevision | null>(null);
@@ -166,7 +188,7 @@ export function RoutingRootDetailPage(): JSX.Element {
                   {operations.map((op) => (
                     <tr key={op.id}>
                       <td>{op.sequence}</td>
-                      <td>{op.work_center}</td>
+                      <td>{wcName(op.work_center)}</td>
                       <td>{op.operation_name}</td>
                       <td>{op.output_material ?? '—'}</td>
                       <td>{op.setup_time_minutes ?? '—'}</td>
