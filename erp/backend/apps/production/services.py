@@ -9,7 +9,8 @@ from django.db import models
 from apps.core.events import EntityCreated, EntityUpdated
 from apps.core.exceptions import ConflictError
 from apps.core.transactions import atomic_with_events
-from apps.inventory.models import StockMovement, StockMovementDirection
+from apps.inventory.models import StockMovementDirection
+from apps.inventory import services as inventory_services
 
 
 def _actor_id(actor) -> Optional[str]:
@@ -72,19 +73,18 @@ def create_material_issue(serializer, *, actor=None):
     """Post one immutable issue and its append-only OUT movement atomically."""
     with atomic_with_events() as events:
         issue = serializer.save(created_by=actor, updated_by=actor)
-        movement = StockMovement.objects.create(
+        movement = inventory_services.post_movement(
             company=issue.production_order.company,
             warehouse=issue.warehouse,
-            traceability_unit=issue.traceability_unit,
-            material=issue.material,
             direction=StockMovementDirection.OUT,
             quantity=issue.quantity,
             uom=issue.uom,
+            material=issue.material,
+            traceability_unit=issue.traceability_unit,
             reference_type="production.MaterialIssue",
             reference_id=issue.id,
             notes=issue.operation_label,
-            created_by=actor,
-            updated_by=actor,
+            actor=actor,
         )
         events.append(
             EntityCreated(
@@ -109,18 +109,18 @@ def create_production_output(serializer, *, actor=None):
     """Post one immutable output and its append-only IN movement atomically."""
     with atomic_with_events() as events:
         output = serializer.save(created_by=actor, updated_by=actor)
-        movement = StockMovement.objects.create(
+        movement = inventory_services.post_movement(
             company=output.production_order.company,
             warehouse=output.warehouse,
-            traceability_unit=output.traceability_unit,
             direction=StockMovementDirection.IN,
             quantity=output.quantity,
             uom=output.uom,
+            material=None,
+            traceability_unit=output.traceability_unit,
             reference_type="production.ProductionOutput",
             reference_id=output.id,
             notes=output.operation_label,
-            created_by=actor,
-            updated_by=actor,
+            actor=actor,
         )
         events.append(
             EntityCreated(

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from apps.core.exceptions import ConflictError
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from apps.core.viewsets import AuditedModelViewSet
 from apps.inventory.models import (
     GenealogyLink,
@@ -11,6 +13,7 @@ from apps.inventory.models import (
     Warehouse,
     WarehouseAccess,
 )
+from apps.inventory import services
 from apps.inventory.serializers import (
     GenealogyLinkSerializer,
     StockMovementSerializer,
@@ -90,3 +93,64 @@ class StockMovementViewSet(AuditedModelViewSet):
 
     def perform_destroy(self, instance):
         raise ConflictError("Stock movements are append-only.", code="append_only")
+
+    def get_queryset(self):
+        """Company-scoped ledger rows (Q-055)."""
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        ids = user.company_memberships.values_list("company_id", flat=True)
+        return qs.filter(company_id__in=ids)
+
+    def _member_company(self):
+        """Resolve the company this ledger query addresses.
+
+        Single-company members get their company automatically;
+        multi-company users must pass ``company`` from their memberships.
+        """
+        import uuid as uuid_module
+
+        from apps.core.exceptions import AuthorizationError, ValidationError
+        from apps.organization.models import Company
+
+        user = self.request.user
+        requested = self.request.query_params.get("company")
+        member_ids = set(user.company_memberships.values_list("company_id", flat=True))
+        if requested:
+            try:
+                requested_id = uuid_module.UUID(requested)
+            except ValueError as exc:
+                raise ValidationError("Invalid company id.") from exc
+            if requested_id not in member_ids:
+                raise AuthorizationError("That company is not yours.")
+            return Company.objects.get(pk=requested_id)
+        if len(member_ids) == 1:
+            return Company.objects.get(pk=next(iter(member_ids)))
+        raise ValidationError(
+            "Multiple companies available - pass ?company=<id>.",
+            code="inventory.company_required",
+        )
+
+    @action(detail=False, methods=["get"], url_path="balances")
+    def balances(self, request):
+        """Derived on-hand quantities grouped by warehouse/material/unit."""
+        company = self._member_company()
+        rows = services.balances(
+            company,
+            material=request.query_params.get("material"),
+            warehouse=request.query_params.get("warehouse"),
+        )
+        return Response(rows)
+
+    @action(detail=False, methods=["get"], url_path="kardex")
+    def kardex(self, request):
+        """Chronological ledger history with running balance."""
+        company = self._member_company()
+        rows = services.kardex(
+            company,
+            traceability_unit=request.query_params.get("traceability_unit"),
+            material=request.query_params.get("material"),
+            warehouse=request.query_params.get("warehouse"),
+        )
+        return Response(rows)

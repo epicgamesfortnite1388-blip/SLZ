@@ -8,6 +8,8 @@ scope for this slice.
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.test import TestCase
 
 from apps.audit.models import AuditLog
@@ -263,6 +265,22 @@ class ProductionExecutionTests(TestCase):
         )
 
     def test_explicit_issue_requires_unit_and_posts_movement(self):
+        # Q-048/Q-055 execution guard: stock must exist before an issue can
+        # post — seed one receipt so the negative-stock check passes.
+        from apps.inventory import services as inventory_services
+        from apps.inventory.models import StockMovementDirection
+
+        inventory_services.post_movement(
+            company=self.company,
+            warehouse=self.warehouse,
+            direction=StockMovementDirection.IN,
+            quantity=Decimal("25"),
+            uom=self.p["uom"],
+            material=self.resin,
+            traceability_unit=self.unit,
+            reference_type="test.seed",
+            actor=self.user,
+        )
         response = self.client.post(
             "/api/v1/production/material-issues/",
             {
@@ -278,7 +296,9 @@ class ProductionExecutionTests(TestCase):
         )
         self.assertEqual(response.status_code, 201, response.content)
         self.assertEqual(MaterialIssue.objects.count(), 1)
-        self.assertEqual(self.unit.stock_movements.count(), 1)
+        # Seed receipt (IN) + issue (OUT) both land on the serialized unit's
+        # ledger — the append-only history is exactly these two rows.
+        self.assertEqual(self.unit.stock_movements.count(), 2)
 
     def test_backflush_does_not_accept_selected_unit(self):
         response = self.client.post(
