@@ -22,10 +22,12 @@ export function ProductCreatePage(): JSX.Element {
   const navigate = useNavigate();
 
   const [companies, setCompanies] = useState<Option[]>([]);
+  const [groups, setGroups] = useState<Option[]>([]);
   const [families, setFamilies] = useState<Option[]>([]);
   const [uoms, setUoms] = useState<Option[]>([]);
 
   const [company, setCompany] = useState('');
+  const [productGroup, setProductGroup] = useState('');
   const [family, setFamily] = useState('');
   const [code, setCode] = useState('');
   const [nameFa, setNameFa] = useState('');
@@ -39,6 +41,9 @@ export function ProductCreatePage(): JSX.Element {
     let cancelled = false;
     apiClient.get<Paginated<Option>>('/organization/companies/?page_size=200')
       .then((res) => { if (!cancelled) { setCompanies(res.results); if (res.results.length > 0) setCompany(res.results[0].id); } })
+      .catch(() => {});
+    apiClient.get<Paginated<Option>>('/catalog/product-groups/?page_size=200')
+      .then((res) => { if (!cancelled) setGroups(res.results); })
       .catch(() => {});
     apiClient.get<Paginated<Option>>('/catalog/product-families/?page_size=200')
       .then((res) => { if (!cancelled) setFamilies(res.results); })
@@ -56,6 +61,7 @@ export function ProductCreatePage(): JSX.Element {
     try {
       await createProduct({
         company,
+        product_group: productGroup || undefined,
         family: family || undefined,
         code,
         name_fa: nameFa,
@@ -112,7 +118,8 @@ export function ProductCreatePage(): JSX.Element {
           )}
 
           {selectField('masterData.fields.company', company, setCompany, companies, true)}
-          {selectField('engineering.fields.family', family, setFamily, families, false)}
+          {selectField('productGroups.title', productGroup, setProductGroup, groups, false)}
+          {selectField('productFamilies.title', family, setFamily, families, false)}
 
           <FormField label={t('masterData.fields.code')} required>
             {({ id }) => (

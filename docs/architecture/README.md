@@ -101,6 +101,15 @@ Business modules build on the foundation above. The first is:
   only — material issue/genealogy, operation confirmations/scrap/downtime, QC
   results, margin priority, outsourcing locus and ATP/capacity are deferred
   behind Q-046/SR-05/SR-06/SR-08/SR-12/SR-13/SR-14/#9/#12/#18/#19.
+- [multi-tenancy-preparation.md](multi-tenancy-preparation.md) — Q-055 impact
+  map: every model/queryset/service/serializer/frontend surface that will need
+  company scoping once the tenancy decision lands. Preparation only; no
+  behavior change.
+- [execution-preparation.md](execution-preparation.md) — execution-layer
+  extension points: the already-shipped seams (event bus, transactional outbox,
+  locked transitions, versioned structures, audited writes) and the boundary
+  contracts the future stock/genealogy/QC/allocation services must implement.
+  Preparation only; no gated semantics chosen.
 
 ## Scope boundary (important for future agents)
 
@@ -118,7 +127,9 @@ Do not add business logic to foundation apps. See
 
 ## Verification status
 
-The source is complete and self-consistent. Runtime verification (Docker,
-PostgreSQL, `manage.py test`, `npm` build) must be run in an environment with
-network/package access — see the Task 003 final report and the root
-`README.md` for exact commands.
+Application logic is runtime-verified on the SQLite test profile (backend and
+frontend suites, migration-drift gate, lint/typecheck/build — see
+`docs/PROJECT-STATUS.md` for current counts). The container path (Docker,
+PostgreSQL, Redis, nginx) has **not** been executed in the authoring
+environment; `docs/RELEASE-CHECKLIST.md` records it as the outstanding
+deployment verification step.
