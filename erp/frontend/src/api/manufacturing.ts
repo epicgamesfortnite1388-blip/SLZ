@@ -64,6 +64,39 @@ export function createMachine(
   return apiClient.post<Machine>('/manufacturing/machines/', payload);
 }
 
+/** A BOM root — the durable identity of a versioned bill of materials. */
+export interface BillOfMaterials {
+  id: string;
+  spec_revision: string;
+  output_material: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Create a BOM root (audited write path). */
+export function createBomRoot(
+  payload: Partial<BillOfMaterials>,
+): Promise<BillOfMaterials> {
+  return apiClient.post<BillOfMaterials>('/manufacturing/boms/', payload);
+}
+
+/** A routing root — the durable identity of a versioned set of operations. */
+export interface Routing {
+  id: string;
+  spec_revision: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Create a routing root (audited write path). */
+export function createRoutingRoot(
+  payload: Partial<Routing>,
+): Promise<Routing> {
+  return apiClient.post<Routing>('/manufacturing/routings/', payload);
+}
+
 /** Activate a DRAFT BOM revision (supersedes the prior ACTIVE one, atomic). */
 export function activateBomRevision(id: string): Promise<StructureRevision> {
   return apiClient.post<StructureRevision>(

@@ -21,6 +21,8 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: 'nav.masterData', to: '/master-data', end: true },
   { labelKey: 'organization.companies.title', to: '/organization/companies', permission: 'organization.company.view' },
   { labelKey: 'organization.sites.title', to: '/organization/sites', permission: 'organization.site.view' },
+  { labelKey: 'organization.departments.title', to: '/organization/departments', permission: 'organization.department.view' },
+  { labelKey: 'organization.siteCapabilities.title', to: '/organization/site-capabilities', permission: 'organization.sitecapability.view' },
   { labelKey: 'partners.title', to: '/master-data/partners', permission: 'partners.partner.view' },
   { labelKey: 'products.title', to: '/master-data/products', permission: 'catalog.product.view' },
   { labelKey: 'materials.title', to: '/master-data/materials', permission: 'catalog.material.view' },

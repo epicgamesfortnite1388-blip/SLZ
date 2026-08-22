@@ -28,7 +28,11 @@ import { WorkCenterCreatePage } from '@/pages/manufacturing/WorkCenterCreatePage
 import { MachinesPage } from '@/pages/manufacturing/MachinesPage';
 import { MachineCreatePage } from '@/pages/manufacturing/MachineCreatePage';
 import { BomRevisionsPage } from '@/pages/manufacturing/BomRevisionsPage';
+import { BomRootsPage } from '@/pages/manufacturing/BomRootsPage';
+import { BomRootCreatePage } from '@/pages/manufacturing/BomRootCreatePage';
 import { RoutingRevisionsPage } from '@/pages/manufacturing/RoutingRevisionsPage';
+import { RoutingRootsPage } from '@/pages/manufacturing/RoutingRootsPage';
+import { RoutingRootCreatePage } from '@/pages/manufacturing/RoutingRootCreatePage';
 import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
 import { WarehouseCreatePage } from '@/pages/inventory/WarehouseCreatePage';
 import { WarehouseDetailPage } from '@/pages/inventory/WarehouseDetailPage';
@@ -36,6 +40,8 @@ import { WarehouseAccessPage } from '@/pages/inventory/WarehouseAccessPage';
 import { CharacteristicsPage } from '@/pages/quality/CharacteristicsPage';
 import { CharacteristicCreatePage } from '@/pages/quality/CharacteristicCreatePage';
 import { QualityPlanRevisionsPage } from '@/pages/quality/QualityPlanRevisionsPage';
+import { QualityPlanRootsPage } from '@/pages/quality/QualityPlanRootsPage';
+import { QualityPlanRootCreatePage } from '@/pages/quality/QualityPlanRootCreatePage';
 import { PurchaseRequisitionsPage } from '@/pages/procurement/PurchaseRequisitionsPage';
 import { PurchaseRequisitionCreatePage } from '@/pages/procurement/PurchaseRequisitionCreatePage';
 import { PurchaseOrdersPage } from '@/pages/procurement/PurchaseOrdersPage';
@@ -259,12 +265,44 @@ export default function App(): JSX.Element {
             path="boms"
             element={
               <ProtectedRoute requiredPermission="manufacturing.bom.view">
+                <BomRootsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="boms/new"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.bom.manage">
+                <BomRootCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="bom-revisions"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.bom.view">
                 <BomRevisionsPage />
               </ProtectedRoute>
             }
           />
           <Route
             path="routings"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.routing.view">
+                <RoutingRootsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="routings/new"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.routing.manage">
+                <RoutingRootCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="routing-revisions"
             element={
               <ProtectedRoute requiredPermission="manufacturing.routing.view">
                 <RoutingRevisionsPage />
@@ -327,6 +365,22 @@ export default function App(): JSX.Element {
           />
           <Route
             path="plans"
+            element={
+              <ProtectedRoute requiredPermission="quality.plan.view">
+                <QualityPlanRootsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="plans/new"
+            element={
+              <ProtectedRoute requiredPermission="quality.plan.manage">
+                <QualityPlanRootCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="plan-revisions"
             element={
               <ProtectedRoute requiredPermission="quality.plan.view">
                 <QualityPlanRevisionsPage />

@@ -312,9 +312,19 @@
       "title": "Bills of materials",
       "subtitle": "Versioned material structures bound to a specification revision."
     },
+    "bomRoots": {
+      "title": "BOM roots",
+      "subtitle": "Durable identities — each bound to a specification revision.",
+      "new": "New BOM"
+    },
     "routings": {
       "title": "Routings",
       "subtitle": "Versioned ordered operations bound to a specification revision."
+    },
+    "routingRoots": {
+      "title": "Routing roots",
+      "subtitle": "Durable identities — each bound to a specification revision.",
+      "new": "New routing"
     },
     "fields": {
       "site": "Site",
@@ -323,7 +333,9 @@
       "revisionNumber": "Rev.",
       "status": "Status",
       "effectiveFrom": "Effective from",
-      "actions": "Actions"
+      "actions": "Actions",
+      "specRevision": "Spec revision",
+      "outputMaterial": "Output material"
     },
     "statuses": {
       "DRAFT": "Draft",
@@ -384,6 +396,11 @@
     "plans": {
       "title": "Quality plans",
       "subtitle": "Versioned inspection plans bound to a product specification revision."
+    },
+    "planRoots": {
+      "title": "Quality plan roots",
+      "subtitle": "Durable identities — each bound to a specification revision.",
+      "new": "New quality plan"
     },
     "activate": "Activate",
     "fields": {

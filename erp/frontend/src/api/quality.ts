@@ -81,3 +81,10 @@ export function activateQualityPlanRevision(
     {},
   );
 }
+
+/** Create a quality plan root (audited write path). */
+export function createQualityPlan(
+  payload: Partial<QualityPlan>,
+): Promise<QualityPlan> {
+  return apiClient.post<QualityPlan>('/quality/plans/', payload);
+}
