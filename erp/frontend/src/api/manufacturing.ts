@@ -25,6 +25,13 @@ export interface WorkCenter {
   name_en: string;
   sequence_hint: number;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Fetch one work center by id. */
+export function fetchWorkCenter(id: string): Promise<WorkCenter> {
+  return apiClient.get<WorkCenter>(`/manufacturing/work-centers/${id}/`);
 }
 
 /** A physical resource; ``capability_profile`` is free-form data (no code). */
@@ -38,6 +45,13 @@ export interface Machine {
   name_en: string;
   capability_profile: Record<string, unknown>;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Fetch one machine by id. */
+export function fetchMachine(id: string): Promise<Machine> {
+  return apiClient.get<Machine>(`/manufacturing/machines/${id}/`);
 }
 
 /** One immutable-once-active revision (shared shape for BOM and Routing). */

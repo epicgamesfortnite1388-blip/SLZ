@@ -39,8 +39,10 @@ import { ToolingAssetCreatePage } from '@/pages/engineering/ToolingAssetCreatePa
 import { ToolingAssetDetailPage } from '@/pages/engineering/ToolingAssetDetailPage';
 import { WorkCentersPage } from '@/pages/manufacturing/WorkCentersPage';
 import { WorkCenterCreatePage } from '@/pages/manufacturing/WorkCenterCreatePage';
+import { WorkCenterDetailPage } from '@/pages/manufacturing/WorkCenterDetailPage';
 import { MachinesPage } from '@/pages/manufacturing/MachinesPage';
 import { MachineCreatePage } from '@/pages/manufacturing/MachineCreatePage';
+import { MachineDetailPage } from '@/pages/manufacturing/MachineDetailPage';
 import { BomRevisionsPage } from '@/pages/manufacturing/BomRevisionsPage';
 import { BomRootsPage } from '@/pages/manufacturing/BomRootsPage';
 import { BomRootCreatePage } from '@/pages/manufacturing/BomRootCreatePage';
@@ -377,6 +379,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="work-centers/:id"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.workcenter.view">
+                <WorkCenterDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="machines"
             element={
               <ProtectedRoute requiredPermission="manufacturing.machine.view">
@@ -389,6 +399,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="manufacturing.machine.manage">
                 <MachineCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="machines/:id"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.machine.view">
+                <MachineDetailPage />
               </ProtectedRoute>
             }
           />

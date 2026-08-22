@@ -424,7 +424,12 @@
       "headerTitle": "Header",
       "revisionsTitle": "Revisions",
       "linesTitle": "Material Lines",
-      "operationsTitle": "Operations"
+      "operationsTitle": "Operations",
+      "workCenterTitle": "Work Center Detail",
+      "workCenterSubtitle": "A logical production stage grouping interchangeable machines.",
+      "machineTitle": "Machine Detail",
+      "machineSubtitle": "A physical resource with a data-driven capability profile.",
+      "back": "← Back"
     },
     "statuses": {
       "DRAFT": "Draft",

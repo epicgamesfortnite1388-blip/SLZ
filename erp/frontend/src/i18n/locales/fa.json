@@ -424,7 +424,12 @@
       "headerTitle": "سربرگ",
       "revisionsTitle": "بازنگری‌ها",
       "linesTitle": "خطوط مواد",
-      "operationsTitle": "عملیات‌ها"
+      "operationsTitle": "عملیات‌ها",
+      "workCenterTitle": "جزئیات مرکز کاری",
+      "workCenterSubtitle": "یک مرحله منطقی تولید که ماشین‌آلات قابل‌جایگزین را گروه‌بندی می‌کند.",
+      "machineTitle": "جزئیات ماشین",
+      "machineSubtitle": "یک منبع فیزیکی با پروفایل قابلیت داده‌محور.",
+      "back": "← بازگشت"
     },
     "statuses": {
       "DRAFT": "پیش‌نویس",

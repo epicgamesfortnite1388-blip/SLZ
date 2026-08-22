@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { Button } from '@/components/ui';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
@@ -13,6 +13,7 @@ import type { Machine } from '@/api/manufacturing';
  */
 export function MachinesPage(): JSX.Element {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const collection = useCollection<Machine>('/manufacturing/machines/');
 
@@ -38,6 +39,7 @@ export function MachinesPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
+      onRowClick={(r) => navigate(`/manufacturing/machines/${r.id}`)}
       headerAction={
         hasPermission('manufacturing.machine.manage') ? (
           <Link to="/manufacturing/machines/new">

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { Button } from '@/components/ui';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
@@ -25,6 +25,7 @@ const columns: Column<WorkCenter>[] = [
 /** Browse work centers (production stages that group machines). */
 export function WorkCentersPage(): JSX.Element {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const collection = useCollection<WorkCenter>('/manufacturing/work-centers/');
 
@@ -35,6 +36,7 @@ export function WorkCentersPage(): JSX.Element {
       columns={columns}
       rowKey={(r) => r.id}
       collection={collection}
+      onRowClick={(r) => navigate(`/manufacturing/work-centers/${r.id}`)}
       headerAction={
         hasPermission('manufacturing.workcenter.manage') ? (
           <Link to="/manufacturing/work-centers/new">
