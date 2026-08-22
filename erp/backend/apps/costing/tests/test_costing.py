@@ -17,7 +17,7 @@ from django.test import TestCase
 
 from apps.catalog.models import Material, UnitOfMeasure, UomDimension
 from apps.core.tests.factories import auth_client, grant, make_company, make_superuser, make_user
-from apps.costing import services
+from apps.costing import integration, services
 from apps.costing.models import CostLayerType
 
 
@@ -178,3 +178,59 @@ class CostLayerApiTests(CostingTestBase):
             format="json",
         )
         self.assertIn(resp.status_code, (400, 403, 405))
+
+
+class CostingIntegrationTests(CostingTestBase):
+    def test_receipt_integration_posts_cost_layer(self):
+        layer = integration.post_cost_on_receipt(
+            company=self.company,
+            material=self.material,
+            date="2026-08-01",
+            quantity="200",
+            unit_price=Decimal("45"),
+            reference_type="procurement.GoodsReceiptLine",
+            actor=self.user,
+        )
+        self.assertEqual(layer.layer_type, CostLayerType.RECEIPT)
+        self.assertEqual(layer.quantity, Decimal("200"))
+        self.assertEqual(layer.unit_cost, Decimal("45"))
+        self.assertEqual(layer.total_cost, Decimal("9000"))
+
+    def test_receipt_without_price_uses_zero_cost(self):
+        layer = integration.post_cost_on_receipt(
+            company=self.company,
+            material=self.material,
+            date="2026-08-01",
+            quantity="100",
+            reference_type="procurement.GoodsReceiptLine",
+            actor=self.user,
+        )
+        self.assertEqual(layer.unit_cost, Decimal("0"))
+        self.assertEqual(layer.total_cost, Decimal("0"))
+
+    def test_issue_integration_uses_current_wa(self):
+        # First, seed a receipt so WA is known
+        self._receipt(100, 50, "2026-08-01")
+        # Then issue at WA
+        layer = integration.post_cost_on_issue(
+            company=self.company,
+            material=self.material,
+            date="2026-08-02",
+            quantity="40",
+            reference_type="production.MaterialIssue",
+            actor=self.user,
+        )
+        self.assertEqual(layer.layer_type, CostLayerType.ISSUE)
+        self.assertEqual(layer.quantity, Decimal("40"))
+        self.assertEqual(layer.unit_cost, Decimal("50"))
+
+    def test_issue_with_no_receipt_uses_zero_cost(self):
+        layer = integration.post_cost_on_issue(
+            company=self.company,
+            material=self.material,
+            date="2026-08-01",
+            quantity="10",
+            reference_type="production.MaterialIssue",
+            actor=self.user,
+        )
+        self.assertEqual(layer.unit_cost, Decimal("0"))
