@@ -1,47 +1,37 @@
-# SLZ ERP / MES — Platform Foundation
+# SLZ ERP / MES
 
 Custom ERP/MES for **صنایع لفاف زرین** (Zarrin Laff Industries), a made-to-order
-flexible-packaging manufacturer.
+flexible-packaging manufacturer (NEPTA group; phase 1 = SLZ/Tehran + Helena/Saveh).
 
-This repository currently contains the **platform foundation** — a clean,
-production-quality modular monolith that future modules build on. It
-deliberately ships **no business modules** yet (no sales, engineering,
-inventory, manufacturing, quality, purchasing, finance, …). It provides the
-mechanisms those modules will share: identity & RBAC, a generic audit trail,
-documents, localization (Jalali/Gregorian, bilingual fa/en), notifications, a
-minimal approval workflow, a standardized API surface, domain events, and a
-consistent transaction strategy.
+The platform is a modular-monolith **Django 4.2 + DRF backend**, a **React 18 +
+TypeScript SPA**, and PostgreSQL/Redis infrastructure orchestrated with Docker
+Compose. It ships the full foundation (identity & RBAC, JWT auth, append-only
+audit trail with before/after diffs, documents/attachments, bilingual fa/en
+with Jalali dates, notifications, generic approval workflow) plus the
+**confirmed domain layers**: master data, product engineering with versioned
+specifications, BOM/routing, procurement and sales documents, production orders,
+quality plans, warehouses, and tooling assets.
+
+> The execution/traceability layer (stock movements, material issue, genealogy,
+> QC execution) is deliberately **not implemented** — it is gated on open SLZ
+> business decisions (see `docs/PROJECT-STATUS.md`).
 
 ## Repository layout
 
 ```
 ERP/
-├── docs/
-│   ├── architecture/        # how the platform is built (start here)
-│   ├── business-analysis/   # Task 001 — domain discovery
-│   ├── business-review/     # Task 002 — validation
-│   └── requirements/        # Task 002 — requirements baseline
+├── docs/                     # analysis, requirements, architecture, status
+│   ├── PROJECT-STATUS.md     # ← current progress & remaining work (start here)
+│   └── architecture/         # how the platform is built
+├── skills/                   # domain-knowledge primers for AI agents
 └── erp/
-    ├── backend/             # Django + DRF (the monolith)
-    ├── frontend/            # Vite + React 18 + TypeScript SPA
-    ├── infrastructure/      # Dockerfiles, nginx
-    ├── scripts/             # entrypoint
+    ├── backend/              # Django + DRF monolith (18 apps)
+    ├── frontend/             # Vite + React 18 + TypeScript SPA
+    ├── infrastructure/       # Dockerfiles, nginx
+    ├── scripts/              # container entrypoint
     ├── docker-compose.yml
-    ├── Makefile
-    └── .env.example
+    └── Makefile              # developer shortcuts
 ```
-
-Read **[docs/architecture/README.md](docs/architecture/README.md)** first — it
-explains the modular monolith, API conventions, data lifecycle, versioning,
-transactions, and the security baseline.
-
-## Tech stack
-
-- **Backend:** Django 4.2, Django REST Framework, PostgreSQL 16, Celery + Redis,
-  SimpleJWT, django-filter, jdatetime.
-- **Frontend:** Vite, React 18, TypeScript (strict), react-router v6,
-  i18next, Vitest + Testing Library.
-- **Infra:** Docker Compose (postgres/redis/backend/celery/frontend), nginx.
 
 ## Quick start (Docker)
 
@@ -53,11 +43,10 @@ cp .env.example .env          # adjust values; set a real DJANGO_SECRET_KEY
 docker compose up --build
 ```
 
-The backend entrypoint waits for PostgreSQL, then runs `makemigrations`,
-`migrate`, and `seed_rbac` (which seeds platform permissions and the
-`platform_admin` role — no business data). To create the first admin, set
-`ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env` before starting, or run
-`make createsuperuser`.
+The backend entrypoint waits for PostgreSQL, applies the committed migrations,
+and seeds platform RBAC (66 permissions + the `platform_admin` role — no
+business data). To create the first admin, set `ADMIN_EMAIL` /
+`ADMIN_PASSWORD` in `.env` before starting, or run `make createsuperuser`.
 
 Services:
 
@@ -66,38 +55,46 @@ Services:
 - Frontend SPA — http://localhost:5173 (dev) or the nginx-served build
 
 Common `make` targets (run from `erp/`): `up`, `down`, `build`, `migrate`,
-`seed`, `test`, `lint`, `format`, `createsuperuser`. Run `make help` for all.
+`seed`, `test`, `lint`, `migrations-check`, `verify`. Run `make help` for all.
 
-## Local development (without Docker)
+## Local development without Docker
 
-Backend:
+A fully self-contained settings profile (`config.settings.local`) runs the API
+on SQLite with in-process Celery — no external services at all:
 
 ```bash
+# Backend (Windows PowerShell; use export on bash)
 cd erp/backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv && .\.venv\Scripts\Activate.ps1
 pip install -r requirements/dev.txt
-export DJANGO_SETTINGS_MODULE=config.settings.dev   # needs Postgres + Redis
+$env:DJANGO_SETTINGS_MODULE = 'config.settings.local'
 python manage.py migrate
 python manage.py seed_rbac
+python manage.py createsuperuser      # first login
 python manage.py runserver
-```
 
-Frontend:
-
-```bash
+# Frontend (second terminal)
 cd erp/frontend
-npm install
-npm run dev
+npm ci
+npm run dev                           # http://localhost:5173
 ```
+
+For PostgreSQL-backed local development use
+`DJANGO_SETTINGS_MODULE=config.settings.dev` with the services from
+`docker compose up postgres redis`.
+
+Sign in with your superuser account; every screen is permission-gated
+(`module.resource.action`), so an account without seeded permissions sees
+nothing by design.
 
 ## Running the tests
 
-The backend test suite uses **SQLite in-memory** and eager Celery, so it needs
-**no external services**:
+The backend test suite runs against a throwaway file-backed SQLite database
+with eager Celery — no external services:
 
 ```bash
 cd erp/backend
-python manage.py test --settings=config.settings.test
+python manage.py test --settings=config.settings.test --noinput
 ```
 
 Frontend:
@@ -110,17 +107,15 @@ npm run lint          # eslint
 npm run build         # production build
 ```
 
-CI (`.github/workflows/ci.yml`) runs backend lint + format-check + tests and
-frontend typecheck + lint + test + build on push/PR.
+Or everything CI runs, in one command (host mode):
 
-## Verification status
+```bash
+cd erp && make verify-local
+```
 
-All backend and frontend **source compiles and is self-consistent**; JSON
-configs and Jalali calendar math were cross-checked offline. Full **runtime**
-verification (Docker build, PostgreSQL, `manage.py test`, `npm run build`) must
-be executed in an environment with package/network access — the sandbox used to
-author this foundation blocked `pip` and `npm` installs. Run the commands above
-to complete verification. See the Task 003 final report for details.
+CI (`.github/workflows/ci.yml`) gates every push/PR on: backend flake8 +
+black + isort, migration-drift check, full Django suite; frontend typecheck,
+ESLint, Vitest, production build.
 
 ## Conventions (do not violate)
 
@@ -129,4 +124,7 @@ to complete verification. See the Task 003 final report for details.
 - Permissions are `module.resource.action`; roles are data, never hard-coded.
 - Datetimes are timezone-aware UTC; Jalali is presentation-only.
 - Store numbers/money numeric; format at the edge via `localization`.
-- Foundation apps contain no business logic.
+- Migrations are generated during development and committed; deploys only
+  apply them (`makemigrations --check` guards drift in CI).
+- The standardized error envelope (`docs/architecture/api-conventions.md`)
+  is the only error shape clients ever see.
