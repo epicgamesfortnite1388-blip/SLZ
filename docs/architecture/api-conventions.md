@@ -53,21 +53,23 @@ unexpected — is returned in one shape by
 }
 ```
 
-The **seven** standardized error types (from `apps/core/exceptions.py`):
+The standardized error types (exact `type` values from
+`apps/core/exceptions.py`):
 
-| `type`               | HTTP | Raise when …                                        |
-|----------------------|------|-----------------------------------------------------|
-| `validation_error`   | 400  | Input fails field/format/shape validation           |
-| `authentication_error` | 401 | No/invalid credentials                             |
-| `authorization_error` | 403 | Authenticated but lacks the required permission     |
-| `not_found`          | 404  | Target entity does not exist (or is soft-deleted)   |
-| `conflict`           | 409  | Uniqueness / concurrency / state conflict           |
-| `business_rule_error`| 422  | A domain invariant is violated                      |
-| `system_error`       | 500  | Unhandled/unexpected server fault                   |
+| `type`                 | HTTP | Raise when …                                        |
+|------------------------|------|-----------------------------------------------------|
+| `ValidationError`      | 400  | Input fails field/format/shape validation           |
+| `AuthenticationError`  | 401  | No/invalid credentials                              |
+| `AuthorizationError`   | 403  | Authenticated but lacks the required permission     |
+| `NotFoundError`        | 404  | Target entity does not exist (or is soft-deleted)   |
+| `ConflictError`        | 409  | Uniqueness / concurrency / state conflict           |
+| `BusinessRuleError`    | 422  | A domain invariant is violated                      |
+| `ThrottledError`       | 429  | Rate limit exceeded (login/refresh; `Retry-After` header is set) |
+| `SystemError`          | 500  | Unhandled/unexpected server fault                   |
 
-Unknown exceptions are logged as `system_error` with the `correlation_id`; raw
-tracebacks are never leaked. Auth challenge headers (`WWW-Authenticate`) are
-preserved.
+Unknown exceptions are logged as `SystemError` with the `correlation_id`; raw
+tracebacks are never leaked. Auth challenge headers (`WWW-Authenticate`) and
+DRF's `Retry-After` on throttled responses are preserved.
 
 ## Success responses
 
@@ -75,6 +77,21 @@ preserved.
 - Collection: **paginated** (see below).
 - Mutations return the resulting resource representation where practical.
 - `204 No Content` for deletes.
+
+## Authentication
+
+JWT bearer auth (`djangorestframework-simplejwt`, rotation + blacklist on):
+
+| Endpoint             | Method | Auth | Notes                                              |
+|----------------------|--------|------|----------------------------------------------------|
+| `/auth/login/`       | POST   | anon | `{email, password}` → `{access, refresh, user}`; audited; per-IP throttled |
+| `/auth/refresh/`     | POST   | anon | `{refresh}` → `{access}`; rotates + blacklists; throttled |
+| `/auth/logout/`      | POST   | user | `{refresh}` → blacklists the token; audited         |
+| `/auth/me/`          | GET    | user | Current user incl. role codes + permission codes    |
+| `/auth/me/`          | PATCH  | user | Self-service update of `full_name` / `language` / `timezone` only (validated) |
+
+All other endpoints require authentication; module access is governed by
+`module.resource.action` permissions resolved from the user's roles.
 
 ## Pagination
 
