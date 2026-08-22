@@ -13,9 +13,14 @@ interface Section {
 
 const SECTIONS: Section[] = [
   { to: '/master-data/partners', titleKey: 'partners.title', descKey: 'partners.subtitle', permission: 'partners.partner.view' },
+  { to: '/master-data/product-groups', titleKey: 'productGroups.title', descKey: 'productGroups.subtitle', permission: 'catalog.productgroup.view' },
+  { to: '/master-data/product-types', titleKey: 'productTypes.title', descKey: 'productTypes.subtitle', permission: 'catalog.producttaxonomy.view' },
+  { to: '/master-data/product-classes', titleKey: 'productClasses.title', descKey: 'productClasses.subtitle', permission: 'catalog.producttaxonomy.view' },
+  { to: '/master-data/product-families', titleKey: 'productFamilies.title', descKey: 'productFamilies.subtitle', permission: 'catalog.producttaxonomy.view' },
   { to: '/master-data/products', titleKey: 'products.title', descKey: 'products.subtitle', permission: 'catalog.product.view' },
   { to: '/master-data/materials', titleKey: 'materials.title', descKey: 'materials.subtitle', permission: 'catalog.material.view' },
   { to: '/master-data/uoms', titleKey: 'uoms.title', descKey: 'uoms.subtitle', permission: 'catalog.uom.view' },
+  { to: '/master-data/uom-conversions', titleKey: 'uomConversions.title', descKey: 'uomConversions.subtitle', permission: 'catalog.uom.view' },
   { to: '/master-data/employees', titleKey: 'employees.title', descKey: 'employees.subtitle', permission: 'hr.employee.view' },
 ];
 
