@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
-import { Alert, Button } from '@/components/ui';
+import { Alert, Button, StatusBadge } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
@@ -48,7 +48,7 @@ export function PurchaseOrdersPage(): JSX.Element {
     { headerKey: 'procurement.fields.number', render: (r) => r.number },
     {
       headerKey: 'procurement.fields.status',
-      render: (r) => t(`procurement.orderStatuses.${r.status}`),
+      render: (r) => <StatusBadge status={r.status} label={t(`procurement.orderStatuses.${r.status}`)} />,
     },
     { headerKey: 'procurement.fields.currency', render: (r) => r.currency },
     {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { Alert, Button } from '@/components/ui';
+import { Alert, Button, StatusBadge } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import {
@@ -50,7 +50,7 @@ export function PurchaseRequisitionsPage(): JSX.Element {
     { headerKey: 'procurement.fields.number', render: (r) => r.number },
     {
       headerKey: 'procurement.fields.status',
-      render: (r) => t(`procurement.reqStatuses.${r.status}`),
+      render: (r) => <StatusBadge status={r.status} label={t(`procurement.reqStatuses.${r.status}`)} />,
     },
     {
       headerKey: 'procurement.fields.needBy',

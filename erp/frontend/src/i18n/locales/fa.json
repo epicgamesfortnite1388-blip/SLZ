@@ -25,7 +25,17 @@
   },
   "nav": {
     "dashboard": "داشبورد",
-    "masterData": "داده‌های پایه"
+    "masterData": "داده‌های پایه",
+    "sectionOverview": "نمای کلی",
+    "sectionCommerce": "بازرگانی",
+    "sectionOperations": "عملیات",
+    "sectionQuality": "کنترل کیفیت",
+    "sectionMasterData": "داده‌های پایه",
+    "sectionEngineering": "مهندسی",
+    "sectionOrg": "سازمان",
+    "sectionFinance": "مالی",
+    "sectionAdmin": "مدیریت",
+    "sectionIdentity": "هویت"
   },
   "userMenu": {
     "profile": "پروفایل",
@@ -101,7 +111,8 @@
       "company": "شرکت",
       "active": "فعال",
       "baseUom": "واحد پایه",
-      "uom": "واحد"
+      "uom": "واحد",
+      "quantity": "مقدار"
     }
   },
   "organization": {
@@ -500,6 +511,14 @@
       "title": "دسترسی انبار",
       "subtitle": "اعطای دسترسی هر کاربر به انبارهای مشخص."
     },
+    "traceability": {
+      "title": "واحدهای ردیابی",
+      "subtitle": "رول‌ها، بچ‌ها، کارتن‌ها و پالت‌های دارای شناسه سریال."
+    },
+    "balances": {
+      "title": "موجودی‌های انبار",
+      "subtitle": "موجودی هر ماده در تمامی انبارها."
+    },
     "fields": {
       "site": "سایت",
       "storeType": "نوع انبار",
@@ -507,7 +526,10 @@
       "user": "کاربر",
       "accessLevel": "سطح دسترسی",
       "createdAt": "تاریخ ایجاد",
-      "notes": "یادداشت‌ها"
+      "notes": "یادداشت‌ها",
+      "identifier": "شناسه",
+      "unitType": "نوع",
+      "quantity": "مقدار"
     },
     "storeTypes": {
       "GENERAL": "عمومی",
@@ -529,6 +551,8 @@
     }
   },
   "quality": {
+    "checkResults": { "title": "نتایج بازرسی کیفی" },
+    "results": { "title": "نتایج QC", "post": "ثبت نتیجه" },
     "characteristics": {
       "title": "مشخصه‌های کیفی",
       "subtitle": "فهرست مشخصه‌های قابل اندازه‌گیری کیفیت در سطح شرکت.",
@@ -547,6 +571,11 @@
     "fields": {
       "datatype": "نوع داده",
       "method": "روش",
+      "planItem": "آیتم طرح",
+      "unit": "واحد ردیابی",
+      "value": "مقدار",
+      "disposition": "حکم",
+      "checkedAt": "زمان بازرسی",
       "revisionNumber": "نسخه",
       "status": "وضعیت",
       "effectiveFrom": "اعتبار از",
@@ -918,5 +947,36 @@
       "roles": "نقش‌ها",
       "isActive": "فعال"
     }
+  },
+  "costing": {
+    "title": "بهایابی",
+    "summary": { "title": "خلاصه بهایابی" },
+    "fields": {
+      "material": "ماده",
+      "waCost": "میانگین موزون",
+      "onHandQty": "موجودی",
+      "onHandCost": "ارزش موجودی"
+    }
+  },
+  "shipment": {
+    "grns": {
+      "title": "رسید کالا",
+      "subtitle": "رسیدها در مقابل سفارش‌های خرید با ایجاد ردیابی."
+    },
+    "allocations": {
+      "title": "تخصیص‌ها",
+      "new": "تخصیص جدید",
+      "subtitle": "رزرو موجودی قابل‌ردیابی برای ردیف‌های سفارش فروش."
+    },
+    "fields": {
+      "company": "شرکت",
+      "orderLine": "ردیف سفارش",
+      "unit": "واحد ردیابی",
+      "quantity": "مقدار",
+      "uom": "واحد",
+      "status": "وضعیت",
+      "notes": "یادداشت"
+    },
+    "actions": { "release": "آزادسازی" }
   }
 }

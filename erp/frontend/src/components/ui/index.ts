@@ -11,3 +11,5 @@ export { Alert } from './Alert';
 export type { AlertProps, AlertVariant } from './Alert';
 export { FormField } from './FormField';
 export type { FormFieldProps } from './FormField';
+export { StatusBadge } from './StatusBadge';
+export type { StatusBadgeProps, StatusVariant } from './StatusBadge';

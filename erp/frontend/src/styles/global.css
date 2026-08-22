@@ -258,6 +258,17 @@ button {
   flex-shrink: 0;
 }
 
+.sidebar__section-title {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-sidebar-text-muted);
+  padding-inline: var(--space-3);
+  padding-block: var(--space-1);
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
 /* ---- User menu ---- */
 .user-menu {
   position: relative;

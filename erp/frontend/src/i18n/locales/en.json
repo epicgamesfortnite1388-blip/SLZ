@@ -25,7 +25,17 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "masterData": "Master data"
+    "masterData": "Master data",
+    "sectionOverview": "Overview",
+    "sectionCommerce": "Commerce",
+    "sectionOperations": "Operations",
+    "sectionQuality": "Quality",
+    "sectionMasterData": "Master data",
+    "sectionEngineering": "Engineering",
+    "sectionOrg": "Organization",
+    "sectionFinance": "Finance",
+    "sectionAdmin": "Administration",
+    "sectionIdentity": "Identity"
   },
   "userMenu": {
     "profile": "Profile",
@@ -101,7 +111,8 @@
       "company": "Company",
       "active": "Active",
       "baseUom": "Base unit",
-      "uom": "UoM"
+      "uom": "UoM",
+      "quantity": "Quantity"
     }
   },
   "organization": {
@@ -500,6 +511,14 @@
       "title": "Warehouse access",
       "subtitle": "Per-user access grants to individual warehouses."
     },
+    "traceability": {
+      "title": "Traceability units",
+      "subtitle": "Serialized rolls, batches, cartons and pallets."
+    },
+    "balances": {
+      "title": "Stock balances",
+      "subtitle": "Per-material on-hand quantities across all warehouses."
+    },
     "fields": {
       "site": "Site",
       "storeType": "Store type",
@@ -507,7 +526,10 @@
       "user": "User",
       "accessLevel": "Access level",
       "createdAt": "Created",
-      "notes": "Notes"
+      "notes": "Notes",
+      "identifier": "Identifier",
+      "unitType": "Type",
+      "quantity": "Quantity"
     },
     "storeTypes": {
       "GENERAL": "General",
@@ -529,6 +551,8 @@
     }
   },
   "quality": {
+    "checkResults": { "title": "QC check results" },
+    "results": { "title": "QC results", "post": "Post result" },
     "characteristics": {
       "title": "Quality characteristics",
       "subtitle": "Company catalogue of measurable quality attributes.",
@@ -547,6 +571,11 @@
     "fields": {
       "datatype": "Datatype",
       "method": "Method",
+      "planItem": "Plan item ID",
+      "unit": "Traceability unit ID",
+      "value": "Measured value",
+      "disposition": "Disposition",
+      "checkedAt": "Checked at",
       "revisionNumber": "Revision",
       "status": "Status",
       "effectiveFrom": "Effective from",
@@ -918,5 +947,36 @@
       "roles": "Roles",
       "isActive": "Active"
     }
+  },
+  "costing": {
+    "title": "Costing",
+    "summary": { "title": "Costing summary" },
+    "fields": {
+      "material": "Material",
+      "waCost": "WA unit cost",
+      "onHandQty": "On hand",
+      "onHandCost": "On hand value"
+    }
+  },
+  "shipment": {
+    "grns": {
+      "title": "Goods receipts",
+      "subtitle": "Receipts against purchase orders with traceability creation."
+    },
+    "allocations": {
+      "title": "Allocations",
+      "new": "New allocation",
+      "subtitle": "Reserve traceable stock against sales-order lines."
+    },
+    "fields": {
+      "company": "Company",
+      "orderLine": "Order line",
+      "unit": "Traceability unit",
+      "quantity": "Quantity",
+      "uom": "Unit",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "actions": { "release": "Release" }
   }
 }

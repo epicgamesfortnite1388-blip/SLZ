@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/auth/AuthContext';
 import { apiClient } from '@/api/client';
 import { isApiError } from '@/api/types';
-import { Alert, Button, Card, FormField, Input, Spinner } from '@/components/ui';
+import { Alert, Button, Card, FormField, Input, Spinner, StatusBadge } from '@/components/ui';
 import type { Paginated } from '@/api/inventory';
 
 interface QcResult {
@@ -66,48 +66,81 @@ export function QualityCheckResultsPage(): JSX.Element {
   };
 
   if (!canView) return <></>;
-  if (loading) return <Card title={t('quality.results.title', 'QC Results')}><Spinner /></Card>;
+  if (loading) {
+    return (
+      <div className="stack">
+        <div className="page-header">
+          <h1 className="page-header__title">{t('quality.checkResults.title')}</h1>
+        </div>
+        <Card><Spinner /></Card>
+      </div>
+    );
+  }
 
   return (
-    <Card title={t('quality.results.title', 'QC Results')}>
-      {error && <Alert variant="danger" title={t('common.error')} onClose={() => setError(null)}>{error}</Alert>}
-      {canManage && (
-        <form className="stack" onSubmit={(e) => void postResult(e)}>
-          <h3>{t('quality.results.post', 'Post Result')}</h3>
-          <div className="grid">
-            <FormField label={t('quality.fields.planItem', 'Plan Item')} required>
-              {({ id }) => <Input id={id} value={planItem} onChange={(e) => setPlanItem(e.target.value)} required disabled={busy} placeholder="UUID" />}
-            </FormField>
-            <FormField label={t('quality.fields.unit', 'Unit')} required>
-              {({ id }) => <Input id={id} value={unit} onChange={(e) => setUnit(e.target.value)} required disabled={busy} placeholder="UUID" />}
-            </FormField>
-            <FormField label={t('quality.fields.value', 'Value')} required>
-              {({ id }) => <Input id={id} value={value} onChange={(e) => setValue(e.target.value)} required disabled={busy} />}
-            </FormField>
-            <FormField label={t('quality.fields.disposition', 'Disposition')} required>
-              {({ id }) => <select className="input" id={id} value={disposition} onChange={(e) => setDisposition(e.target.value)} required disabled={busy}>
-                <option value="PASS">PASS</option>
-                <option value="FAIL">FAIL</option>
-                <option value="HOLD">HOLD</option>
-              </select>}
-            </FormField>
-            <FormField label={t('quality.fields.checkedAt', 'Checked At')} required>
-              {({ id }) => <Input id={id} type="datetime-local" value={checkedAt} onChange={(e) => setCheckedAt(e.target.value)} required disabled={busy} />}
-            </FormField>
-          </div>
-          <Button type="submit" loading={busy}>{t('common.create', 'Post')}</Button>
-        </form>
-      )}
-      <div className="table-scroll">
-        <table className="data-table">
-          <thead><tr><th>{t('quality.fields.unit', 'Unit')}</th><th>{t('quality.fields.value', 'Value')}</th><th>{t('quality.fields.disposition', 'Disposition')}</th><th>{t('quality.fields.checkedAt', 'Checked')}</th></tr></thead>
-          <tbody>
-            {results.length === 0 ? <tr><td colSpan={4}>{t('common.noData', 'No data')}</td></tr> : results.map((r) => (
-              <tr key={r.id}><td>{r.traceability_unit}</td><td>{r.measured_value}</td><td><span className={`badge badge-${r.disposition.toLowerCase()}`}>{r.disposition}</span></td><td>{r.checked_at}</td></tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="stack">
+      <div className="page-header">
+        <h1 className="page-header__title">{t('quality.checkResults.title')}</h1>
       </div>
-    </Card>
+
+      <Card>
+        {error && <Alert variant="danger" title={t('common.error')} onClose={() => setError(null)}>{error}</Alert>}
+
+        {canManage && (
+          <form className="stack" onSubmit={(e) => void postResult(e)} style={{ marginBottom: 'var(--space-5)' }}>
+            <h3>{t('quality.results.post')}</h3>
+            <div className="form-grid">
+              <FormField label={t('quality.fields.planItem')} required>
+                {({ id }) => <Input id={id} value={planItem} onChange={(e) => setPlanItem(e.target.value)} required disabled={busy} placeholder="UUID" />}
+              </FormField>
+              <FormField label={t('quality.fields.unit')} required>
+                {({ id }) => <Input id={id} value={unit} onChange={(e) => setUnit(e.target.value)} required disabled={busy} placeholder="UUID" />}
+              </FormField>
+              <FormField label={t('quality.fields.value')} required>
+                {({ id }) => <Input id={id} value={value} onChange={(e) => setValue(e.target.value)} required disabled={busy} />}
+              </FormField>
+              <FormField label={t('quality.fields.disposition')} required>
+                {({ id }) => (
+                  <select className="input" id={id} value={disposition} onChange={(e) => setDisposition(e.target.value)} required disabled={busy}>
+                    <option value="PASS">{t('quality.datatypes.BOOL')} PASS</option>
+                    <option value="FAIL">FAIL</option>
+                    <option value="HOLD">HOLD</option>
+                  </select>
+                )}
+              </FormField>
+              <FormField label={t('quality.fields.checkedAt')} required>
+                {({ id }) => <Input id={id} type="datetime-local" value={checkedAt} onChange={(e) => setCheckedAt(e.target.value)} required disabled={busy} />}
+              </FormField>
+            </div>
+            <Button type="submit" loading={busy}>{t('masterData.save')}</Button>
+          </form>
+        )}
+
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>{t('quality.fields.unit')}</th>
+                <th>{t('quality.fields.value')}</th>
+                <th>{t('quality.fields.disposition')}</th>
+                <th>{t('quality.fields.checkedAt')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.length === 0 ? (
+                <tr><td colSpan={4}>{t('masterData.empty')}</td></tr>
+              ) : results.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.traceability_unit}</td>
+                  <td>{r.measured_value}</td>
+                  <td><StatusBadge status={r.disposition} /></td>
+                  <td>{r.checked_at}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
   );
 }

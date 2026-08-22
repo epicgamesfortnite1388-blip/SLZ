@@ -56,6 +56,8 @@ import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
 import { WarehouseCreatePage } from '@/pages/inventory/WarehouseCreatePage';
 import { WarehouseDetailPage } from '@/pages/inventory/WarehouseDetailPage';
 import { WarehouseAccessPage } from '@/pages/inventory/WarehouseAccessPage';
+import { TraceabilityUnitsPage } from '@/pages/inventory/TraceabilityUnitsPage';
+import { StockBalancesPage } from '@/pages/inventory/StockBalancesPage';
 import { CharacteristicsPage } from '@/pages/quality/CharacteristicsPage';
 import { CharacteristicCreatePage } from '@/pages/quality/CharacteristicCreatePage';
 import { QualityPlanRevisionsPage } from '@/pages/quality/QualityPlanRevisionsPage';
@@ -76,6 +78,7 @@ import { ProductionOrdersPage } from '@/pages/production/ProductionOrdersPage';
 import { ProductionOrderCreatePage } from '@/pages/production/ProductionOrderCreatePage';
 import { ProductionOrderDetailPage } from '@/pages/production/ProductionOrderDetailPage';
 import { AllocationsPage } from '@/pages/shipment/AllocationsPage';
+import { GoodsReceiptsPage } from '@/pages/shipment/GoodsReceiptsPage';
 import { CostSummaryPage } from '@/pages/costing/CostSummaryPage';
 import { ApprovalsPage } from '@/pages/workflow/ApprovalsPage';
 import { WorkflowDefinitionsPage } from '@/pages/workflow/WorkflowDefinitionsPage';
@@ -531,6 +534,22 @@ export default function App(): JSX.Element {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="traceability-units"
+            element={
+              <ProtectedRoute requiredPermission="inventory.movement.view">
+                <TraceabilityUnitsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="balances"
+            element={
+              <ProtectedRoute requiredPermission="catalog.material.view">
+                <StockBalancesPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         <Route path="quality">
@@ -873,6 +892,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="shipment.allocation.view">
                 <AllocationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="grns"
+            element={
+              <ProtectedRoute requiredPermission="procurement.grn.view">
+                <GoodsReceiptsPage />
               </ProtectedRoute>
             }
           />

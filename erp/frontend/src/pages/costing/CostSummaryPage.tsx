@@ -48,7 +48,6 @@ export function CostSummaryPage(): JSX.Element {
   }, [canView, t]);
 
   if (!canView) return <></>;
-  if (loading) return <Card title={t('costing.summary.title', 'Costing Summary')}><Spinner /></Card>;
 
   const label = (id: string): string => {
     const m = materials[id];
@@ -56,32 +55,50 @@ export function CostSummaryPage(): JSX.Element {
   };
 
   return (
-    <Card title={t('costing.summary.title', 'Costing Summary')}>
-      {error && <Alert variant="danger" title={t('common.error')} onClose={() => setError(null)}>{error}</Alert>}
-      <div className="table-scroll">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>{t('costing.fields.material', 'Material')}</th>
-              <th>{t('costing.fields.waCost', 'WA Unit Cost')}</th>
-              <th>{t('costing.fields.onHandQty', 'On Hand')}</th>
-              <th>{t('costing.fields.onHandCost', 'On Hand Value')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 ? (
-              <tr><td colSpan={4}>{t('common.noData', 'No data')}</td></tr>
-            ) : items.map((item) => (
-              <tr key={item.material_id}>
-                <td>{label(item.material_id)}</td>
-                <td>{item.wa_unit_cost}</td>
-                <td>{item.on_hand_qty}</td>
-                <td>{item.on_hand_cost}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="stack">
+      <div className="page-header">
+        <h1 className="page-header__title">{t('costing.summary.title')}</h1>
+        <p className="page-header__subtitle">{t('costing.fields.onHandCost')}</p>
       </div>
-    </Card>
+
+      <Card>
+        {loading && <Spinner />}
+        {error && (
+          <Alert variant="danger" title={t('common.error')} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+        {!loading && !error && (
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>{t('costing.fields.material')}</th>
+                  <th className="text-end">{t('costing.fields.waCost')}</th>
+                  <th className="text-end">{t('costing.fields.onHandQty')}</th>
+                  <th className="text-end">{t('costing.fields.onHandCost')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>{t('masterData.empty')}</td>
+                  </tr>
+                ) : (
+                  items.map((item) => (
+                    <tr key={item.material_id}>
+                      <td>{label(item.material_id)}</td>
+                      <td className="text-end">{item.wa_unit_cost}</td>
+                      <td className="text-end">{item.on_hand_qty}</td>
+                      <td className="text-end">{item.on_hand_cost}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { Alert, Button } from '@/components/ui';
+import { Alert, Button, StatusBadge } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import {
@@ -46,7 +46,7 @@ export function SalesOrdersPage(): JSX.Element {
     { headerKey: 'sales.fields.number', render: (r) => r.number },
     {
       headerKey: 'sales.fields.status',
-      render: (r) => t(`sales.orderStatuses.${r.status}`),
+      render: (r) => <StatusBadge status={r.status} label={t(`sales.orderStatuses.${r.status}`)} />,
     },
     { headerKey: 'sales.fields.currency', render: (r) => r.currency },
     {
