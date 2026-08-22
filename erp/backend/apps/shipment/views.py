@@ -33,7 +33,9 @@ class AllocationViewSet(AuditedModelViewSet):
         "status",
     ]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         company = serializer.validated_data["company"]
         alloc = services.reserve(
             company=company,
@@ -42,9 +44,10 @@ class AllocationViewSet(AuditedModelViewSet):
             quantity=serializer.validated_data["quantity"],
             uom=serializer.validated_data["uom"],
             notes=serializer.validated_data.get("notes", ""),
-            actor=self.request.user,
+            actor=request.user,
         )
-        serializer.instance = alloc
+        output_serializer = self.get_serializer(alloc)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="release")
     def release_allocation(self, request, pk=None):

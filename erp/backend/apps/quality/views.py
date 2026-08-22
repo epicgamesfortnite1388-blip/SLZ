@@ -10,6 +10,7 @@ editable only while their revision is DRAFT (enforced in serializers). Mirrors
 
 from __future__ import annotations
 
+from rest_framework import status as http_status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -139,7 +140,9 @@ class QualityCheckResultViewSet(AuditedModelViewSet):
         "disposition",
     ]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         result = services.post_check_result(
             plan_item=serializer.validated_data["plan_item"],
             traceability_unit=serializer.validated_data["traceability_unit"],
@@ -148,9 +151,10 @@ class QualityCheckResultViewSet(AuditedModelViewSet):
             checked_at=serializer.validated_data["checked_at"],
             checked_by=serializer.validated_data.get("checked_by"),
             notes=serializer.validated_data.get("notes", ""),
-            actor=self.request.user,
+            actor=request.user,
         )
-        serializer.instance = result
+        output_serializer = self.get_serializer(result)
+        return Response(output_serializer.data, status=http_status.HTTP_201_CREATED)
 
     def perform_update(self, serializer):
         raise ConflictError("QC results are append-only.", code="append_only")

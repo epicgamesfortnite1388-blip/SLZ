@@ -73,6 +73,38 @@ class ShipmentCreateSerializer(serializers.Serializer):
     notes = serializers.CharField(required=False, allow_blank=True, default="")
     lines = ShipmentLineInputSerializer(many=True)
 
+    def validate(self, attrs):
+        company = attrs["company"]
+        warehouse = attrs["warehouse"]
+        customer = attrs["customer"]
+        sales_order = attrs.get("sales_order")
+        errors = {}
+        if warehouse.company_id != company.id:
+            errors["warehouse"] = "Warehouse must belong to the shipment company."
+        if customer.partner.company_id != company.id:
+            errors["customer"] = "Customer must belong to the shipment company."
+        if sales_order is not None and sales_order.company_id != company.id:
+            errors["sales_order"] = "Sales order must belong to the shipment company."
+        for i, line in enumerate(attrs.get("lines", [])):
+            unit = line.get("traceability_unit")
+            sol = line.get("sales_order_line")
+            alloc = line.get("allocation")
+            if unit and unit.company_id != company.id:
+                errors.setdefault("lines", {}).setdefault(i, {})[
+                    "traceability_unit"
+                ] = "Unit must belong to the shipment company."
+            if sol and sol.order.company_id != company.id:
+                errors.setdefault("lines", {}).setdefault(i, {})[
+                    "sales_order_line"
+                ] = "Order line must belong to the shipment company."
+            if alloc and alloc.company_id != company.id:
+                errors.setdefault("lines", {}).setdefault(i, {})[
+                    "allocation"
+                ] = "Allocation must belong to the shipment company."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
 
 class ShipmentLineSerializer(serializers.ModelSerializer):
     class Meta:

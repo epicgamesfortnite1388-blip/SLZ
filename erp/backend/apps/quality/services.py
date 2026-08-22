@@ -203,8 +203,7 @@ def post_check_result(
         if not traceability_unit.notes:
             traceability_unit.notes = ""
         traceability_unit.notes = (
-            traceability_unit.notes
-            + f" [QC HOLD: {checked_at.isoformat()}]"
+            traceability_unit.notes + f" [QC HOLD: {checked_at.isoformat()}]"
         ).strip()
         traceability_unit.save(update_fields=["notes", "updated_at"])
 

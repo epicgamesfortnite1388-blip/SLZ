@@ -35,6 +35,19 @@ class SalesOrderSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["status"]
 
+    def validate(self, attrs):
+        company = attrs.get("company", getattr(self.instance, "company", None))
+        site = attrs.get("site", getattr(self.instance, "site", None))
+        customer = attrs.get("customer", getattr(self.instance, "customer", None))
+        errors = {}
+        if company and site and site.company_id != company.id:
+            errors["site"] = "Site must belong to the order company."
+        if company and customer and customer.partner.company_id != company.id:
+            errors["customer"] = "Customer must belong to the order company."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
 
 class SalesOrderLineSerializer(serializers.ModelSerializer):
     """Order child line. Two invariants are enforced here:

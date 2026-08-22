@@ -170,9 +170,7 @@ class QualityCheckResultSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def validate(self, attrs):
-        plan_item = attrs.get(
-            "plan_item", getattr(self.instance, "plan_item", None)
-        )
+        plan_item = attrs.get("plan_item", getattr(self.instance, "plan_item", None))
         unit = attrs.get(
             "traceability_unit",
             getattr(self.instance, "traceability_unit", None),

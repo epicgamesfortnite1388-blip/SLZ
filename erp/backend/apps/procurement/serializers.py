@@ -44,6 +44,16 @@ class PurchaseRequisitionSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["status"]
 
+    def validate(self, attrs):
+        company = attrs.get("company", getattr(self.instance, "company", None))
+        site = attrs.get("site", getattr(self.instance, "site", None))
+        errors = {}
+        if company and site and site.company_id != company.id:
+            errors["site"] = "Site must belong to the requisition company."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,6 +73,19 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["status"]
+
+    def validate(self, attrs):
+        company = attrs.get("company", getattr(self.instance, "company", None))
+        site = attrs.get("site", getattr(self.instance, "site", None))
+        supplier = attrs.get("supplier", getattr(self.instance, "supplier", None))
+        errors = {}
+        if company and site and site.company_id != company.id:
+            errors["site"] = "Site must belong to the order company."
+        if company and supplier and supplier.partner.company_id != company.id:
+            errors["supplier"] = "Supplier must belong to the order company."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
 
 class _LineOfDocumentSerializer(serializers.ModelSerializer):
@@ -197,6 +220,22 @@ class GoodsReceiptCreateSerializer(serializers.Serializer):
     received_at = serializers.DateField()
     notes = serializers.CharField(required=False, allow_blank=True, default="")
     lines = GoodsReceiptLineInputSerializer(many=True)
+
+    def validate(self, attrs):
+        company = attrs["company"]
+        warehouse = attrs["warehouse"]
+        supplier = attrs.get("supplier")
+        purchase_order = attrs.get("purchase_order")
+        errors = {}
+        if warehouse.company_id != company.id:
+            errors["warehouse"] = "Warehouse must belong to the receipt company."
+        if supplier is not None and supplier.partner.company_id != company.id:
+            errors["supplier"] = "Supplier must belong to the receipt company."
+        if purchase_order is not None and purchase_order.company_id != company.id:
+            errors["purchase_order"] = "Purchase order must belong to the receipt company."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
 
 class GoodsReceiptLineSerializer(serializers.ModelSerializer):
