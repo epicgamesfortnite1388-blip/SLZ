@@ -12,7 +12,7 @@ export function ProductClassesPage(): JSX.Element {
   const collection = useCollection<ProductClass>('/catalog/product-classes/');
 
   const columns: Column<ProductClass>[] = [
-    { headerKey: 'masterData.fields.code', render: (r) => `${r.product_type}/${r.code}` },
+    { headerKey: 'masterData.fields.code', render: (r) => r.code },
     { headerKey: 'masterData.fields.nameFa', render: (r) => r.name_fa },
     { headerKey: 'masterData.fields.nameEn', render: (r) => r.name_en || '—' },
     { headerKey: 'masterData.fields.active', render: (r) => <BoolCell value={r.is_active} />, align: 'center' },
