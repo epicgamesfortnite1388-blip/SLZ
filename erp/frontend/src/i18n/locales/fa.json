@@ -142,6 +142,16 @@
       }
     }
   },
+  "permissions": {
+    "title": "مجوزها",
+    "subtitle": "کدهای مجوز سامانه (module.resource.action) — فقط خواندنی.",
+    "fields": {
+      "code": "کد",
+      "module": "ماژول",
+      "descriptionEn": "توضیح (انگلیسی)",
+      "descriptionFa": "توضیح (فارسی)"
+    }
+  },
   "roles": {
     "title": "نقش‌ها",
     "subtitle": "نقش‌های دسترسی سامانه — مجموعه‌های مجوز قابل انتساب به کاربران.",

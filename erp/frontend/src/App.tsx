@@ -82,6 +82,7 @@ import { AuditLogPage } from '@/pages/audit/AuditLogPage';
 import { RolesPage } from '@/pages/identity/RolesPage';
 import { RoleCreatePage } from '@/pages/identity/RoleCreatePage';
 import { UsersPage } from '@/pages/identity/UsersPage';
+import { PermissionsPage } from '@/pages/identity/PermissionsPage';
 import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { CompaniesPage } from '@/pages/organization/CompaniesPage';
 import { CompanyCreatePage } from '@/pages/organization/CompanyCreatePage';
@@ -810,6 +811,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="identity.user.view">
                 <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="permissions"
+            element={
+              <ProtectedRoute requiredPermission="identity.permission.view">
+                <PermissionsPage />
               </ProtectedRoute>
             }
           />

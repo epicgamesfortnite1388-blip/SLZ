@@ -142,6 +142,16 @@
       }
     }
   },
+  "permissions": {
+    "title": "Permissions",
+    "subtitle": "Platform RBAC permission codes (module.resource.action) — read-only.",
+    "fields": {
+      "code": "Code",
+      "module": "Module",
+      "descriptionEn": "Description (EN)",
+      "descriptionFa": "Description (FA)"
+    }
+  },
   "roles": {
     "title": "Roles",
     "subtitle": "Platform RBAC roles — permission bundles assignable to users.",
