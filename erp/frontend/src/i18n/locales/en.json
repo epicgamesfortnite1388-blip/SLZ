@@ -175,6 +175,30 @@
       "title": "Partner details",
       "back": "← Back to partners",
       "notFound": "This partner could not be found."
+    },
+    "contacts": {
+      "title": "Contacts",
+      "name": "Name",
+      "kind": "Kind",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "kind": "Type",
+      "line1": "Address line",
+      "city": "City",
+      "country": "Country"
+    },
+    "kinds": {
+      "GENERAL": "General",
+      "SALES": "Sales",
+      "TECHNICAL": "Technical",
+      "FINANCE": "Finance",
+      "LOGISTICS": "Logistics",
+      "BILLING": "Billing",
+      "SHIPPING": "Shipping",
+      "OTHER": "Other"
     }
   },
   "productGroups": {
@@ -250,7 +274,15 @@
       "VOLUME": "Volume",
       "COUNT": "Count",
       "TIME": "Time"
-    }
+    },
+    "fromUom": "From UoM",
+    "toUom": "To UoM",
+    "factor": "Factor"
+  },
+  "uomConversions": {
+    "title": "UoM conversions",
+    "subtitle": "Conversion factors between units of the same dimension.",
+    "new": "New conversion"
   },
   "employees": {
     "title": "Employees",

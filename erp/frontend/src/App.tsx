@@ -25,6 +25,8 @@ import { MaterialCreatePage } from '@/pages/masterData/MaterialCreatePage';
 import { MaterialDetailPage } from '@/pages/masterData/MaterialDetailPage';
 import { UomsPage } from '@/pages/masterData/UomsPage';
 import { UomCreatePage } from '@/pages/masterData/UomCreatePage';
+import { UomConversionsPage } from '@/pages/masterData/UomConversionsPage';
+import { UomConversionCreatePage } from '@/pages/masterData/UomConversionCreatePage';
 import { EmployeesPage } from '@/pages/masterData/EmployeesPage';
 import { EmployeeDetailPage } from '@/pages/masterData/EmployeeDetailPage';
 import { EmployeeCreatePage } from '@/pages/masterData/EmployeeCreatePage';
@@ -252,6 +254,22 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="catalog.uom.view">
                 <UomsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="uom-conversions"
+            element={
+              <ProtectedRoute requiredPermission="catalog.uom.view">
+                <UomConversionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="uom-conversions/new"
+            element={
+              <ProtectedRoute requiredPermission="catalog.uom.manage">
+                <UomConversionCreatePage />
               </ProtectedRoute>
             }
           />

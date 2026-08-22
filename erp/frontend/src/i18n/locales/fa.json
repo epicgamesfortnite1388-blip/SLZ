@@ -175,6 +175,30 @@
       "title": "جزئیات طرف تجاری",
       "back": "← بازگشت به طرف‌های تجاری",
       "notFound": "این طرف تجاری یافت نشد."
+    },
+    "contacts": {
+      "title": "مخاطبان",
+      "name": "نام",
+      "kind": "نوع",
+      "email": "ایمیل",
+      "phone": "تلفن"
+    },
+    "addresses": {
+      "title": "نشانی‌ها",
+      "kind": "نوع",
+      "line1": "خط نشانی",
+      "city": "شهر",
+      "country": "کشور"
+    },
+    "kinds": {
+      "GENERAL": "عمومی",
+      "SALES": "فروش",
+      "TECHNICAL": "فنی",
+      "FINANCE": "مالی",
+      "LOGISTICS": "لجستیک",
+      "BILLING": "صورتحساب",
+      "SHIPPING": "حمل",
+      "OTHER": "سایر"
     }
   },
   "productGroups": {
@@ -250,7 +274,15 @@
       "VOLUME": "حجم",
       "COUNT": "تعداد",
       "TIME": "زمان"
-    }
+    },
+    "fromUom": "از واحد",
+    "toUom": "به واحد",
+    "factor": "ضریب"
+  },
+  "uomConversions": {
+    "title": "تبدیل واحدها",
+    "subtitle": "ضرایب تبدیل بین واحدهای یک بعد.",
+    "new": "تبدیل جدید"
   },
   "employees": {
     "title": "کارکنان",

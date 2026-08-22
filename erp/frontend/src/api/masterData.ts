@@ -219,3 +219,73 @@ export function createProductClass(payload: Partial<ProductClass>): Promise<Prod
 export function createProductFamily(payload: Partial<ProductFamily>): Promise<ProductFamily> {
   return apiClient.post<ProductFamily>('/catalog/product-families/', payload);
 }
+
+// ── Unit of measure conversions ──
+
+/** 1 from_uom = factor × to_uom (same dimension enforced server-side). */
+export interface UomConversion {
+  id: string;
+  from_uom: string;
+  to_uom: string;
+  factor: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function createUomConversion(payload: Partial<UomConversion>): Promise<UomConversion> {
+  return apiClient.post<UomConversion>('/catalog/uom-conversions/', payload);
+}
+
+/** One partner contact person (mirrors ``ContactSerializer``). */
+export interface PartnerContact {
+  id: string;
+  partner: string;
+  name: string;
+  title: string;
+  kind: string;
+  email: string;
+  phone: string;
+  is_primary: boolean;
+}
+
+/** Contacts of one partner (`/partners/contacts/?partner=`). */
+export async function fetchPartnerContacts(partnerId: string): Promise<PartnerContact[]> {
+  const page = await apiClient.get<Paginated<PartnerContact>>(
+    `/partners/contacts/?partner=${encodeURIComponent(partnerId)}&page_size=100`,
+  );
+  return page.results;
+}
+
+export function createPartnerContact(
+  payload: Partial<PartnerContact> & { partner: string },
+): Promise<PartnerContact> {
+  return apiClient.post<PartnerContact>('/partners/contacts/', payload);
+}
+
+/** One partner address (mirrors ``AddressSerializer``). */
+export interface PartnerAddress {
+  id: string;
+  partner: string;
+  kind: string;
+  line1: string;
+  line2: string;
+  city: string;
+  province: string;
+  postal_code: string;
+  country: string;
+  is_primary: boolean;
+}
+
+/** Addresses of one partner (`/partners/addresses/?partner=`). */
+export async function fetchPartnerAddresses(partnerId: string): Promise<PartnerAddress[]> {
+  const page = await apiClient.get<Paginated<PartnerAddress>>(
+    `/partners/addresses/?partner=${encodeURIComponent(partnerId)}&page_size=100`,
+  );
+  return page.results;
+}
+
+export function createPartnerAddress(
+  payload: Partial<PartnerAddress> & { partner: string },
+): Promise<PartnerAddress> {
+  return apiClient.post<PartnerAddress>('/partners/addresses/', payload);
+}

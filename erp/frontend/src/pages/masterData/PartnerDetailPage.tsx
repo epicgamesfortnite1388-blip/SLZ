@@ -6,6 +6,7 @@ import { BoolCell } from '@/components/CollectionView';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
+import { PartnerAddressesPanel, PartnerContactsPanel } from './PartnerSubPanels';
 import { useRecord } from '@/hooks/useRecord';
 import type { Partner } from '@/api/masterData';
 
@@ -74,6 +75,13 @@ export function PartnerDetailPage(): JSX.Element {
           <RecordDetail title={t('partners.detail.title')} fields={fields} />
           {hasPermission('documents.attachment.view') && id && (
             <AttachmentPanel entityType={ENTITY_TYPE} entityId={id} />
+          )}
+
+          {(hasPermission('partners.contact.view') || hasPermission('partners.contact.manage')) && id && (
+            <PartnerContactsPanel partnerId={id} />
+          )}
+          {(hasPermission('partners.address.view') || hasPermission('partners.address.manage')) && id && (
+            <PartnerAddressesPanel partnerId={id} />
           )}
 
           <AuditHistoryPanel entityType={ENTITY_TYPE} entityId={id ?? ''} />

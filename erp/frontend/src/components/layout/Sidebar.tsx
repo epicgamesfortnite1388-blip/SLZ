@@ -31,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: 'productFamilies.title', to: '/master-data/product-families', permission: 'catalog.producttaxonomy.view' },
   { labelKey: 'materials.title', to: '/master-data/materials', permission: 'catalog.material.view' },
   { labelKey: 'uoms.title', to: '/master-data/uoms', permission: 'catalog.uom.view' },
+  { labelKey: 'uomConversions.title', to: '/master-data/uom-conversions', permission: 'catalog.uom.view' },
   { labelKey: 'employees.title', to: '/master-data/employees', permission: 'hr.employee.view' },
   { labelKey: 'engineering.customerProducts.title', to: '/engineering/customer-products', permission: 'engineering.customerproduct.view' },
   { labelKey: 'engineering.specifications.title', to: '/engineering/specifications', permission: 'engineering.specification.view' },
