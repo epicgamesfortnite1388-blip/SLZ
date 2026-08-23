@@ -256,3 +256,31 @@ class AllocationTests(TestCase):
         # The unit row should still exist and be queryable.
         unit = TraceabilityUnit.objects.get(pk=self.p["unit"].pk)
         self.assertEqual(Decimal(unit.quantity), Decimal(self.p["unit"].quantity))
+
+    def test_over_allocation_same_order_line_blocked(self):
+        """Two reservations on the same SO line must not together exceed on-hand.
+        Regression: the old code excluded the same SO line from the already-
+        allocated check, allowing intra-line over-allocation."""
+        from apps.core.exceptions import BusinessRuleError
+        from apps.shipment import services as shipment_services
+
+        # First allocation: 200 on 500 on-hand
+        shipment_services.reserve(
+            company=self.company,
+            sales_order_line=self.p["sol"],
+            traceability_unit=self.p["unit"],
+            quantity=Decimal("200"),
+            uom=self.p["uom"],
+            actor=self.user,
+        )
+        # Second allocation on same SO line: 400 — would make 600 > 500
+        with self.assertRaises(BusinessRuleError) as ctx:
+            shipment_services.reserve(
+                company=self.company,
+                sales_order_line=self.p["sol"],
+                traceability_unit=self.p["unit"],
+                quantity=Decimal("400"),
+                uom=self.p["uom"],
+                actor=self.user,
+            )
+        self.assertIn("Insufficient", str(ctx.exception))

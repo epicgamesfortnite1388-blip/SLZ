@@ -18,6 +18,7 @@ from apps.core.models import BaseModel, SoftDeleteModel
 class AllocationStatus(models.TextChoices):
     RESERVED = "RESERVED", "Reserved"
     RELEASED = "RELEASED", "Released"
+    SHIPPED = "SHIPPED", "Shipped"
 
 
 class ShipmentStatus(models.TextChoices):

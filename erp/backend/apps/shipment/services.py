@@ -68,15 +68,13 @@ def reserve(
         company=company,
         traceability_unit=traceability_unit,
     )
-    # Already allocated to any order line
+    # Already allocated to any order line (including this one — prevents
+    # creating multiple RESERVED allocations to the same line that together
+    # exceed available stock).
     already = Allocation.objects.filter(
         traceability_unit=traceability_unit,
         status=AllocationStatus.RESERVED,
-    ).exclude(sales_order_line=sales_order_line).aggregate(t=models.Sum("quantity"))[
-        "t"
-    ] or Decimal(
-        "0"
-    )
+    ).aggregate(t=models.Sum("quantity"))["t"] or Decimal("0")
     available = on_hand - already
     requested = Decimal(str(quantity))
 
@@ -191,6 +189,10 @@ def create_shipment(serializer, *, actor=None):
                         "Shipment quantity exceeds the allocated quantity " f"({alloc.quantity}).",
                         code="shipment.over_shipped",
                     )
+                # Consume the allocation: mark it SHIPPED so it cannot be re-used.
+                alloc.status = AllocationStatus.SHIPPED
+                alloc.updated_by = actor
+                alloc.save(update_fields=["status", "updated_by", "updated_at"])
 
             dial = ShipmentLine.objects.create(
                 shipment=shipment,

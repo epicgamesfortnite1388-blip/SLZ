@@ -36,20 +36,12 @@ from apps.engineering.models import (
     PrintProcess,
     SpecColor,
     SpecFormat,
-    SpecLayer,
     SpecificationRevision,
+    SpecLayer,
     SurfaceFinish,
 )
-from apps.identity.models import (
-    CompanyMembership,
-    Role,
-    User,
-    UserRole,
-)
-from apps.inventory.models import (
-    Warehouse,
-    WarehouseStoreType,
-)
+from apps.identity.models import CompanyMembership, Role, User, UserRole
+from apps.inventory.models import Warehouse, WarehouseStoreType
 from apps.manufacturing.models import (
     BillOfMaterials,
     BomLine,
@@ -60,31 +52,11 @@ from apps.manufacturing.models import (
     RoutingRevision,
     WorkCenter,
 )
-from apps.organization.models import (
-    Company,
-    ProductionCapability,
-    Site,
-    SiteCapability,
-)
-from apps.partners.models import (
-    Customer,
-    Partner,
-    Supplier,
-)
-from apps.procurement.models import (
-    PurchaseOrder,
-    PurchaseOrderLine,
-    PurchaseOrderStatus,
-)
-from apps.production.models import (
-    ProductionOrder,
-    ProductionOrderStatus,
-)
-from apps.sales.models import (
-    SalesOrder,
-    SalesOrderLine,
-    SalesOrderStatus,
-)
+from apps.organization.models import Company, ProductionCapability, Site, SiteCapability
+from apps.partners.models import Customer, Partner, Supplier
+from apps.procurement.models import PurchaseOrder, PurchaseOrderLine, PurchaseOrderStatus
+from apps.production.models import ProductionOrder
+from apps.sales.models import SalesOrder, SalesOrderLine, SalesOrderStatus
 
 TODAY = date.today()
 
@@ -135,7 +107,12 @@ class Command(BaseCommand):
 
         # ── 4. Warehouses ───────────────────────────────────────────────
         wh_config = [
-            ("RM-01", "انبار مواد اولیه", "Raw Material Warehouse", WarehouseStoreType.RAW_MATERIAL),
+            (
+                "RM-01",
+                "انبار مواد اولیه",
+                "Raw Material Warehouse",
+                WarehouseStoreType.RAW_MATERIAL,
+            ),
             ("WIP-01", "انبار نیم‌ساخته", "WIP Warehouse", WarehouseStoreType.WIP),
             ("FG-01", "انبار محصول", "Finished Goods Warehouse", WarehouseStoreType.FINISHED_GOODS),
             ("QC-01", "انبار قرنطینه", "Quarantine Warehouse", WarehouseStoreType.QUARANTINE),
@@ -196,18 +173,74 @@ class Command(BaseCommand):
 
         # ── 7. Materials ────────────────────────────────────────────────
         mat_config = [
-            ("PE-LD", "گرانول پلی‌اتیلن سبک", "LDPE Granule", MaterialSubtype.RESIN_MASTERBATCH, TraceabilityMode.BATCH, "KG"),
-            ("PE-LLD", "گرانول پلی‌اتیلن خطی", "LLDPE Granule", MaterialSubtype.RESIN_MASTERBATCH, TraceabilityMode.BATCH, "KG"),
-            ("BOPP-20", "فیلم BOPP 20 میکرون", "BOPP Film 20µ", MaterialSubtype.SEMI_FINISHED, TraceabilityMode.SERIALIZED_ROLL, "ROLL"),
-            ("PET-12", "فیلم PET 12 میکرون", "PET Film 12µ", MaterialSubtype.SEMI_FINISHED, TraceabilityMode.SERIALIZED_ROLL, "ROLL"),
-            ("PE-FILM80", "فیلم PE 80 میکرون", "PE Film 80µ", MaterialSubtype.SEMI_FINISHED, TraceabilityMode.SERIALIZED_ROLL, "ROLL"),
+            (
+                "PE-LD",
+                "گرانول پلی‌اتیلن سبک",
+                "LDPE Granule",
+                MaterialSubtype.RESIN_MASTERBATCH,
+                TraceabilityMode.BATCH,
+                "KG",
+            ),
+            (
+                "PE-LLD",
+                "گرانول پلی‌اتیلن خطی",
+                "LLDPE Granule",
+                MaterialSubtype.RESIN_MASTERBATCH,
+                TraceabilityMode.BATCH,
+                "KG",
+            ),
+            (
+                "BOPP-20",
+                "فیلم BOPP 20 میکرون",
+                "BOPP Film 20µ",
+                MaterialSubtype.SEMI_FINISHED,
+                TraceabilityMode.SERIALIZED_ROLL,
+                "ROLL",
+            ),
+            (
+                "PET-12",
+                "فیلم PET 12 میکرون",
+                "PET Film 12µ",
+                MaterialSubtype.SEMI_FINISHED,
+                TraceabilityMode.SERIALIZED_ROLL,
+                "ROLL",
+            ),
+            (
+                "PE-FILM80",
+                "فیلم PE 80 میکرون",
+                "PE Film 80µ",
+                MaterialSubtype.SEMI_FINISHED,
+                TraceabilityMode.SERIALIZED_ROLL,
+                "ROLL",
+            ),
             ("INK-BLK", "مرکب مشکی", "Black Ink", MaterialSubtype.INK, None, "KG"),
             ("INK-CYN", "مرکب فیروزه‌ای", "Cyan Ink", MaterialSubtype.INK, None, "KG"),
             ("INK-MAG", "مرکب قرمز", "Magenta Ink", MaterialSubtype.INK, None, "KG"),
             ("INK-YEL", "مرکب زرد", "Yellow Ink", MaterialSubtype.INK, None, "KG"),
-            ("SOL-001", "حلال اتیل استات", "Ethyl Acetate Solvent", MaterialSubtype.SOLVENT, None, "KG"),
-            ("ADH-001", "چسب لمینیت", "Lamination Adhesive", MaterialSubtype.CONSUMABLE, None, "KG"),
-            ("PE-RECYCLE", "گرانول بازیافتی PE", "Recycled PE Granule", MaterialSubtype.REGRIND, TraceabilityMode.BATCH, "KG"),
+            (
+                "SOL-001",
+                "حلال اتیل استات",
+                "Ethyl Acetate Solvent",
+                MaterialSubtype.SOLVENT,
+                None,
+                "KG",
+            ),
+            (
+                "ADH-001",
+                "چسب لمینیت",
+                "Lamination Adhesive",
+                MaterialSubtype.CONSUMABLE,
+                None,
+                "KG",
+            ),
+            (
+                "PE-RECYCLE",
+                "گرانول بازیافتی PE",
+                "Recycled PE Granule",
+                MaterialSubtype.REGRIND,
+                TraceabilityMode.BATCH,
+                "KG",
+            ),
         ]
         materials = {}
         for code, fa, en, sub, tmode, uom_code in mat_config:
@@ -284,10 +317,22 @@ class Command(BaseCommand):
 
         # ── 10. Customer Products ────────────────────────────────────────
         cp_config = [
-            ("CP-001", "فیلم لمینت گلرنگ", "Golrang Laminated Film",
-             cust_partner, "ROLL", TraceabilityMode.SERIALIZED_ROLL),
-            ("CP-002", "کیسه 1kg گلرنگ", "Golrang 1kg Bag",
-             cust_partner, "PCS", TraceabilityMode.CARTON),
+            (
+                "CP-001",
+                "فیلم لمینت گلرنگ",
+                "Golrang Laminated Film",
+                cust_partner,
+                "ROLL",
+                TraceabilityMode.SERIALIZED_ROLL,
+            ),
+            (
+                "CP-002",
+                "کیسه 1kg گلرنگ",
+                "Golrang 1kg Bag",
+                cust_partner,
+                "PCS",
+                TraceabilityMode.CARTON,
+            ),
         ]
         customer_products = {}
         for code, fa, en, partner, uom_code, tmode in cp_config:
@@ -416,8 +461,20 @@ class Command(BaseCommand):
 
         # Machines
         machine_config = [
-            ("M-EXT01", "اکسترودر ۱", "Extruder 1", "EXT", {"web_width_mm": 1800, "thickness_um": "20-200"}),
-            ("M-PRT01", "فلکسو ۱", "Flexo Press 1", "PRINT", {"web_width_mm": 1200, "color_stations": 8}),
+            (
+                "M-EXT01",
+                "اکسترودر ۱",
+                "Extruder 1",
+                "EXT",
+                {"web_width_mm": 1800, "thickness_um": "20-200"},
+            ),
+            (
+                "M-PRT01",
+                "فلکسو ۱",
+                "Flexo Press 1",
+                "PRINT",
+                {"web_width_mm": 1200, "color_stations": 8},
+            ),
             ("M-LAM01", "لمینتور ۱", "Laminator 1", "LAM", {"web_width_mm": 1400}),
             ("M-SLT01", "اسلیتر ۱", "Slitter 1", "SLIT", {"web_width_mm": 1600}),
             ("M-CNV01", "کیسه‌زن ۱", "Bag Machine 1", "CONV", {"max_bag_width_mm": 500}),
@@ -677,18 +734,20 @@ class Command(BaseCommand):
         # Add company membership
         CompanyMembership.objects.get_or_create(user=demo_user, company=company)
 
-        self.stdout.write(self.style.SUCCESS(
-            "Demo data seeded.\n"
-            f"  Company: {company.name_en} ({company.code})\n"
-            f"  Site:    {site.name_en}\n"
-            f"  Warehouses: {len(warehouses)}\n"
-            f"  UoMs:    {len(uoms)}\n"
-            f"  Materials: {len(materials)}\n"
-            f"  Products: {len(products)}\n"
-            f"  Customer products: {len(customer_products)}\n"
-            f"  Work centers: {len(work_centers)}\n"
-            f"  Sales orders: 2 (CONFIRMED)\n"
-            f"  Purchase orders: 1 (SENT)\n"
-            f"  Production orders: 3 (2 RELEASED, 1 DRAFT)\n"
-            f"  Demo user: operator@slz.local / demo123"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Demo data seeded.\n"
+                f"  Company: {company.name_en} ({company.code})\n"
+                f"  Site:    {site.name_en}\n"
+                f"  Warehouses: {len(warehouses)}\n"
+                f"  UoMs:    {len(uoms)}\n"
+                f"  Materials: {len(materials)}\n"
+                f"  Products: {len(products)}\n"
+                f"  Customer products: {len(customer_products)}\n"
+                f"  Work centers: {len(work_centers)}\n"
+                f"  Sales orders: 2 (CONFIRMED)\n"
+                f"  Purchase orders: 1 (SENT)\n"
+                f"  Production orders: 3 (2 RELEASED, 1 DRAFT)\n"
+                f"  Demo user: operator@slz.local / demo123"
+            )
+        )
