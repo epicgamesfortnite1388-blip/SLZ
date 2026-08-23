@@ -70,6 +70,12 @@ class BusinessRuleError(BaseDomainError):
     default_detail = "The operation violates a business rule."
 
 
+class MethodNotAllowedError(BaseDomainError):
+    status_code = status.HTTP_405_METHOD_NOT_ALLOWED
+    error_type = "MethodNotAllowed"
+    default_detail = "This HTTP method is not supported on this endpoint."
+
+
 class ThrottledError(BaseDomainError):
     status_code = status.HTTP_429_TOO_MANY_REQUESTS
     error_type = "ThrottledError"

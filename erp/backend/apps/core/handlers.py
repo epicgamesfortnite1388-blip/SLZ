@@ -64,6 +64,8 @@ def _to_domain_error(exc) -> core_exc.BaseDomainError:
     # render a 500. It keeps its 429 status and DRF's Retry-After header.
     if isinstance(exc, drf_exceptions.Throttled):
         return core_exc.ThrottledError()
+    if isinstance(exc, drf_exceptions.MethodNotAllowed):
+        return core_exc.MethodNotAllowedError(_clean_detail(exc.detail))
     if isinstance(exc, drf_exceptions.ValidationError):
         return core_exc.ValidationError(details=exc.detail)
     if isinstance(exc, drf_exceptions.APIException):

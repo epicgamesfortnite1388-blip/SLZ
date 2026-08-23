@@ -50,6 +50,7 @@ export type ApiErrorType =
   | 'ConflictError'
   | 'BusinessRuleError'
   | 'ThrottledError'
+  | 'MethodNotAllowed'
   | 'SystemError';
 
 /** Raw error envelope shape returned by the backend on failure. */

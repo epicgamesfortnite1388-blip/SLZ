@@ -145,17 +145,28 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=False, min_length=8)
     roles = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Role.objects.all(), required=False,
+        many=True,
+        queryset=Role.objects.all(),
+        required=False,
     )
     company_ids = serializers.ListField(
-        child=serializers.UUIDField(), write_only=True, required=False,
+        child=serializers.UUIDField(),
+        write_only=True,
+        required=False,
     )
 
     class Meta:
         model = User
         fields = [
-            "email", "username", "full_name", "password",
-            "is_active", "language", "timezone", "roles", "company_ids",
+            "email",
+            "username",
+            "full_name",
+            "password",
+            "is_active",
+            "language",
+            "timezone",
+            "roles",
+            "company_ids",
         ]
 
     def create(self, validated_data):
@@ -168,11 +179,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
             user.save(update_fields=["password"])
         if roles:
             from apps.identity.models import UserRole
+
             for role in roles:
                 UserRole.objects.get_or_create(user=user, role=role)
         if company_ids:
             from apps.identity.models import CompanyMembership
             from apps.organization.models import Company
+
             for cid in company_ids:
                 CompanyMembership.objects.get_or_create(user=user, company_id=cid)
         return user
@@ -188,11 +201,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
         instance.save()
         if roles is not None:
             from apps.identity.models import UserRole
+
             UserRole.objects.filter(user=instance).delete()
             for role in roles:
                 UserRole.objects.get_or_create(user=instance, role=role)
         if company_ids is not None:
             from apps.identity.models import CompanyMembership
+
             CompanyMembership.objects.filter(user=instance).delete()
             for cid in company_ids:
                 CompanyMembership.objects.get_or_create(user=instance, company_id=cid)
@@ -216,7 +231,13 @@ class RoleViewSet(viewsets.ModelViewSet):
     search_fields = ["code", "name_en", "name_fa"]
 
 
-class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class UserViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = User.objects.all().prefetch_related("roles")
     serializer_class = UserSerializer
     permission_classes = [require_permission("identity.user.view")]
