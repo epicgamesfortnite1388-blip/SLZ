@@ -47,6 +47,17 @@ export interface TokenProvider {
 
 let tokenProvider: TokenProvider | null = null;
 
+/** Active company ID set by AuthContext via configureActiveCompany. */
+let activeCompanyId: string | null = null;
+
+export function setActiveCompanyId(id: string | null): void {
+  activeCompanyId = id;
+}
+
+export function getActiveCompanyId(): string | null {
+  return activeCompanyId;
+}
+
 export function configureTokenProvider(provider: TokenProvider | null): void {
   tokenProvider = provider;
 }
@@ -204,6 +215,11 @@ export async function request<T = unknown>(
     if (access) headers['Authorization'] = `Bearer ${access}`;
   }
 
+  // Company-scoped RBAC (Q-055): attach X-SLZ-Company header when set.
+  if (activeCompanyId) {
+    headers['X-SLZ-Company'] = activeCompanyId;
+  }
+
   const body =
     json !== undefined
       ? JSON.stringify(json)
@@ -274,6 +290,11 @@ export async function requestBlob(
   if (auth) {
     const access = tokenProvider?.getAccessToken();
     if (access) headers['Authorization'] = `Bearer ${access}`;
+  }
+
+  // Company-scoped RBAC (Q-055): attach X-SLZ-Company header when set.
+  if (activeCompanyId) {
+    headers['X-SLZ-Company'] = activeCompanyId;
   }
 
   const response = await fetch(buildUrl(path), { ...rest, headers });

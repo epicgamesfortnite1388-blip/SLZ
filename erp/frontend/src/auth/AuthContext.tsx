@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from 'react';
 import { authApi } from '@/api/auth';
-import { configureTokenProvider } from '@/api/client';
+import { configureTokenProvider, setActiveCompanyId } from '@/api/client';
 import type { PermissionCode, User } from '@/api/types';
 import i18n from '@/i18n';
 
@@ -49,6 +49,10 @@ export interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   hasPermission: (code: PermissionCode) => boolean;
+  /** Currently selected company ID (Q-055). */
+  activeCompanyId: string | null;
+  /** Switch the active company context (sends X-SLZ-Company header). */
+  setActiveCompany: (companyId: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -56,6 +60,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeCompanyId, setActiveCompanyIdState] = useState<string | null>(null);
 
   // Tokens live in refs so the API client's TokenProvider can read them synchronously.
   const accessTokenRef = useRef<string | null>(null);
@@ -151,9 +156,21 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     (code: PermissionCode): boolean => {
       if (!user) return false;
       if (user.is_superuser) return true;
+      // When a company is selected, check per-company permissions.
+      if (activeCompanyId && user.permissions_by_company?.[activeCompanyId]) {
+        return user.permissions_by_company[activeCompanyId].includes(code);
+      }
       return user.permissions.includes(code);
     },
-    [user],
+    [user, activeCompanyId],
+  );
+
+  const setActiveCompany = useCallback(
+    (companyId: string | null) => {
+      setActiveCompanyId(companyId);
+      setActiveCompanyIdState(companyId);
+    },
+    [],
   );
 
   const value = useMemo<AuthContextValue>(
@@ -164,8 +181,10 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       login,
       logout,
       hasPermission,
+      activeCompanyId,
+      setActiveCompany,
     }),
-    [user, loading, login, logout, hasPermission],
+    [user, loading, login, logout, hasPermission, activeCompanyId, setActiveCompany],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

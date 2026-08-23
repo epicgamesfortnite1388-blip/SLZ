@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { CompanySelector } from './CompanySelector';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { NotificationBell } from './NotificationBell';
 import { UserMenu } from './UserMenu';
@@ -15,6 +16,7 @@ export function Header(): JSX.Element {
         <span>{t('app.title')}</span>
       </div>
       <div className="header__actions">
+        <CompanySelector />
         <NotificationBell />
         <LanguageSwitcher />
         <UserMenu />

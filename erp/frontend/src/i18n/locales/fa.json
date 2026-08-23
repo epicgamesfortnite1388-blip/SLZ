@@ -42,6 +42,10 @@
     "logout": "خروج",
     "account": "حساب کاربری"
   },
+  "companySelector": {
+    "label": "انتخاب شرکت",
+    "all": "همه شرکت‌ها"
+  },
   "login": {
     "title": "ورود",
     "subtitle": "به حساب کاربری خود در SLZ ERP وارد شوید",

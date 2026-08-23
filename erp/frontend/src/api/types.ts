@@ -21,6 +21,12 @@ export interface User {
   is_superuser: boolean;
   roles: RoleCode[];
   permissions: PermissionCode[];
+  /** Company IDs this user is a member of (Q-055). */
+  companies: string[];
+  /** Per-company permission breakdown (from /auth/me/). */
+  permissions_by_company?: Record<string, PermissionCode[]>;
+  /** Active company from the X-SLZ-Company header (mirrored by /auth/me/). */
+  active_company_id?: string | null;
 }
 
 /** Successful login response payload. */

@@ -42,6 +42,10 @@
     "logout": "Sign out",
     "account": "Account"
   },
+  "companySelector": {
+    "label": "Select company",
+    "all": "All companies"
+  },
   "login": {
     "title": "Sign in",
     "subtitle": "Sign in to your SLZ ERP account",

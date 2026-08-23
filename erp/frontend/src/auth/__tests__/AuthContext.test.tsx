@@ -22,6 +22,7 @@ function makeUser(overrides: Partial<User> = {}): User {
     is_superuser: false,
     roles: ['operator'],
     permissions: ['organization.company.view'],
+    companies: [],
     ...overrides,
   };
 }
