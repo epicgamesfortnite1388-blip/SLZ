@@ -88,8 +88,21 @@ function StatCard({ def }: { def: StatDef }): JSX.Element {
       .catch(() => {
         if (active) setFailed(true);
       });
+    const onCompanyChange = () => {
+      setCount(null);
+      setFailed(false);
+      fetchCount(def.path)
+        .then((n) => {
+          if (active) setCount(n);
+        })
+        .catch(() => {
+          if (active) setFailed(true);
+        });
+    };
+    window.addEventListener('slz:company-changed', onCompanyChange);
     return () => {
       active = false;
+      window.removeEventListener('slz:company-changed', onCompanyChange);
     };
   }, [def.path]);
 
@@ -124,7 +137,20 @@ function OrderBookRow({ def }: { def: OrderBookDef }): JSX.Element {
       .catch(() => {
         if (active) setFailed(true);
       });
+    const onCompanyChange = () => {
+      setSummary(null);
+      setFailed(false);
+      fetchStatusSummary(def.path)
+        .then((s) => {
+          if (active) setSummary(s);
+        })
+        .catch(() => {
+          if (active) setFailed(true);
+        });
+    };
+    window.addEventListener('slz:company-changed', onCompanyChange);
     return () => {
+      window.removeEventListener('slz:company-changed', onCompanyChange);
       active = false;
     };
   }, [def.path]);

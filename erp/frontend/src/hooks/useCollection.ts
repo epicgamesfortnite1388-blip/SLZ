@@ -77,5 +77,16 @@ export function useCollection<T>(
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
 
+
+  // Refetch from page 1 whenever the active company context changes
+  // (Q-055): prevents stale cross-company rows staying on screen.
+  useEffect(() => {
+    const onCompanyChange = () => {
+      setPage(1);
+      setNonce((n) => n + 1);
+    };
+    window.addEventListener('slz:company-changed', onCompanyChange);
+    return () => window.removeEventListener('slz:company-changed', onCompanyChange);
+  }, []);
   return { data, loading, error, page, search, setPage, setSearch, reload };
 }

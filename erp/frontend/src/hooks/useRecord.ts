@@ -59,6 +59,14 @@ export function useRecord<T>(path: string | null): UseRecordResult<T> {
       });
   }, [path]);
 
+  // Refetch when the active company context changes (Q-055) or when the caller
+  // asks for a manual refresh.
+  useEffect(() => {
+    const onCompanyChange = () => setNonce((n) => n + 1);
+    window.addEventListener('slz:company-changed', onCompanyChange);
+    return () => window.removeEventListener('slz:company-changed', onCompanyChange);
+  }, []);
+
   useEffect(() => {
     load();
     return () => {

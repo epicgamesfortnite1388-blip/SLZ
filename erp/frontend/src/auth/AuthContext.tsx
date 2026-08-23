@@ -165,13 +165,15 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     [user, activeCompanyId],
   );
 
-  const setActiveCompany = useCallback(
-    (companyId: string | null) => {
-      setActiveCompanyId(companyId);
-      setActiveCompanyIdState(companyId);
-    },
-    [],
-  );
+  const setActiveCompany = useCallback((companyId: string | null) => {
+    setActiveCompanyId(companyId);
+    setActiveCompanyIdState(companyId);
+    // Broadcast so every mounted collection/detail refetches in the new
+    // company context — prevents stale cross-company data on screen.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('slz:company-changed'));
+    }
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
