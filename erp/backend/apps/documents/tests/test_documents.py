@@ -14,6 +14,8 @@ class DocumentTests(TestCase):
     def setUp(self):
         self.user = make_user()
         grant(self.user, "documents.attachment.view", "documents.attachment.delete")
+        # make_user() auto-joins every existing company, so the user is a
+        # member of self.company here (required by the Q-055 upload guard).
         self.client = auth_client(self.user)
 
     def _upload(self, name="spec.txt", content=b"hello"):
