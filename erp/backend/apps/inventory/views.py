@@ -170,7 +170,7 @@ class StockMovementViewSet(AuditedModelViewSet):
         """Chronological ledger history with running balance."""
         company = self._member_company()
         rows = services.kardex(
-            company,
+            company=company,
             traceability_unit=request.query_params.get("traceability_unit"),
             material=request.query_params.get("material"),
             warehouse=request.query_params.get("warehouse"),
