@@ -1,0 +1,63 @@
+# ============================================================================
+# SLZ ERP — Docker build context exclusions.
+# Keeps the context small and prevents secrets / dev artifacts from leaking.
+# ============================================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+*.egg
+backend/.venv
+backend/venv
+backend/.pytest_cache
+backend/.mypy_cache
+
+# Node / frontend dev artifacts (frontend is built in its own stage)
+frontend/node_modules
+
+# IDE / editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files — MUST NOT be baked into images
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation (not needed at runtime)
+docs
+README.md
+LICENSE
+
+# CI
+.github
+
+# Test artifacts
+*.coverage
+htmlcov
+
+# Media / uploads (mounted as volume at runtime)
+backend/media
+
+# Static (collected at build time, not needed in context)
+backend/staticfiles
