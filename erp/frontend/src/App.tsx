@@ -89,7 +89,10 @@ import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { AuditLogPage } from '@/pages/audit/AuditLogPage';
 import { RolesPage } from '@/pages/identity/RolesPage';
 import { RoleCreatePage } from '@/pages/identity/RoleCreatePage';
+import { RoleDetailPage } from '@/pages/identity/RoleDetailPage';
 import { UsersPage } from '@/pages/identity/UsersPage';
+import { UserCreatePage } from '@/pages/identity/UserCreatePage';
+import { UserEditPage } from '@/pages/identity/UserEditPage';
 import { PermissionsPage } from '@/pages/identity/PermissionsPage';
 import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { CompaniesPage } from '@/pages/organization/CompaniesPage';
@@ -847,10 +850,34 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="roles/:id"
+            element={
+              <ProtectedRoute requiredPermission="identity.role.manage">
+                <RoleDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="users"
             element={
               <ProtectedRoute requiredPermission="identity.user.view">
                 <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="users/new"
+            element={
+              <ProtectedRoute requiredPermission="identity.user.manage">
+                <UserCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="users/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="identity.user.manage">
+                <UserEditPage />
               </ProtectedRoute>
             }
           />

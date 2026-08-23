@@ -15,7 +15,8 @@
     "yes": "Yes",
     "no": "No",
     "back": "Back",
-    "addLine": "Add line"
+    "addLine": "Add line",
+    "notFound": "Not found"
   },
   "language": {
     "label": "Language",
@@ -35,7 +36,10 @@
     "sectionOrg": "Organization",
     "sectionFinance": "Finance",
     "sectionAdmin": "Administration",
-    "sectionIdentity": "Identity"
+    "sectionIdentity": "Identity",
+    "toggle": "Toggle navigation",
+    "expand": "Expand sidebar",
+    "collapse": "Collapse sidebar"
   },
   "userMenu": {
     "profile": "Profile",
@@ -117,7 +121,9 @@
       "baseUom": "Base unit",
       "uom": "UoM",
       "quantity": "Quantity"
-    }
+    },
+    "actions": "Actions",
+    "edit": "Edit"
   },
   "organization": {
     "companies": {
@@ -194,19 +200,19 @@
     },
     "customerProfile": {
       "title": "Customer profile",
-      "missing": "No customer profile",
-      "missingHint": "This partner is not marked as a customer. Enable the customer role to manage profile data.",
       "salesLine": "Sales line",
-      "tolerance": "Tolerance",
-      "requiresCoa": "Requires COA"
+      "tolerance": "Delivery tolerance %",
+      "requiresCoa": "Requires COA",
+      "missing": "No customer profile yet",
+      "missingHint": "Saving this form creates the customer role profile for this partner."
     },
     "supplierProfile": {
       "title": "Supplier profile",
-      "missing": "No supplier profile",
-      "missingHint": "This partner is not marked as a supplier. Enable the supplier role to manage profile data.",
-      "isApproved": "Approved",
+      "isApproved": "Approved supplier",
       "evaluationScore": "Evaluation score",
-      "leadTime": "Lead time (days)"
+      "leadTime": "Lead time (days)",
+      "missing": "No supplier profile yet",
+      "missingHint": "Saving this form creates the supplier role profile for this partner."
     },
     "fields": {
       "legalName": "Legal name",
@@ -232,22 +238,6 @@
       "line1": "Address line",
       "city": "City",
       "country": "Country"
-    },
-    "customerProfile": {
-      "title": "Customer profile",
-      "salesLine": "Sales line",
-      "tolerance": "Delivery tolerance %",
-      "requiresCoa": "Requires COA",
-      "missing": "No customer profile yet",
-      "missingHint": "Saving this form creates the customer role profile for this partner."
-    },
-    "supplierProfile": {
-      "title": "Supplier profile",
-      "isApproved": "Approved supplier",
-      "evaluationScore": "Evaluation score",
-      "leadTime": "Lead time (days)",
-      "missing": "No supplier profile yet",
-      "missingHint": "Saving this form creates the supplier role profile for this partner."
     },
     "kinds": {
       "GENERAL": "General",
@@ -575,8 +565,13 @@
     }
   },
   "quality": {
-    "checkResults": { "title": "QC check results" },
-    "results": { "title": "QC results", "post": "Post result" },
+    "checkResults": {
+      "title": "QC check results"
+    },
+    "results": {
+      "title": "QC results",
+      "post": "Post result"
+    },
     "characteristics": {
       "title": "Quality characteristics",
       "subtitle": "Company catalogue of measurable quality attributes.",
@@ -971,18 +966,25 @@
   },
   "users": {
     "title": "Users",
-    "subtitle": "Platform user accounts — read-only for identity administrators.",
+    "subtitle": "Platform user accounts and company memberships.",
+    "new": "New user",
+    "edit": "Edit user: {{email}}",
     "fields": {
       "email": "Email",
+      "password": "Password",
+      "passwordHint": "Leave empty to keep unchanged",
       "fullName": "Full name",
       "language": "Language",
+      "isActive": "Active",
       "roles": "Roles",
-      "isActive": "Active"
+      "companies": "Companies"
     }
   },
   "costing": {
     "title": "Costing",
-    "summary": { "title": "Costing summary" },
+    "summary": {
+      "title": "Costing summary"
+    },
     "fields": {
       "material": "Material",
       "waCost": "WA unit cost",
@@ -1022,6 +1024,8 @@
       "notes": "Notes",
       "lineCount": "Lines"
     },
-    "actions": { "release": "Release" }
+    "actions": {
+      "release": "Release"
+    }
   }
 }

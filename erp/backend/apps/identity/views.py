@@ -137,6 +137,68 @@ class MeView(APIView):
         return Response(UserSerializer(request.user).data)
 
 
+class UserCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating/updating users via the API.
+
+    Password is write-only. Roles and companies are accepted as FK lists.
+    """
+
+    password = serializers.CharField(write_only=True, required=False, min_length=8)
+    roles = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Role.objects.all(), required=False,
+    )
+    company_ids = serializers.ListField(
+        child=serializers.UUIDField(), write_only=True, required=False,
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            "email", "username", "full_name", "password",
+            "is_active", "language", "timezone", "roles", "company_ids",
+        ]
+
+    def create(self, validated_data):
+        password = validated_data.pop("password", None)
+        roles = validated_data.pop("roles", [])
+        company_ids = validated_data.pop("company_ids", [])
+        user = User.objects.create_user(**validated_data)
+        if password:
+            user.set_password(password)
+            user.save(update_fields=["password"])
+        if roles:
+            from apps.identity.models import UserRole
+            for role in roles:
+                UserRole.objects.get_or_create(user=user, role=role)
+        if company_ids:
+            from apps.identity.models import CompanyMembership
+            from apps.organization.models import Company
+            for cid in company_ids:
+                CompanyMembership.objects.get_or_create(user=user, company_id=cid)
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        roles = validated_data.pop("roles", None)
+        company_ids = validated_data.pop("company_ids", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        if roles is not None:
+            from apps.identity.models import UserRole
+            UserRole.objects.filter(user=instance).delete()
+            for role in roles:
+                UserRole.objects.get_or_create(user=instance, role=role)
+        if company_ids is not None:
+            from apps.identity.models import CompanyMembership
+            CompanyMembership.objects.filter(user=instance).delete()
+            for cid in company_ids:
+                CompanyMembership.objects.get_or_create(user=instance, company_id=cid)
+        return instance
+
+
 class PermissionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
@@ -154,9 +216,19 @@ class RoleViewSet(viewsets.ModelViewSet):
     search_fields = ["code", "name_en", "name_fa"]
 
 
-class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all().prefetch_related("roles")
     serializer_class = UserSerializer
     permission_classes = [require_permission("identity.user.view")]
+    permission_map = {
+        "POST": "identity.user.manage",
+        "PUT": "identity.user.manage",
+        "PATCH": "identity.user.manage",
+    }
     filterset_fields = ["is_active", "language"]
     search_fields = ["email", "username", "full_name"]
+
+    def get_serializer_class(self):
+        if self.action in ("create", "update", "partial_update"):
+            return UserCreateSerializer
+        return UserSerializer

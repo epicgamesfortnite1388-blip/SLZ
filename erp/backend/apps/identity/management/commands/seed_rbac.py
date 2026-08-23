@@ -21,6 +21,7 @@ from apps.identity.models import Permission, Role, RolePermission, User
 # register their own permissions later; these cover the foundation only.
 PLATFORM_PERMISSIONS = [
     ("identity.user.view", "View users", "مشاهده کاربران"),
+    ("identity.user.manage", "Manage users", "مدیریت کاربران"),
     ("identity.permission.view", "View platform permissions", "مشاهده دسترسی‌های سامانه"),
     ("identity.role.manage", "Manage roles", "مدیریت نقش‌ها"),
     ("audit.log.view", "View audit log", "مشاهده گزارش حسابرسی"),

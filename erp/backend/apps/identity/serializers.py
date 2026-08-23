@@ -20,6 +20,12 @@ class RoleSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
+    set_permission_codes = serializers.ListField(
+        child=serializers.CharField(),
+        write_only=True,
+        required=False,
+        help_text="Replace all permissions with this list of codes.",
+    )
 
     class Meta:
         model = Role
@@ -31,7 +37,16 @@ class RoleSerializer(serializers.ModelSerializer):
             "description",
             "is_system",
             "permission_codes",
+            "set_permission_codes",
         ]
+
+    def update(self, instance, validated_data):
+        codes = validated_data.pop("set_permission_codes", None)
+        instance = super().update(instance, validated_data)
+        if codes is not None:
+            perms = Permission.objects.filter(code__in=codes)
+            instance.permissions.set(perms)
+        return instance
 
 
 class UserSerializer(serializers.ModelSerializer):
