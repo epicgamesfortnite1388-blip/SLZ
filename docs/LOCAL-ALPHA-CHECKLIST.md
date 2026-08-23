@@ -1,7 +1,15 @@
 # SLZ ERP — Local Alpha Manual Checklist (non-developer walkthrough)
 
-Open **http://localhost:5173** in a browser. Log in with
-`operator@slz.local` / `demo123` (seeded demo data).
+Open **http://localhost:5173** in a browser.
+
+Seeded accounts (local alpha):
+
+| Account | Password | Purpose |
+|---|---|---|
+| `admin@slz.local` | `demo123` | Platform superuser / IT admin |
+| `operator@slz.local` | `demo123` | Operational demo user |
+
+Log in with **admin@slz.local / demo123** first.
 
 For every step: ✅ = works as expected · ❌ = note exactly what you did and
 what happened instead.
