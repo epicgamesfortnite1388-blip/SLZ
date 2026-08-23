@@ -45,7 +45,13 @@ def reserve(
       allocated to other order lines + already allocated to THIS line).
     - Over-allocation across order lines is blocked.
     """
+    from apps.inventory.models import TraceabilityUnit
     from apps.inventory.services import on_hand_quantity
+
+    # Lock the traceability unit row to serialize concurrent reservations.
+    # Two callers racing on the same unit will not both pass the
+    # availability check below — the second blocks until the first commits.
+    TraceabilityUnit.objects.select_for_update().get(pk=traceability_unit.pk)
 
     if traceability_unit.company_id != company.id:
         raise BusinessRuleError(
