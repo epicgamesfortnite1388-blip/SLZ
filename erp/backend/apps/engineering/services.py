@@ -63,6 +63,7 @@ def create_specification_draft(
                 entity_type="engineering.SpecificationRevision",
                 entity_id=str(revision.pk),
                 actor_id=_actor_id(actor),
+                company_id=str(root.company_id),
             )
         )
     return revision
@@ -121,6 +122,7 @@ def activate_specification(
                     entity_type="engineering.SpecificationRevision",
                     entity_id=str(old.pk),
                     actor_id=_actor_id(actor),
+                    company_id=str(revision.root.company_id),
                     changes={"status": RevisionStatus.SUPERSEDED},
                 )
             )
@@ -134,6 +136,7 @@ def activate_specification(
                 entity_type="engineering.SpecificationRevision",
                 entity_id=str(revision.pk),
                 actor_id=_actor_id(actor),
+                company_id=str(revision.root.company_id),
                 changes={"status": RevisionStatus.ACTIVE},
             )
         )
@@ -164,6 +167,7 @@ def _set_tooling_status(
                 entity_type="engineering.ToolingAsset",
                 entity_id=str(asset.pk),
                 actor_id=_actor_id(actor),
+                company_id=str(asset.company_id),
                 changes={"status": to_status},
             )
         )

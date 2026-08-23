@@ -98,6 +98,9 @@ def transition(
                 entity_type=entity_type,
                 entity_id=str(document.pk),
                 actor_id=_actor_id(actor),
+                company_id=(
+                    str(document.company_id) if getattr(document, "company_id", None) else None
+                ),
                 changes={"status": to_status},
             )
         )

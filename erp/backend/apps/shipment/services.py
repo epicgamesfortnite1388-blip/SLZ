@@ -148,6 +148,7 @@ def create_shipment(serializer, *, actor=None):
                 entity_type="shipment.Shipment",
                 entity_id=str(shipment.pk),
                 actor_id=_actor_id(actor),
+                company_id=str(company.id),
                 state={"number": shipment.number},
             )
         )
@@ -155,6 +156,21 @@ def create_shipment(serializer, *, actor=None):
         for entry in lines:
             unit = entry["traceability_unit"]
             qty = Decimal(str(entry["quantity"]))
+
+            # Cross-company guards: every referenced row must belong to the
+            # shipping company (Q-055). Defense in depth on top of queryset
+            # scoping — payload references are validated explicitly.
+            if unit.company_id != company.id:
+                raise BusinessRuleError(
+                    "Traceability unit belongs to another company.",
+                    code="shipment.cross_company",
+                )
+            order_line = entry.get("sales_order_line")
+            if order_line is not None and order_line.order.company_id != company.id:
+                raise BusinessRuleError(
+                    "Sales order line belongs to another company.",
+                    code="shipment.cross_company_line",
+                )
 
             # Verify the unit is allocated
             alloc = None
@@ -169,6 +185,11 @@ def create_shipment(serializer, *, actor=None):
                     raise BusinessRuleError(
                         "Allocation traceability unit mismatch.",
                         code="shipment.allocation_mismatch",
+                    )
+                if qty > Decimal(str(alloc.quantity)):
+                    raise BusinessRuleError(
+                        "Shipment quantity exceeds the allocated quantity " f"({alloc.quantity}).",
+                        code="shipment.over_shipped",
                     )
 
             dial = ShipmentLine.objects.create(
@@ -201,6 +222,7 @@ def create_shipment(serializer, *, actor=None):
                     entity_type="shipment.ShipmentLine",
                     entity_id=str(dial.id),
                     actor_id=_actor_id(actor),
+                    company_id=str(company.id),
                     state={
                         "quantity": str(entry["quantity"]),
                         "movement_id": str(movement.id),

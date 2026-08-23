@@ -25,6 +25,7 @@ class DomainEvent:
     entity_id: str
     occurred_at: datetime = field(default_factory=lambda: datetime.now(_tz.utc))
     actor_id: Optional[str] = None
+    company_id: Optional[str] = None
     correlation_id: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 

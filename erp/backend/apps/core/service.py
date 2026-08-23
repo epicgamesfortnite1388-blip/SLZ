@@ -28,6 +28,12 @@ def _actor_id(actor) -> Optional[str]:
     return str(pk) if pk else None
 
 
+def _company_id(instance) -> Optional[str]:
+    """Extract the owning company id from a model instance, if any."""
+    cid = getattr(instance, "company_id", None)
+    return str(cid) if cid else None
+
+
 def _json_safe_changes(data: dict[str, Any]) -> dict[str, Any]:
     """Best-effort JSON-safe snapshot of changed fields for the audit trail."""
     safe: dict[str, Any] = {}
@@ -63,6 +69,7 @@ def create_from_serializer(serializer, *, actor=None):
                 entity_type=entity_label(instance),
                 entity_id=str(instance.pk),
                 actor_id=_actor_id(actor),
+                company_id=_company_id(instance),
                 state=_snapshot(instance),
             )
         )
@@ -80,6 +87,7 @@ def update_from_serializer(serializer, *, actor=None):
                 entity_type=entity_label(instance),
                 entity_id=str(instance.pk),
                 actor_id=_actor_id(actor),
+                company_id=_company_id(instance),
                 changes=changes,
                 before_state=before,
                 after_state=_snapshot(instance),
@@ -96,6 +104,12 @@ def delete_instance(instance, *, actor=None):
         state = _snapshot(instance)
         instance.delete()
         events.append(
-            EntityDeleted(entity_type=label, entity_id=pk, actor_id=_actor_id(actor), state=state)
+            EntityDeleted(
+                entity_type=label,
+                entity_id=pk,
+                actor_id=_actor_id(actor),
+                company_id=_company_id(instance),
+                state=state,
+            )
         )
     return instance

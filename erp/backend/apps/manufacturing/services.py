@@ -39,6 +39,17 @@ def _actor_id(actor) -> Optional[str]:
     return str(pk) if pk else None
 
 
+def _company_id_from_root(root: models.Model) -> Optional[str]:
+    """Walk root→root chain to find the owning company, if any."""
+    cid = getattr(root, "company_id", None)
+    if cid is None:
+        # Some roots have an intermediate FK (e.g. root->root->company)
+        inner = getattr(root, "root", None)
+        if inner is not None:
+            cid = getattr(inner, "company_id", None)
+    return str(cid) if cid else None
+
+
 def next_revision_number(revision_model: type[Revision], root: models.Model) -> int:
     current = revision_model.objects.filter(root=root).aggregate(m=Max("revision_number"))["m"]
     return (current or 0) + 1
@@ -67,6 +78,7 @@ def create_revision_draft(
                 entity_type=entity_type,
                 entity_id=str(revision.pk),
                 actor_id=_actor_id(actor),
+                company_id=_company_id_from_root(root),
             )
         )
     return revision
@@ -129,6 +141,7 @@ def activate_revision(
                     entity_type=entity_type,
                     entity_id=str(old.pk),
                     actor_id=_actor_id(actor),
+                    company_id=_company_id_from_root(revision.root),
                     changes={"status": RevisionStatus.SUPERSEDED},
                 )
             )
@@ -142,6 +155,7 @@ def activate_revision(
                 entity_type=entity_type,
                 entity_id=str(revision.pk),
                 actor_id=_actor_id(actor),
+                company_id=_company_id_from_root(revision.root),
                 changes={"status": RevisionStatus.ACTIVE},
             )
         )

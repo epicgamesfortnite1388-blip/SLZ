@@ -41,6 +41,14 @@ class AuditLog(models.Model):
         default="",
         help_text="Denormalized actor identity, preserved even if the user is removed.",
     )
+    company = models.ForeignKey(
+        "organization.Company",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="audit_entries",
+        help_text="Owning company for row-level isolation; NULL for platform events (login/logout).",
+    )
     action = models.CharField(max_length=16, choices=AuditAction.choices, db_index=True)
     entity_type = models.CharField(max_length=100, db_index=True)
     entity_id = models.CharField(max_length=64, db_index=True)
@@ -55,6 +63,7 @@ class AuditLog(models.Model):
         indexes = [
             models.Index(fields=["entity_type", "entity_id"]),
             models.Index(fields=["action", "timestamp"]),
+            models.Index(fields=["company", "timestamp"]),
         ]
 
     def __str__(self) -> str:

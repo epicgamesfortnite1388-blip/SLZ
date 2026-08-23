@@ -15,6 +15,7 @@ def record_audit(
     entity_id: str,
     actor=None,
     actor_id: Optional[str] = None,
+    company_id: Optional[str] = None,
     before_state: Optional[dict] = None,
     after_state: Optional[dict] = None,
     metadata: Optional[dict] = None,
@@ -24,6 +25,9 @@ def record_audit(
 
     ``correlation_id`` defaults to the current request's id so a full request
     can be reconstructed across modules.
+
+    ``company_id`` scopes the entry to one organization for multi-tenancy
+    (Q-055).  Platform-level events such as login may leave it None.
 
     Callers may pass either an ``actor`` **instance** (direct service writes) or
     an ``actor_id`` (the event path — domain events carry only the id to stay
@@ -44,6 +48,7 @@ def record_audit(
         entity_id=str(entity_id),
         actor=actor if getattr(actor, "pk", None) else None,
         actor_label=actor_label,
+        company_id=company_id,
         before_state=before_state,
         after_state=after_state,
         metadata=metadata or {},

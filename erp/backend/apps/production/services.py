@@ -63,6 +63,9 @@ def transition(
                 entity_type=entity_type,
                 entity_id=str(document.pk),
                 actor_id=_actor_id(actor),
+                company_id=(
+                    str(document.company_id) if getattr(document, "company_id", None) else None
+                ),
                 changes={"status": to_status},
             )
         )
@@ -86,11 +89,13 @@ def create_material_issue(serializer, *, actor=None):
             notes=issue.operation_label,
             actor=actor,
         )
+        company_id = str(issue.production_order.company_id)
         events.append(
             EntityCreated(
                 entity_type="production.MaterialIssue",
                 entity_id=str(issue.id),
                 actor_id=_actor_id(actor),
+                company_id=company_id,
                 state={"method": issue.method, "quantity": str(issue.quantity)},
             )
         )
@@ -99,6 +104,7 @@ def create_material_issue(serializer, *, actor=None):
                 entity_type="inventory.StockMovement",
                 entity_id=str(movement.id),
                 actor_id=_actor_id(actor),
+                company_id=company_id,
                 state={"direction": movement.direction, "quantity": str(movement.quantity)},
             )
         )
@@ -158,11 +164,13 @@ def create_production_output(serializer, *, actor=None):
             notes=output.operation_label,
             actor=actor,
         )
+        company_id = str(output.production_order.company_id)
         events.append(
             EntityCreated(
                 entity_type="production.ProductionOutput",
                 entity_id=str(output.id),
                 actor_id=_actor_id(actor),
+                company_id=company_id,
                 state={"quantity": str(output.quantity)},
             )
         )
@@ -171,6 +179,7 @@ def create_production_output(serializer, *, actor=None):
                 entity_type="inventory.StockMovement",
                 entity_id=str(movement.id),
                 actor_id=_actor_id(actor),
+                company_id=company_id,
                 state={"direction": movement.direction, "quantity": str(movement.quantity)},
             )
         )
