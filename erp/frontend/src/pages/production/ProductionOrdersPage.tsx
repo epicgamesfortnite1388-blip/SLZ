@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { Alert, Button, StatusBadge } from '@/components/ui';
+import { Alert, Button, ConfirmButton, StatusBadge } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import {
@@ -69,15 +69,27 @@ export function ProductionOrdersPage(): JSX.Element {
         return (
           <div className="row-actions">
             {actions.map((a) => (
-              <Button
-                key={a}
-                size="sm"
-                variant={a === 'cancel' ? 'secondary' : 'primary'}
-                loading={asyncAct.busy === `${r.id}:${a}`}
-                onClick={() => void run(r.id, a)}
-              >
-                {t(`production.actions.${a}`)}
-              </Button>
+              a === 'cancel' ? (
+                <ConfirmButton
+                  key={a}
+                  size="sm"
+                  variant="secondary"
+                  loading={asyncAct.busy === `${r.id}:${a}`}
+                  confirmMessage={t('common.confirmAction')}
+                  onConfirm={() => void run(r.id, a)}
+                >
+                  {t(`production.actions.${a}`)}
+                </ConfirmButton>
+              ) : (
+                <Button
+                  key={a}
+                  size="sm"
+                  loading={asyncAct.busy === `${r.id}:${a}`}
+                  onClick={() => void run(r.id, a)}
+                >
+                  {t(`production.actions.${a}`)}
+                </Button>
+              )
             ))}
           </div>
         );

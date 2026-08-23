@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
-import { Alert, Button } from '@/components/ui';
+import { StatusBadge, Alert, Button } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
@@ -47,7 +47,7 @@ export function ToolingAssetsPage(): JSX.Element {
     },
     {
       headerKey: 'tooling.fields.status',
-      render: (r) => t(`tooling.statuses.${r.status}`),
+      render: (r) => <StatusBadge status={r.status} label={t(`tooling.statuses.${r.status}`)} />,
     },
     {
       headerKey: 'tooling.fields.usage',

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { fetchToolingAsset } from '@/api/tooling';
 import { isApiError } from '@/api/types';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { BoolCell } from '@/components/CollectionView';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
-import { Alert, Button, Spinner } from '@/components/ui';
+import { StatusBadge, Alert, Button, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 
 /**
@@ -62,7 +62,7 @@ export function ToolingAssetDetailPage(): JSX.Element {
     { labelKey: 'tooling.fields.code', value: asset.code },
     { labelKey: 'tooling.fields.name', value: asset.name_fa },
     { labelKey: 'tooling.fields.type', value: t(`tooling.types.${asset.tooling_type}`) },
-    { labelKey: 'tooling.fields.status', value: t(`tooling.statuses.${asset.status}`) },
+    { labelKey: 'tooling.fields.status', value: <StatusBadge status={asset.status} label={t(`tooling.statuses.${asset.status}`)} /> },
     { labelKey: 'tooling.fields.customer', value: asset.customer },
     {
       labelKey: 'tooling.fields.customerProduct',
@@ -90,9 +90,9 @@ export function ToolingAssetDetailPage(): JSX.Element {
       )}
 
       <div className="form-actions">
-        <a className="link-back" onClick={() => window.history.back()} href="#back">
+        <Link to="/engineering/tooling" className="link-back">
           ← {t('common.back')}
-        </a>
+        </Link>
       </div>
     </div>
   );

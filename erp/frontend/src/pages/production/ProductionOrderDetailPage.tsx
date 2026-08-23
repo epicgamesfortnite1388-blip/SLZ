@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { fetchProductionOrder } from '@/api/production';
 import { isApiError } from '@/api/types';
 import { formatDateTime } from '@/i18n/dates';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
-import { Alert, Button, Spinner } from '@/components/ui';
+import { StatusBadge, Alert, Button, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 import { ProductionExecutionPanel } from './ProductionExecutionPanel';
 
@@ -66,7 +66,7 @@ export function ProductionOrderDetailPage(): JSX.Element {
 
   const fields: DetailField[] = [
     { labelKey: 'production.fields.number', value: order.number },
-    { labelKey: 'production.fields.status', value: t(`production.orderStatuses.${order.status}`) },
+    { labelKey: 'production.fields.status', value: <StatusBadge status={order.status} label={t(`production.orderStatuses.${order.status}`)} /> },
     { labelKey: 'production.fields.customerProduct', value: order.customer_product },
     { labelKey: 'production.fields.specRevision', value: order.spec_revision },
     { labelKey: 'production.fields.bomRevision', value: order.bom_revision ?? '—' },
@@ -104,9 +104,9 @@ export function ProductionOrderDetailPage(): JSX.Element {
       )}
 
       <div className="form-actions">
-        <a className="link-back" onClick={() => window.history.back()} href="#back">
+        <Link to="/production/orders" className="link-back">
           ← {t('common.back')}
-        </a>
+        </Link>
       </div>
     </div>
   );

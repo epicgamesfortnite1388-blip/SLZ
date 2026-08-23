@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
-import { Alert, Button } from '@/components/ui';
+import { StatusBadge, Alert, Button } from '@/components/ui';
 import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import { activateSpecification, type SpecificationRevision } from '@/api/engineering';
@@ -30,7 +30,7 @@ export function SpecificationsPage(): JSX.Element {
 
   const columns: Column<SpecificationRevision>[] = [
     { headerKey: 'engineering.fields.revisionNumber', render: (r) => `#${r.revision_number}`, align: 'center' },
-    { headerKey: 'engineering.fields.status', render: (r) => t(`engineering.statuses.${r.status}`) },
+    { headerKey: 'engineering.fields.status', render: (r) => <StatusBadge status={r.status} label={t(`engineering.statuses.${r.status}`)} /> },
     { headerKey: 'engineering.fields.specFormat', render: (r) => r.spec_format || '—' },
     { headerKey: 'engineering.fields.colors', render: (r) => r.number_of_colors, align: 'center' },
     {

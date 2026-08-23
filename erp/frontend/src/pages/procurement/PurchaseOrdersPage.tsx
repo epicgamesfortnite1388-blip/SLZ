@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
-import { Alert, Button, StatusBadge } from '@/components/ui';
+import { Alert, Button, ConfirmButton, StatusBadge } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import { useAsyncAction } from '@/hooks/useAsyncAction';
@@ -64,15 +64,27 @@ export function PurchaseOrdersPage(): JSX.Element {
         return (
           <div className="row-actions">
             {actions.map((a) => (
-              <Button
-                key={a}
-                size="sm"
-                variant={a === 'cancel' ? 'secondary' : 'primary'}
-                loading={action.busy === `${r.id}:${a}`}
-                onClick={() => void run(r.id, a)}
-              >
-                {t(`procurement.actions.${a}`)}
-              </Button>
+              a === 'cancel' ? (
+                <ConfirmButton
+                  key={a}
+                  size="sm"
+                  variant="secondary"
+                  loading={action.busy === `${r.id}:${a}`}
+                  confirmMessage={t('common.confirmAction')}
+                  onConfirm={() => void run(r.id, a)}
+                >
+                  {t(`procurement.actions.${a}`)}
+                </ConfirmButton>
+              ) : (
+                <Button
+                  key={a}
+                  size="sm"
+                  loading={action.busy === `${r.id}:${a}`}
+                  onClick={() => void run(r.id, a)}
+                >
+                  {t(`procurement.actions.${a}`)}
+                </Button>
+              )
             ))}
           </div>
         );

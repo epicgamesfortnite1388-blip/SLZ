@@ -114,7 +114,11 @@ export function Sidebar(): JSX.Element {
   const toggle = useCallback(() => {
     setCollapsed((v) => {
       const next = !v;
-      try { localStorage.setItem('slz_sidebar_collapsed', next ? '1' : '0'); } catch {}
+      try {
+        localStorage.setItem('slz_sidebar_collapsed', next ? '1' : '0');
+      } catch {
+        /* storage unavailable (private mode) — collapse state is best-effort */
+      }
       return next;
     });
   }, []);

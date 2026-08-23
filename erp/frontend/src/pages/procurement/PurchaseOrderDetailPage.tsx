@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   fetchPurchaseOrder,
   fetchPurchaseOrderLines,
@@ -11,7 +11,7 @@ import { formatDateTime } from '@/i18n/dates';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
-import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { StatusBadge, Alert, Button, Card, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 
 /** Read-only detail of one purchase order: header, lines, audit history. */
@@ -67,7 +67,7 @@ export function PurchaseOrderDetailPage(): JSX.Element {
 
   const fields: DetailField[] = [
     { labelKey: 'procurement.fields.number', value: order.number },
-    { labelKey: 'procurement.fields.status', value: t(`procurement.orderStatuses.${order.status}`) },
+    { labelKey: 'procurement.fields.status', value: <StatusBadge status={order.status} label={t(`procurement.orderStatuses.${order.status}`)} /> },
     { labelKey: 'procurement.fields.supplier', value: order.supplier },
     { labelKey: 'procurement.fields.currency', value: order.currency },
     { labelKey: 'procurement.fields.orderDate', value: when(order.order_date) },
@@ -126,9 +126,9 @@ export function PurchaseOrderDetailPage(): JSX.Element {
       )}
 
       <div className="form-actions">
-        <a className="link-back" onClick={() => window.history.back()} href="#back">
+        <Link to="/procurement/orders" className="link-back">
           ← {t('common.back')}
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   fetchCustomerProduct,
   listSpecColors,
@@ -25,7 +25,7 @@ import { formatDateTime } from '@/i18n/dates';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
-import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { StatusBadge, Alert, Button, Card, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 
 
@@ -209,7 +209,7 @@ export function CustomerProductDetailPage(): JSX.Element {
   const specFields: DetailField[] | null = selected
     ? [
         { labelKey: 'engineering.fields.revisionNumber', value: selected.revision_number },
-        { labelKey: 'engineering.fields.status', value: t(`engineering.statuses.${selected.status}`) },
+        { labelKey: 'engineering.fields.status', value: <StatusBadge status={selected.status} label={t(`engineering.statuses.${selected.status}`)} /> },
         { labelKey: 'engineering.fields.effectiveFrom', value: when(selected.effective_from) },
         { labelKey: 'engineering.fields.effectiveTo', value: when(selected.effective_to) },
         { labelKey: 'engineering.fields.changeReason', value: selected.change_reason || '—' },
@@ -273,7 +273,7 @@ export function CustomerProductDetailPage(): JSX.Element {
                   className={selected?.id === rev.id ? 'diff-table__row--changed' : undefined}
                 >
                   <td>{rev.revision_number}</td>
-                  <td>{t(`engineering.statuses.${rev.status}`)}</td>
+                  <td>{<StatusBadge status={rev.status} label={t(`engineering.statuses.${rev.status}`)} />}</td>
                   <td>{when(rev.effective_from)}</td>
                   <td>{when(rev.effective_to)}</td>
                   <td>{rev.change_reason || '—'}</td>
@@ -399,9 +399,9 @@ export function CustomerProductDetailPage(): JSX.Element {
       )}
 
       <div className="form-actions">
-        <a className="link-back" onClick={() => window.history.back()} href="#back">
+        <Link to="/engineering/customer-products" className="link-back">
           ← {t('common.back')}
-        </a>
+        </Link>
       </div>
     </div>
   );

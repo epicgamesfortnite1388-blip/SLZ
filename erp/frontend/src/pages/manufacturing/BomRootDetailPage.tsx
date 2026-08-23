@@ -13,7 +13,7 @@ import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { BoolCell } from '@/components/CollectionView';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
-import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { StatusBadge, Alert, Button, Card, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 
 const when = (iso: string | null): string => (iso ? iso.replace('T', ' ').slice(0, 10) : '—');
@@ -131,7 +131,7 @@ export function BomRootDetailPage(): JSX.Element {
                   style={selected?.id === rev.id ? { fontWeight: 600 } : undefined}
                 >
                   <td>#{rev.revision_number}</td>
-                  <td>{t(`manufacturing.statuses.${rev.status}`)}</td>
+                  <td>{<StatusBadge status={rev.status} label={t(`manufacturing.statuses.${rev.status}`)} />}</td>
                   <td>{when(rev.effective_from)}</td>
                   <td>{when(rev.effective_to)}</td>
                   <td>{rev.change_reason || '—'}</td>

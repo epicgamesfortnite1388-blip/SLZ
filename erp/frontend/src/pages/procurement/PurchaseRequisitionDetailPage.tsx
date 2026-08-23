@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   fetchPurchaseRequisition,
   fetchPurchaseRequisitionLines,
@@ -11,7 +11,7 @@ import { formatDateTime } from '@/i18n/dates';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
-import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { StatusBadge, Alert, Button, Card, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 
 /** Read-only detail of one requisition: header, lines, audit history. */
@@ -69,7 +69,7 @@ export function PurchaseRequisitionDetailPage(): JSX.Element {
     { labelKey: 'procurement.fields.number', value: doc.number },
     {
       labelKey: 'procurement.fields.status',
-      value: t(`procurement.reqStatuses.${doc.status}`),
+      value: <StatusBadge status={doc.status} label={t(`procurement.reqStatuses.${doc.status}`)} />,
     },
     { labelKey: 'procurement.fields.requestedBy', value: doc.requested_by ?? '—' },
     { labelKey: 'procurement.fields.needBy', value: when(doc.need_by_date) },
@@ -125,9 +125,9 @@ export function PurchaseRequisitionDetailPage(): JSX.Element {
       )}
 
       <div className="form-actions">
-        <a className="link-back" onClick={() => window.history.back()} href="#back">
+        <Link to="/procurement/requisitions" className="link-back">
           ← {t('common.back')}
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/auth/AuthContext';
-import { Button } from '@/components/ui';
+import { StatusBadge, Button } from '@/components/ui';
 import { CollectionView, type Column } from '@/components/CollectionView';
 import { useCollection } from '@/hooks/useCollection';
 import { activateBomRevision, type StructureRevision } from '@/api/manufacturing';
@@ -38,7 +38,7 @@ export function BomRevisionsPage(): JSX.Element {
     },
     {
       headerKey: 'manufacturing.fields.status',
-      render: (r) => t(`manufacturing.statuses.${r.status}`),
+      render: (r) => <StatusBadge status={r.status} label={t(`manufacturing.statuses.${r.status}`)} />,
     },
     {
       headerKey: 'manufacturing.fields.effectiveFrom',

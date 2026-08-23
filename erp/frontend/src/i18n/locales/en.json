@@ -16,7 +16,8 @@
     "no": "No",
     "back": "Back",
     "addLine": "Add line",
-    "notFound": "Not found"
+    "notFound": "Not found",
+    "confirmAction": "Confirm"
   },
   "language": {
     "label": "Language",

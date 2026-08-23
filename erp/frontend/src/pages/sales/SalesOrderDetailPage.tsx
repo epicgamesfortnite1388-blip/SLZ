@@ -7,7 +7,7 @@ import { formatDateTime } from '@/i18n/dates';
 import { AttachmentPanel } from '@/components/AttachmentPanel';
 import { AuditHistoryPanel } from '@/components/AuditHistoryPanel';
 import { RecordDetail, type DetailField } from '@/components/RecordDetail';
-import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { StatusBadge, Alert, Button, Card, Spinner } from '@/components/ui';
 import { useAuth } from '@/auth/AuthContext';
 
 /** Locale-neutral timestamp trim (matches the audit viewer). */
@@ -70,7 +70,7 @@ export function SalesOrderDetailPage(): JSX.Element {
 
   const fields: DetailField[] = [
     { labelKey: 'sales.fields.number', value: order.number },
-    { labelKey: 'sales.fields.status', value: t(`sales.orderStatuses.${order.status}`) },
+    { labelKey: 'sales.fields.status', value: <StatusBadge status={order.status} label={t(`sales.orderStatuses.${order.status}`)} /> },
     { labelKey: 'sales.fields.currency', value: order.currency },
     { labelKey: 'sales.fields.customer', value: order.customer },
     { labelKey: 'sales.fields.orderDate', value: when(order.order_date) },

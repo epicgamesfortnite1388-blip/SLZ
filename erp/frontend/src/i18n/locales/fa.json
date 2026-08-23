@@ -16,7 +16,8 @@
     "no": "خیر",
     "back": "بازگشت",
     "addLine": "افزودن ردیف",
-    "notFound": "یافت نشد"
+    "notFound": "یافت نشد",
+    "confirmAction": "تأیید"
   },
   "language": {
     "label": "زبان",
