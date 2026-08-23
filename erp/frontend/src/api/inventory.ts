@@ -125,3 +125,17 @@ export function fetchStockMovements(
 ): Promise<Paginated<StockMovement>> {
   return apiClient.get<Paginated<StockMovement>>(`/inventory/movements/${query}`);
 }
+
+export interface StockBalance {
+  warehouse: string;
+  material: string;
+  traceability_unit: string | null;
+  uom: string;
+  on_hand: string;
+}
+
+export function fetchStockBalances(
+  query = '?page_size=200',
+): Promise<StockBalance[]> {
+  return apiClient.get<StockBalance[]>(`/inventory/movements/balances/${query}`);
+}

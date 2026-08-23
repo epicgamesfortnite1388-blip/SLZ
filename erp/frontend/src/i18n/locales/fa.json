@@ -315,6 +315,26 @@
       "title": "جزئیات ماده",
       "back": "← بازگشت به مواد",
       "notFound": "این ماده یافت نشد."
+    },
+    "balances": {
+      "title": "موجودی انبار",
+      "warehouse": "انبار",
+      "unit": "واحد ردیابی",
+      "onHand": "موجودی"
+    },
+    "costLayers": {
+      "title": "تاریخچه بهای تمام‌شده",
+      "date": "تاریخ",
+      "type": "نوع",
+      "quantity": "مقدار",
+      "unitCost": "بهای واحد",
+      "totalCost": "بهای کل"
+    },
+    "units": {
+      "title": "واحدهای ردیابی",
+      "identifier": "شناسه",
+      "unitType": "نوع",
+      "quantity": "مقدار"
     }
   },
   "uoms": {

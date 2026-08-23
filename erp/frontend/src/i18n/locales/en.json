@@ -315,6 +315,26 @@
       "title": "Material details",
       "back": "← Back to materials",
       "notFound": "This material could not be found."
+    },
+    "balances": {
+      "title": "Stock balances",
+      "warehouse": "Warehouse",
+      "unit": "Traceability unit",
+      "onHand": "On hand"
+    },
+    "costLayers": {
+      "title": "Cost history",
+      "date": "Date",
+      "type": "Type",
+      "quantity": "Quantity",
+      "unitCost": "Unit cost",
+      "totalCost": "Total cost"
+    },
+    "units": {
+      "title": "Traceability units",
+      "identifier": "Identifier",
+      "unitType": "Type",
+      "quantity": "Quantity"
     }
   },
   "uoms": {
