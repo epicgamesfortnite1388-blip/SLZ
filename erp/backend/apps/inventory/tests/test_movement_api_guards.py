@@ -9,7 +9,6 @@ allowing phantom IN stock and negative balances to any holder of
 
 from __future__ import annotations
 
-from decimal import Decimal
 
 from django.test import TestCase
 

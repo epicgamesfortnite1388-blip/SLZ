@@ -135,6 +135,13 @@ class GenealogyLinkSerializer(serializers.ModelSerializer):
 
 
 class StockMovementSerializer(serializers.ModelSerializer):
+    reference_type = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        default="inventory.Adjustment",
+        max_length=120,
+    )
+
     class Meta:
         model = StockMovement
         fields = [

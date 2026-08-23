@@ -45,3 +45,7 @@ Thumbs.db
 
 # ---- Build caches ----
 *.tsbuildinfo
+
+# Agent runtime artifacts (local harness)
+.freebuff/
+*.txt.bak
