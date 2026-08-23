@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Icon, type IconName } from '@/components/ui';
 import { Alert, Button, Card, Spinner } from '@/components/ui';
 import type { UseCollectionResult } from '@/hooks/useCollection';
 
@@ -23,6 +24,12 @@ export interface CollectionViewProps<T> {
   headerAction?: ReactNode;
   /** Optional row activation (e.g. open a detail view). Rows become clickable. */
   onRowClick?: (row: T) => void;
+  /** i18n key for the empty-state title. Defaults to masterData.empty. */
+  emptyTitleKey?: string;
+  /** Optional i18n key for extra empty-state context. */
+  emptyHintKey?: string;
+  /** Icon shown in the empty state. */
+  emptyIcon?: IconName;
 }
 
 /**
@@ -38,7 +45,9 @@ export function CollectionView<T>({
   collection,
   headerAction,
   onRowClick,
-}: CollectionViewProps<T>): JSX.Element {
+  emptyTitleKey = 'masterData.empty',
+  emptyHintKey,
+  emptyIcon = 'search',}: CollectionViewProps<T>): JSX.Element {
   const { t } = useTranslation();
   const { data, loading, error, page, search, setPage, setSearch, reload } =
     collection;
@@ -84,8 +93,12 @@ export function CollectionView<T>({
         )}
 
         {!loading && !error && rows.length === 0 && (
-          <div className="table-state table-state--empty">
-            {t('masterData.empty')}
+          <div className="empty-state">
+            <span className="icon-wrap">
+              <Icon name={emptyIcon} size={20} />
+            </span>
+            <div className="empty-state__title">{t(emptyTitleKey)}</div>
+            {emptyHintKey && <p className="empty-state__hint">{t(emptyHintKey)}</p>}
           </div>
         )}
 

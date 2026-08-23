@@ -719,3 +719,136 @@
 }
 .sidebar--collapsed ~ .app-shell__main,
 .sidebar--collapsed + .app-shell__main { margin-inline-start: 56px; }
+
+/* ---- Premium polish layer (visual redesign pass) ---- */
+
+/* Buttons: calm motion + visible keyboard focus. */
+.btn {
+  transition: background-color var(--transition-fast, 0.15s ease),
+    border-color var(--transition-fast, 0.15s ease),
+    box-shadow var(--transition-fast, 0.15s ease),
+    transform 0.06s ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Inputs: hover affordance + focus ring parity with buttons. */
+.input:hover:not(:disabled):not([readonly]) {
+  border-color: var(--color-border-strong);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Cards: slightly softer elevation + crisper radius on elevated surfaces. */
+.card {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Tables: refined header, zebra-free clean rows, sticky header in scroll
+   containers for long lists. */
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border-strong);
+  z-index: 1;
+}
+
+.data-table tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--color-surface-2);
+}
+
+.data-table td {
+  vertical-align: middle;
+}
+
+/* Numeric cells align to the end edge in both directions. */
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+/* Technical identifiers stay LTR regardless of locale. */
+.ltr-ids,
+.code-cell {
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Empty states: icon + title + hint instead of bare text. */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-4);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.empty-state .icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-3, rgba(0, 0, 0, 0.04));
+  color: var(--color-text-subtle);
+}
+
+.empty-state__title {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text);
+}
+
+.empty-state__hint {
+  font-size: var(--font-size-sm);
+  max-inline-size: 42ch;
+}
+
+/* Modals: subtle entrance so dialogs feel intentional, not jarring. */
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+.modal {
+  animation: modal-in 0.16s ease-out;
+}
+
+.modal-backdrop {
+  animation: backdrop-in 0.16s ease-out;
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Sidebar links: comfortable icon/label rhythm. */
+.sidebar__link {
+  gap: var(--space-2);
+}

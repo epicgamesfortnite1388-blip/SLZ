@@ -14,3 +14,5 @@ export { FormField } from './FormField';
 export type { FormFieldProps } from './FormField';
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusVariant } from './StatusBadge';
+export { Icon } from './Icon';
+export type { IconName, IconProps } from './Icon';

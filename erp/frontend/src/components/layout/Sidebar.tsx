@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 import type { PermissionCode } from '@/api/types';
+import { Icon, type IconName } from '@/components/ui';
 
 interface NavItem {
   labelKey: string;
   to: string;
   permission?: PermissionCode;
+  icon?: IconName;
   end?: boolean;
 }
 
@@ -20,7 +22,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     labelKey: 'nav.sectionOverview',
     items: [
-      { labelKey: 'nav.dashboard', to: '/', end: true },
+      { labelKey: 'nav.dashboard', to: '/', end: true, icon: 'grid' },
     ],
   },
   {
@@ -52,7 +54,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     labelKey: 'nav.sectionMasterData',
     items: [
-      { labelKey: 'nav.masterData', to: '/master-data', end: true },
+      { labelKey: 'nav.masterData', to: '/master-data', end: true, icon: 'package' },
       { labelKey: 'partners.title', to: '/master-data/partners', permission: 'partners.partner.view' },
       { labelKey: 'products.title', to: '/master-data/products', permission: 'catalog.product.view' },
       { labelKey: 'materials.title', to: '/master-data/materials', permission: 'catalog.material.view' },
@@ -180,6 +182,7 @@ export function Sidebar(): JSX.Element {
                   }
                   title={collapsed ? t(item.labelKey) : undefined}
                 >
+                  {item.icon ? <Icon name={item.icon} size={collapsed ? 20 : 16} /> : null}
                   <span className="sidebar__label">{t(item.labelKey)}</span>
                 </NavLink>
               ))}
