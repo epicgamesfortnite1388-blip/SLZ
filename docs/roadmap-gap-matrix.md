@@ -99,3 +99,14 @@ largest remaining unblocked UI workstream.
    using `PartnerEditPage` as the pattern; each gets a PATCH contract test.
 2. **Detail/edit polish for the small entities** flagged ¹ above, if desired.
 3. Everything else requires the business decisions above.
+
+## Adversarial audit additions (2026-08-23, QA agent)
+
+| Finding | Severity | Status |
+|---|---|---|
+| Attachments had NO company scoping (cross-company list/download/upload/delete) | P0 | FIXED — resolver + stamping + scoped register; 8 regression tests |
+| Stock movement OUT balance check is check-then-write without locking | P2 (race under concurrent writers on Postgres) | DOCUMENTED - recommend serializing writers per scope (e.g. select_for_update on the aggregate-key rows); owner: execution agent |
+| Sample product data fit: per-layer material COLOR and layer treatments (corona/sealability/chemical/reflection) have no structured fields; print-cylinder metadata (repeat/sleeve/plate) unmodeled | P3 | DOCUMENTED - representable today only via free-form SpecParameter conventions; needs a modeling decision |
+| nginx nested asset location suppressed inherited security headers | P2 | FIXED in committed hardening pass (06cc64d lineage) - verify headers duplicated into the assets location at next deploy review |
+| .env.example contained stray "[TEMPLATE]" line | P4 | check current state |
+| GRN frontend path drift (/grns/ vs /goods-receipts/) | P2 | FIXED by Agent 1 (d64cdd9); apiPathDrift guard now prevents recurrence |
