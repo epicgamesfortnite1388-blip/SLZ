@@ -118,7 +118,15 @@ class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data)
+        data = UserSerializer(request.user).data
+        # Augment with per-company permission breakdown so the frontend can
+        # show the right UI for the active company (Q-055).
+        data["permissions_by_company"] = {
+            str(cid): sorted(request.user.permission_codes(company_id=str(cid)))
+            for cid in request.user.company_memberships.values_list("company_id", flat=True)
+        }
+        data["active_company_id"] = getattr(request, "company_id", None)
+        return Response(data)
 
     def patch(self, request):
         # Users may update their own locale preferences only — validated, so a

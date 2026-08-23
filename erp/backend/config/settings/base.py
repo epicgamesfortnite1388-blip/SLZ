@@ -87,6 +87,9 @@ MIDDLEWARE = [
     # Platform middleware: assigns a correlation id to every request and
     # exposes the current request for the audit/event layers.
     "apps.core.middleware.CorrelationIdMiddleware",
+    # Company-scoped RBAC: reads X-SLZ-Company header, validates membership,
+    # sets request.company_id for downstream HasPermission checks (Q-055).
+    "apps.core.middleware.CompanyContextMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

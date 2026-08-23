@@ -51,18 +51,38 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     def __str__(self) -> str:
         return self.email
 
-    def permission_codes(self) -> set[str]:
-        """All permission codes granted through this user's roles."""
+    def permission_codes(self, company_id: str | None = None) -> set[str]:
+        """All permission codes granted through this user's roles.
+
+        When *company_id* is provided, roles are scoped:
+        - roles with ``UserRole.company_id`` matching *company_id* apply.
+        - roles with ``UserRole.company_id IS NULL`` (global) always apply.
+        - roles scoped to a different company are excluded.
+        """
         if self.is_superuser:
             return {"*"}
+        userrole_qs = UserRole.objects.filter(user=self)
+        if company_id is not None:
+            userrole_qs = userrole_qs.filter(
+                models.Q(company_id=company_id) | models.Q(company__isnull=True),
+            )
+        role_ids = userrole_qs.values_list("role_id", flat=True).distinct()
         return set(
-            Permission.objects.filter(roles__users=self).values_list("code", flat=True).distinct()
+            Permission.objects.filter(roles__id__in=role_ids)
+            .values_list("code", flat=True)
+            .distinct()
         )
 
-    def has_permission_code(self, code: str) -> bool:
+    def has_permission_code(self, code: str, company_id: str | None = None) -> bool:
         if self.is_superuser:
             return True
-        return Permission.objects.filter(roles__users=self, code=code).exists()
+        userrole_qs = UserRole.objects.filter(user=self)
+        if company_id is not None:
+            userrole_qs = userrole_qs.filter(
+                models.Q(company_id=company_id) | models.Q(company__isnull=True),
+            )
+        role_ids = userrole_qs.values_list("role_id", flat=True).distinct()
+        return Permission.objects.filter(roles__id__in=role_ids, code=code).exists()
 
 
 class Permission(TimeStampedModel):
@@ -122,13 +142,28 @@ class RolePermission(TimeStampedModel):
 
 
 class UserRole(TimeStampedModel):
+    """Link a user to a role, optionally scoped to a company.
+
+    company=NULL → the role applies globally (across all companies the user is
+    a member of).  company=<FK> → the role only applies when the user is acting
+    within that specific company (Q-055).
+    """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
+    company = models.ForeignKey(
+        "organization.Company",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        default=None,
+        help_text="NULL = global role; set = scoped to this company only.",
+    )
 
     class Meta:
         db_table = "identity_user_role"
-        unique_together = ("user", "role")
+        unique_together = ("user", "role", "company")
 
 
 class CompanyMembership(TimeStampedModel):

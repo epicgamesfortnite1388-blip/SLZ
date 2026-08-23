@@ -59,6 +59,9 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_staff", "is_superuser", "date_joined"]
 
     def get_permissions(self, obj) -> list[str]:
+        # Return the global permission codes (no company scoping).
+        # Per-company permissions are surfaced under the nested
+        # "permissions_by_company" key in /auth/me/.
         return sorted(obj.permission_codes())
 
     def get_companies(self, obj) -> list[str]:

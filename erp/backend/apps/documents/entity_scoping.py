@@ -15,7 +15,6 @@ from typing import Optional
 
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist, ValidationError as DjangoValidationError
-from django.db.models import Model
 
 from apps.core.exceptions import NotFoundError, ValidationError
 

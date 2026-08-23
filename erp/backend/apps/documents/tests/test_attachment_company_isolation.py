@@ -126,7 +126,7 @@ class AttachmentCompanyIsolationTests(TestCase):
         from apps.core.tests.factories import make_superuser
 
         self._upload(self.partner_a.id)
-        foreign = Attachment.objects.create(
+        Attachment.objects.create(
             entity_type="partners.Partner",
             entity_id=str(self.partner_b.id),
             company=self.company_b,
