@@ -89,6 +89,27 @@ class StockMovementViewSet(AuditedModelViewSet):
         "reference_type",
     ]
 
+    def perform_create(self, serializer):
+        """Direct POSTs are manual adjustments and MUST go through the
+        sanctioned posting service so negative-stock and quarantine guards
+        apply. Reference metadata is server-controlled to prevent spoofing
+        real domain documents."""
+        payload = serializer.validated_data
+        self._assert_company_allowed(self._payload_company_id(serializer))
+        movement = services.post_movement(
+            company=payload["company"],
+            warehouse=payload["warehouse"],
+            direction=payload["direction"],
+            quantity=payload["quantity"],
+            uom=payload["uom"],
+            material=payload.get("material"),
+            traceability_unit=payload.get("traceability_unit"),
+            reference_type="inventory.Adjustment",
+            notes=payload.get("notes", ""),
+            actor=self.request.user,
+        )
+        serializer.instance = movement
+
     def perform_update(self, serializer):
         raise ConflictError("Stock movements are append-only.", code="append_only")
 

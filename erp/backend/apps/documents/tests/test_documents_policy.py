@@ -10,7 +10,8 @@ from __future__ import annotations
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
-from apps.core.tests.factories import auth_client, grant, make_user
+from apps.core.tests.factories import auth_client, grant, make_company, make_user
+from apps.partners.models import Partner
 from apps.documents.models import Attachment
 from apps.identity.models import Permission, Role, RolePermission, UserRole
 
@@ -34,6 +35,10 @@ def grant_isolated(user, *codes):
 @override_settings(DOCUMENTS_ALLOWED_EXTENSIONS=["txt"])
 class DocumentPolicyTests(TestCase):
     def setUp(self):
+        self.company = make_company()
+        self.partner = Partner.objects.create(
+            company=self.company, code="P-9", name_fa="شریک", is_customer=True
+        )
         self.user = make_user()
         grant(
             self.user,
@@ -46,8 +51,8 @@ class DocumentPolicyTests(TestCase):
         return self.client.post(
             "/api/v1/documents/attachments/upload/",
             {
-                "entity_type": "sales.SalesOrder",
-                "entity_id": "SO-9",
+                "entity_type": "partners.Partner",
+                "entity_id": str(self.partner.id),
                 "file": SimpleUploadedFile(name, content, content_type="text/plain"),
             },
             format="multipart",
@@ -92,8 +97,8 @@ class DocumentPolicyTests(TestCase):
         resp = auth_client(outsider).post(
             "/api/v1/documents/attachments/upload/",
             {
-                "entity_type": "sales.SalesOrder",
-                "entity_id": "SO-9",
+                "entity_type": "partners.Partner",
+                "entity_id": str(self.partner.id),
                 "file": SimpleUploadedFile("spec.txt", b"x", content_type="text/plain"),
             },
             format="multipart",

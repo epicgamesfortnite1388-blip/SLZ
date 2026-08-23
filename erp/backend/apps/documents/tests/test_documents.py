@@ -5,16 +5,21 @@ from __future__ import annotations
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
-from apps.core.tests.factories import auth_client, grant, make_user
+from apps.core.tests.factories import auth_client, grant, make_company, make_user
 from apps.documents.models import Attachment
+from apps.partners.models import Partner
 
 
 @override_settings(DOCUMENTS_ALLOWED_EXTENSIONS=["txt", "pdf"])
 class DocumentTests(TestCase):
     def setUp(self):
+        self.company = make_company()
+        self.partner = Partner.objects.create(
+            company=self.company, code="P-1", name_fa="شریک", is_customer=True
+        )
         self.user = make_user()
         grant(self.user, "documents.attachment.view", "documents.attachment.delete")
-        # make_user() auto-joins every existing company, so the user is a
+        # make_user() auto-joins every existing company, so this user is a
         # member of self.company here (required by the Q-055 upload guard).
         self.client = auth_client(self.user)
 
@@ -22,8 +27,8 @@ class DocumentTests(TestCase):
         return self.client.post(
             "/api/v1/documents/attachments/upload/",
             {
-                "entity_type": "sales.SalesOrder",
-                "entity_id": "SO-1",
+                "entity_type": "partners.Partner",
+                "entity_id": str(self.partner.id),
                 "file": SimpleUploadedFile(name, content, content_type="text/plain"),
             },
             format="multipart",
@@ -34,7 +39,9 @@ class DocumentTests(TestCase):
         self.assertEqual(resp.status_code, 201, resp.content)
         self.assertEqual(Attachment.objects.count(), 1)
         att = Attachment.objects.first()
-        self.assertEqual(att.entity_id, "SO-1")
+        self.assertEqual(att.entity_id, str(self.partner.id))
+        # The company is resolved from the pinned entity (Q-055).
+        self.assertEqual(att.company_id, self.company.id)
         self.assertTrue(att.checksum_sha256)
 
     def test_disallowed_extension_rejected(self):

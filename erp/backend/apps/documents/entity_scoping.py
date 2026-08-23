@@ -2,13 +2,11 @@
 
 The attachment register is generic: rows point at any business entity via a
 dotted type label plus UUID. Q-055 company isolation therefore cannot be a
-simple FK filter — the target's company must be resolved through the same
+simple FK filter -- the target's company must be resolved through the same
 relationship chain the scoped viewsets use.
 
 Only entity types listed in ``ENTITY_COMPANY_PATHS`` are accepted for upload;
 anything else is rejected rather than silently stored unscoped (fail closed).
-The walk paths mirror each model's ``company_scope_lookup`` so the two can be
-kept in sync by inspection.
 """
 
 from __future__ import annotations
@@ -16,8 +14,8 @@ from __future__ import annotations
 from typing import Optional
 
 from django.apps import apps
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError as DjangoValidationError
+from django.db.models import Model
 
 from apps.core.exceptions import NotFoundError, ValidationError
 
@@ -41,13 +39,7 @@ ENTITY_COMPANY_PATHS: dict[str, tuple[str, str]] = {
 
 
 def resolve_company_id(entity_type: str, entity_id: str) -> Optional[int]:
-    """Company pk owning ``entity_id``, or ``None`` when the type is unknown.
-
-    Raises:
-        ValidationError: the entity type is not an attachable surface.
-        NotFoundError: the referenced record does not exist (or the id is not
-            a valid key for the target model).
-    """
+    """Company pk owning ``entity_id``, or ``None`` when the type is unknown."""
     entry = ENTITY_COMPANY_PATHS.get(entity_type)
     if entry is None:
         raise ValidationError(

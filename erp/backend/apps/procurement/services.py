@@ -195,6 +195,11 @@ def create_goods_receipt(serializer, *, actor=None):
 
         for entry in lines:
             po_line = entry.get("po_line")
+            if po_line is not None:
+                # Serialize concurrent receipts against one line:
+                # two parallel GRNs could otherwise both pass the
+                # over-receipt check.
+                po_line = type(po_line).objects.select_for_update().get(pk=po_line.pk)
             if (
                 po_line is not None
                 and purchase_order is not None
