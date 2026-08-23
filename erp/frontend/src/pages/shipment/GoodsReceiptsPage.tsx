@@ -8,7 +8,7 @@ import type { GoodsReceipt } from '@/api/grn';
 export function GoodsReceiptsPage(): JSX.Element {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
-  const collection = useCollection<GoodsReceipt>('/procurement/grns/');
+  const collection = useCollection<GoodsReceipt>('/procurement/goods-receipts/');
   const canView = hasPermission('procurement.grn.view');
 
   if (!canView) return <></>;

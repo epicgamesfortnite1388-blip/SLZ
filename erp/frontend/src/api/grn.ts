@@ -35,5 +35,5 @@ export interface GoodsReceipt {
 export function createGoodsReceipt(
   payload: Record<string, unknown>,
 ): Promise<GoodsReceipt> {
-  return apiClient.post<GoodsReceipt>('/procurement/grns/', payload);
+  return apiClient.post<GoodsReceipt>('/procurement/goods-receipts/', payload);
 }
