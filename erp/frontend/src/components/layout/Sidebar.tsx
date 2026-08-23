@@ -83,6 +83,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { labelKey: 'costing.title', to: '/costing/summary', permission: 'costing.layer.view' },
       { labelKey: 'shipment.allocations.title', to: '/shipment/allocations', permission: 'shipment.allocation.view' },
+      { labelKey: 'shipment.deliveries.title', to: '/shipment/deliveries', permission: 'shipment.delivery.view' },
     ],
   },
   {

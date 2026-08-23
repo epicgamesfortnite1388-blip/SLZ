@@ -79,6 +79,7 @@ import { ProductionOrderCreatePage } from '@/pages/production/ProductionOrderCre
 import { ProductionOrderDetailPage } from '@/pages/production/ProductionOrderDetailPage';
 import { AllocationsPage } from '@/pages/shipment/AllocationsPage';
 import { GoodsReceiptsPage } from '@/pages/shipment/GoodsReceiptsPage';
+import { ShipmentsPage } from '@/pages/shipment/ShipmentsPage';
 import { CostSummaryPage } from '@/pages/costing/CostSummaryPage';
 import { ApprovalsPage } from '@/pages/workflow/ApprovalsPage';
 import { WorkflowDefinitionsPage } from '@/pages/workflow/WorkflowDefinitionsPage';
@@ -892,6 +893,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="shipment.allocation.view">
                 <AllocationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="deliveries"
+            element={
+              <ProtectedRoute requiredPermission="shipment.delivery.view">
+                <ShipmentsPage />
               </ProtectedRoute>
             }
           />

@@ -968,14 +968,27 @@
       "new": "New allocation",
       "subtitle": "Reserve traceable stock against sales-order lines."
     },
+    "deliveries": {
+      "title": "Deliveries",
+      "new": "New delivery",
+      "subtitle": "Ship deliveries against allocated units — posts inventory OUT.",
+      "lines": "Shipment lines"
+    },
     "fields": {
       "company": "Company",
+      "warehouse": "Warehouse",
+      "customer": "Customer",
+      "salesOrder": "Sales order",
+      "number": "Shipment #",
+      "shippedAt": "Shipped date",
       "orderLine": "Order line",
       "unit": "Traceability unit",
+      "allocation": "Allocation",
       "quantity": "Quantity",
       "uom": "Unit",
       "status": "Status",
-      "notes": "Notes"
+      "notes": "Notes",
+      "lineCount": "Lines"
     },
     "actions": { "release": "Release" }
   }

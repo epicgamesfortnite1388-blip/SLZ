@@ -60,3 +60,25 @@ export function releaseAllocation(id: string): Promise<Allocation> {
 export function fetchShipments(query = '?page_size=100'): Promise<Paginated<Shipment>> {
   return apiClient.get<Paginated<Shipment>>(`/shipment/deliveries/${query}`);
 }
+
+export interface ShipmentCreatePayload {
+  company: string;
+  warehouse: string;
+  customer: string;
+  sales_order?: string | null;
+  number: string;
+  shipped_at: string;
+  notes?: string;
+  lines: Array<{
+    traceability_unit: string;
+    sales_order_line?: string | null;
+    allocation?: string | null;
+    quantity: string;
+    uom: string;
+    notes?: string;
+  }>;
+}
+
+export function createShipment(payload: ShipmentCreatePayload): Promise<Shipment> {
+  return apiClient.post<Shipment>('/shipment/deliveries/', payload);
+}
