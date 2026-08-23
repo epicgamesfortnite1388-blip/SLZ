@@ -35,5 +35,18 @@ CELERY_TASK_ALWAYS_EAGER = True
 CELERY_BROKER_URL = "memory://"
 CELERY_RESULT_BACKEND = "cache+memory://"
 
+# Use local-memory cache instead of Redis (no external service needed).
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "slz-erp-local",
+    }
+}
+
+# Allow the frontend's custom correlation-id header through CORS preflight.
+from corsheaders.defaults import default_headers  # noqa: E402
+
+CORS_ALLOW_HEADERS = list(default_headers) + ["x-correlation-id"]
+
 # Local file uploads next to the SQLite database.
 MEDIA_ROOT = BASE_DIR / "media"
