@@ -35,6 +35,7 @@ const NAV_SECTIONS: NavSection[] = [
     labelKey: 'nav.sectionOperations',
     items: [
       { labelKey: 'production.orders.title', to: '/production/orders', permission: 'production.order.view' },
+      { labelKey: 'production.executionCenter.title', to: '/production/execution-center', permission: 'production.execution.view' },
       { labelKey: 'inventory.warehouses.title', to: '/inventory/warehouses', permission: 'inventory.warehouse.view' },
       { labelKey: 'inventory.traceability.title', to: '/inventory/traceability-units', permission: 'inventory.movement.view' },
       { labelKey: 'inventory.balances.title', to: '/inventory/balances', permission: 'catalog.material.view' },

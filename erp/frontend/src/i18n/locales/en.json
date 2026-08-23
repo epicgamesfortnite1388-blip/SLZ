@@ -794,6 +794,14 @@
         "CARTON": "Carton",
         "PALLET": "Pallet"
       }
+    },
+    "executionCenter": {
+      "title": "Production execution",
+      "subtitle": "Issue materials and record production outputs for released orders.",
+      "selectOrder": "Production order",
+      "chooseOrder": "Choose a released production order",
+      "noOrderHint": "Select a released production order above to begin posting issues and outputs.",
+      "orderNotReleased": "This order is not in RELEASED status — execution is only possible for released orders."
     }
   },
   "tooling": {

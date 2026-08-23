@@ -77,6 +77,7 @@ import { SalesOrderDetailPage } from '@/pages/sales/SalesOrderDetailPage';
 import { ProductionOrdersPage } from '@/pages/production/ProductionOrdersPage';
 import { ProductionOrderCreatePage } from '@/pages/production/ProductionOrderCreatePage';
 import { ProductionOrderDetailPage } from '@/pages/production/ProductionOrderDetailPage';
+import { ProductionExecutionCenter } from '@/pages/production/ProductionExecutionCenter';
 import { AllocationsPage } from '@/pages/shipment/AllocationsPage';
 import { GoodsReceiptsPage } from '@/pages/shipment/GoodsReceiptsPage';
 import { ShipmentsPage } from '@/pages/shipment/ShipmentsPage';
@@ -712,6 +713,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="production.order.manage">
                 <ProductionOrderCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="execution-center"
+            element={
+              <ProtectedRoute requiredPermission="production.execution.view">
+                <ProductionExecutionCenter />
               </ProtectedRoute>
             }
           />

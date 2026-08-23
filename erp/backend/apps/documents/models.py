@@ -18,6 +18,16 @@ class Attachment(SoftDeleteModel):
 
     entity_type = models.CharField(max_length=100, db_index=True)
     entity_id = models.CharField(max_length=64, db_index=True)
+    # Resolved from the referenced entity at upload time (Q-055 company
+    # isolation). Nullable only for rows that predate the resolution registry;
+    # new uploads always stamp it and unresolvable targets are rejected.
+    company = models.ForeignKey(
+        "organization.Company",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="attachments",
+    )
     original_filename = models.CharField(max_length=255)
     content_type = models.CharField(max_length=150, blank=True, default="")
     size_bytes = models.PositiveBigIntegerField(default=0)
