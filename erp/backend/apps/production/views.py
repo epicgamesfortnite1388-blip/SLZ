@@ -102,7 +102,17 @@ class MaterialIssueViewSet(AuditedModelViewSet):
     filterset_fields = ["production_order", "material", "traceability_unit", "method", "warehouse"]
 
     def perform_create(self, serializer):
-        services.create_material_issue(serializer, actor=self.request.user)
+        from django.db import IntegrityError
+
+        try:
+            services.create_material_issue(serializer, actor=self.request.user)
+        except IntegrityError as exc:
+            if "nonce" in str(exc).lower():
+                raise ConflictError(
+                    "Duplicate submission detected — this material issue has already been posted.",
+                    code="duplicate_request",
+                ) from exc
+            raise
 
     def perform_update(self, serializer):
         raise ConflictError("Material issues are append-only.", code="append_only")
@@ -122,7 +132,17 @@ class ProductionOutputViewSet(AuditedModelViewSet):
     filterset_fields = ["production_order", "traceability_unit", "warehouse"]
 
     def perform_create(self, serializer):
-        services.create_production_output(serializer, actor=self.request.user)
+        from django.db import IntegrityError
+
+        try:
+            services.create_production_output(serializer, actor=self.request.user)
+        except IntegrityError as exc:
+            if "nonce" in str(exc).lower():
+                raise ConflictError(
+                    "Duplicate submission detected — this output has already been posted.",
+                    code="duplicate_request",
+                ) from exc
+            raise
 
     def perform_update(self, serializer):
         raise ConflictError("Production outputs are append-only.", code="append_only")

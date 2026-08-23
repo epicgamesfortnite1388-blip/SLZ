@@ -79,6 +79,9 @@ class MaterialIssue(BaseModel):
     EXPLICIT rows name the consumed roll/batch; BACKFLUSH rows may omit the unit
     and identify the source material. The selected method is recorded on every
     row so the audit trail does not depend on a later routing interpretation.
+
+    ``nonce`` is a client-supplied UUID that prevents duplicate submissions —
+    the database rejects a second POST with the same nonce (unique constraint).
     """
 
     production_order = models.ForeignKey(
@@ -105,14 +108,29 @@ class MaterialIssue(BaseModel):
     method = models.CharField(max_length=10, choices=MaterialIssueMethod.choices)
     operation_label = models.CharField(max_length=120, blank=True, default="")
     notes = models.CharField(max_length=500, blank=True, default="")
+    nonce = models.UUIDField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Client-supplied idempotency key — duplicate POSTs with the same nonce are rejected.",
+    )
 
     class Meta:
         db_table = "production_material_issue"
         ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["nonce"],
+                condition=models.Q(nonce__isnull=False),
+                name="uq_material_issue_nonce",
+            ),
+        ]
 
 
 class ProductionOutput(BaseModel):
-    """Immutable produced handling-unit record for a production order."""
+    """Immutable produced handling-unit record for a production order.
+
+    ``nonce`` is a client-supplied UUID that prevents duplicate submissions."""
 
     production_order = models.ForeignKey(
         "production.ProductionOrder", on_delete=models.PROTECT, related_name="outputs"
@@ -129,10 +147,23 @@ class ProductionOutput(BaseModel):
     )
     operation_label = models.CharField(max_length=120, blank=True, default="")
     notes = models.CharField(max_length=500, blank=True, default="")
+    nonce = models.UUIDField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Client-supplied idempotency key — duplicate POSTs rejected.",
+    )
 
     class Meta:
         db_table = "production_output"
         ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["nonce"],
+                condition=models.Q(nonce__isnull=False),
+                name="uq_production_output_nonce",
+            ),
+        ]
 
 
 class ProductionOrder(SoftDeleteModel):

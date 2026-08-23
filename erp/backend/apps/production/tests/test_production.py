@@ -345,3 +345,67 @@ class ProductionExecutionTests(TestCase):
             format="json",
         )
         self.assertEqual(patched.status_code, 409, patched.content)
+
+    def test_duplicate_nonce_rejected_on_material_issue(self):
+        """Same nonce on two POSTs — second is rejected with 409 Conflict."""
+        import uuid
+
+        from apps.inventory import services as inventory_services
+        from apps.inventory.models import StockMovementDirection
+
+        inventory_services.post_movement(
+            company=self.company,
+            warehouse=self.warehouse,
+            direction=StockMovementDirection.IN,
+            quantity=Decimal("100"),
+            uom=self.p["uom"],
+            material=self.resin,
+            traceability_unit=self.unit,
+            reference_type="test.seed",
+            actor=self.user,
+        )
+        nonce = uuid.uuid4()
+        payload = {
+            "production_order": str(self.order.id),
+            "material": str(self.resin.id),
+            "traceability_unit": str(self.unit.id),
+            "warehouse": str(self.warehouse.id),
+            "quantity": "5.000000",
+            "uom": str(self.p["uom"].id),
+            "method": "EXPLICIT",
+            "nonce": str(nonce),
+        }
+        r1 = self.client.post("/api/v1/production/material-issues/", payload, format="json")
+        self.assertEqual(r1.status_code, 201, r1.content)
+
+        r2 = self.client.post("/api/v1/production/material-issues/", payload, format="json")
+        self.assertEqual(r2.status_code, 409, r2.content)
+
+    def test_duplicate_nonce_rejected_on_production_output(self):
+        """Same nonce on two output POSTs — second is rejected."""
+        import uuid
+
+        output_unit = TraceabilityUnit.objects.create(
+            company=self.company,
+            customer_product_id=self.p["product"].id,
+            unit_type=TraceabilityUnitType.BATCH,
+            identifier="OUTPUT-DEDUP",
+            quantity="50.000000",
+            uom=self.p["uom"],
+        )
+        nonce = uuid.uuid4()
+        payload = {
+            "production_order": str(self.order.id),
+            "traceability_unit": str(output_unit.id),
+            "warehouse": str(self.warehouse.id),
+            "quantity": "10.000000",
+            "uom": str(self.p["uom"].id),
+            "nonce": str(nonce),
+        }
+        r1 = self.client.post("/api/v1/production/outputs/", payload, format="json")
+        self.assertEqual(r1.status_code, 201, r1.content)
+        count = ProductionOutput.objects.count()
+
+        r2 = self.client.post("/api/v1/production/outputs/", payload, format="json")
+        self.assertEqual(r2.status_code, 409, r2.content)
+        self.assertEqual(ProductionOutput.objects.count(), count)

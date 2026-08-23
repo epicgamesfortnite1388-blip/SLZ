@@ -96,8 +96,7 @@ class AttachmentCompanyIsolationTests(TestCase):
             original_filename="foreign.txt",
         )
         ids = [
-            row["id"]
-            for row in self.client.get("/api/v1/documents/attachments/").json()["results"]
+            row["id"] for row in self.client.get("/api/v1/documents/attachments/").json()["results"]
         ]
         self.assertNotIn(str(foreign.pk), ids)
 

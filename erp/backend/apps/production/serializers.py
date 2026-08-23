@@ -119,9 +119,13 @@ class MaterialIssueSerializer(serializers.ModelSerializer):
             "method",
             "operation_label",
             "notes",
+            "nonce",
             "created_at",
             "updated_at",
         ]
+
+    # Client-supplied idempotency key; rejected on duplicate via DB constraint.
+    nonce = serializers.UUIDField(required=False, allow_null=True)
 
     quantity = PositiveDecimalField()
 
@@ -174,9 +178,13 @@ class ProductionOutputSerializer(serializers.ModelSerializer):
             "uom",
             "operation_label",
             "notes",
+            "nonce",
             "created_at",
             "updated_at",
         ]
+
+    # Client-supplied idempotency key; duplicate rejected via DB constraint.
+    nonce = serializers.UUIDField(required=False, allow_null=True)
 
     quantity = PositiveDecimalField()
 
