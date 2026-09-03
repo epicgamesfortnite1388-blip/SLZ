@@ -3,7 +3,7 @@
 **Project:** Custom ERP/MES for صنایع لفاف زرین (Zarrin Laff Industries / SLZ) — a
 made-to-order flexible-packaging manufacturer, one of six NEPTA-group companies.
 **Workspace:** `E:\Code\Project\ERP` (backend `erp/backend`, frontend `erp/frontend`).
-**Last updated:** 2026-08-23 (final hardening pass — master audit).
+**Last updated:** 2026-09-03 (VPS prod deployment + second audit pass).
 
 This document is the single consolidated status view.
 
@@ -22,7 +22,9 @@ This document is the single consolidated status view.
 
 ## Snapshot
 
-- **20 backend apps** (8 foundation + 10 domain + 2 execution). **357 backend tests**, all passing.
+- **20 backend apps** (8 foundation + 10 domain + 2 execution). **371 backend tests** on SQLite
+  (all passing; 4 PostgreSQL-only concurrency tests skip there and pass on real PG) — plus a
+  2×-threaded PG suite for workflow finalization races.
 - **Frontend:** ~97 page components across all domain areas; **26 test files / 90 tests**, all passing.
 - **All confirmed business decisions (Q-026, Q-046, Q-048, Q-049, Q-053/Q-055) are implemented.**
 - **Execution layer is complete** — GRN, material issues (explicit/backflush), production outputs, genealogy,
@@ -34,7 +36,14 @@ This document is the single consolidated status view.
 - **Concurrency hardening (2026-09-03):** OUT postings serialised via PostgreSQL advisory xact locks;
   shipment delivery locks the consumed allocation (double-shipment race closed); GRN + shipment POSTs are
   nonce-idempotent (duplicate submissions → 409); material issues/outputs require a RELEASED order;
-  stock transfers are atomic OUT+IN pairs via `POST /inventory/movements/transfer/`.
+  stock transfers are atomic OUT+IN pairs via `POST /inventory/movements/transfer/`; workflow decisions
+  and cancels lock the instance row (approve-vs-cancel and duplicate-decision races closed — PG-tested).
+- **Costing (2026-09-03):** PRODUCTION_OUTPUT layers are now auto-posted on production output (layered
+  residual absorption of consumed input value), so produced stock carries value into weighted-average
+  consumption of downstream stages.
+- **Second audit (2026-09-03):** QC result posting is now transactional and validates disposition
+  (PASS/FAIL/HOLD); extra notification channels can no longer break the caller (failures logged, in-app
+  record kept); sales/workflow/quality/engineering/manufacturing modules re-audited with regression tests.
 - **Docker/PostgreSQL/Redis/Celery stack container-verified (2026-09-03, 1-vCPU VPS):** all images build;
   full `docker compose up` healthy — backend `/ready/` green (Postgres + Redis probes), nginx SPA + API
   proxy serving, JWT login + company-scoped reads + audited writes exercised end-to-end. Two deployment
@@ -42,8 +51,11 @@ This document is the single consolidated status view.
   script — `chmod 755`) and nginx `limit_req_zone` placed inside the `server` block (moved to http
   context). Celery no longer re-runs migrate/seed on start (backend owns that; racing seeds produced
   transient unique-violation tracebacks).
-- **Release readiness:** Docker-daemon gate cleared; remaining work is production hardening (TLS, real
-  secrets) per `docs/VPS-DEPLOYMENT-HANDOFF.md`.
+- **Release readiness (2026-09-03):** production hardening shipped — standalone `docker-compose.prod.yml`
+  (zero public ports), real secrets via `scripts/gen-env.sh`, nightly backups via `scripts/backup-erp.sh`,
+  Cloudflare Tunnel connector registered. DNS routing of the public hostname is a documented P2
+  infrastructure item (see `.agent-work/STATE.md`); no Cloudflare/DNS changes are made without explicit
+  authorization.
 
 ---
 
@@ -57,7 +69,7 @@ This document is the single consolidated status view.
 | **documents** | VERIFIED — Generic attachment register, in-context panels on all detail pages, upload/download with path-traversal protection, extension/size validation |
 | **localization** | VERIFIED — Jalali/Gregorian display, en↔fa 100% parity, number/calendar/date utilities |
 | **notifications** | VERIFIED — In-app inbox + bell; email/SMS/push channels DEFERRED (DR-008) |
-| **workflow** | VERIFIED — Generic engine + approvals inbox + definitions admin |
+| **workflow** | VERIFIED — Generic engine + approvals inbox + definitions admin; decisions/cancel row-locked (approve-vs-cancel + duplicate-decision PG race tests) |
 | **catalog / partners / hr** | VERIFIED — Products, materials, UoM, UoM conversions, product taxonomy (group/type/class/family), partners + contacts + addresses, employees — full CRUD UI |
 | **engineering** | VERIFIED — Versioned CustomerProduct + SpecificationRevision + detail with revision chain + layer/color/parameter tables; ToolingAsset lifecycle (active/retired) |
 | **manufacturing** | VERIFIED — WorkCenter/Machine list/create/detail; versioned BOM + Routing roots + revisions with inline material lines / operations |
@@ -66,7 +78,7 @@ This document is the single consolidated status view.
 | **procurement** | VERIFIED — PR/PO header+line (list/create with inline lines/detail + status transitions) + GRN (goods receipt with PO matching, over-receipt guard, traceability-unit creation, IN stock movements, RECEIPT cost layers) |
 | **sales** | VERIFIED — SalesOrder header+line (list/create/detail + confirm/close/cancel) |
 | **production** | VERIFIED — ProductionOrder header (list/create/detail + release/complete/close/cancel) + MaterialIssue (explicit/backflush per Q-048) + ProductionOutput + ExecutionCenter page + ISSUE cost layers |
-| **costing** | VERIFIED — Dated weighted-average engine, RECEIPT + ISSUE auto-posting, cost_summary (bulk-optimized), wa_unit_cost per material, 13 tests |
+| **costing** | VERIFIED — Dated weighted-average engine, RECEIPT + ISSUE + PRODUCTION_OUTPUT auto-posting (2026-09-03), cost_summary (bulk-optimized), wa_unit_cost per material |
 | **shipment** | VERIFIED — Allocation (reserve/over-allocation guard/release), delivery posting (ShipmentLine with atomic OUT movements + genealogy forward links), 6 shipment tests |
 
 ---
@@ -89,7 +101,6 @@ This document is the single consolidated status view.
 
 | Issue | Description |
 |---|---|
-| PRODUCTION_OUTPUT costing | Cost layer type defined but not auto-posted on output (RECEIPT + ISSUE only) |
 | No sample data fixtures | No seed data for demo; all data created manually |
 | No email/SMS notifications | Gated on DR-008; in-app notifications work |
 | No MRP/reorder logic | Gated on Q-034 cost rates dataset |

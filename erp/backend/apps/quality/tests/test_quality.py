@@ -11,10 +11,13 @@ test, by design (gated on Q-046, #11/#12/#18/#31).
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.test import TestCase
 
 from apps.audit.models import AuditLog
 from apps.catalog.models import (
+    Material,
     ProductClass,
     ProductFamily,
     ProductGroup,
@@ -27,7 +30,15 @@ from apps.core.versioning import RevisionStatus
 from apps.engineering.models import CustomerProduct, SpecificationRevision
 from apps.manufacturing.models import WorkCenter
 from apps.partners.models import Partner
-from apps.quality.models import QualityCharacteristic, QualityPlan, QualityPlanRevision
+from apps.inventory.models import TraceabilityUnit, TraceabilityUnitType
+from apps.quality.models import (
+    QualityCharacteristic,
+    QualityCheckResult,
+    QualityPlan,
+    QualityPlanItem,
+    QualityPlanRevision,
+)
+from apps.quality import services as quality_services
 
 
 def build_prereqs(company):
@@ -286,3 +297,96 @@ class QualityPermissionTests(TestCase):
         client = auth_client(make_user(email="nobody@slz.test"))
         resp = client.get("/api/v1/quality/plans/")
         self.assertEqual(resp.status_code, 403, resp.content)
+
+
+class QualityCheckPostingTests(TestCase):
+    """Regression tests for the QC posting service (append-only results)."""
+
+    def setUp(self):
+        self.company = make_company()
+        self.p = build_prereqs(self.company)
+        self.user = make_user()
+        self.plan = QualityPlan.objects.create(spec_revision=self.p["spec"])
+        revision = QualityPlanRevision.objects.create(root=self.plan, revision_number=1)
+        self.characteristic = QualityCharacteristic.objects.create(
+            company=self.company, code="THK", name_fa="ضخامت"
+        )
+        self.plan_item = QualityPlanItem.objects.create(
+            revision=revision, sequence=1, characteristic=self.characteristic
+        )
+        material = Material.objects.create(
+            company=self.company, code="MAT", name_fa="ماده", base_uom=self.p["uom"]
+        )
+        self.unit = TraceabilityUnit.objects.create(
+            company=self.company,
+            material=material,
+            unit_type=TraceabilityUnitType.ROLL,
+            identifier="ROLL-1",
+            quantity=Decimal("10"),
+            uom=self.p["uom"],
+        )
+
+    def _post(self, **overrides):
+        from django.utils import timezone
+
+        kwargs = {
+            "plan_item": self.plan_item,
+            "traceability_unit": self.unit,
+            "measured_value": "80",
+            "disposition": "PASS",
+            "checked_at": timezone.now(),
+            "actor": self.user,
+        }
+        kwargs.update(overrides)
+        return quality_services.post_check_result(**kwargs)
+
+    def test_invalid_disposition_rejected_atomically(self):
+        from apps.core.exceptions import BusinessRuleError
+
+        with self.assertRaises(BusinessRuleError) as ctx:
+            self._post(disposition="MAYBE")
+        self.assertEqual(ctx.exception.code, "qc.invalid_disposition")
+        self.assertFalse(QualityCheckResult.objects.exists())
+
+    def test_cross_company_unit_rejected(self):
+        from apps.core.exceptions import BusinessRuleError
+
+        other = make_company(code="OTHERQC")
+        other_material = Material.objects.create(
+            company=other, code="MAT-X", name_fa="ماده دیگر", base_uom=self.p["uom"]
+        )
+        other_unit = TraceabilityUnit.objects.create(
+            company=other,
+            material=other_material,
+            unit_type=TraceabilityUnitType.ROLL,
+            identifier="ROLL-X",
+            quantity=Decimal("1"),
+            uom=self.p["uom"],
+        )
+        with self.assertRaises(BusinessRuleError) as ctx:
+            self._post(traceability_unit=other_unit)
+        self.assertEqual(ctx.exception.code, "qc.cross_company")
+        self.assertFalse(QualityCheckResult.objects.exists())
+
+    def test_hold_note_write_failure_rolls_back_result(self):
+        """The result row and the HOLD note commit atomically: if tagging the
+        unit fails, no orphaned QC result may remain."""
+        from unittest import mock
+
+        from apps.inventory.models import TraceabilityUnit as TU
+
+        with (
+            mock.patch.object(TU, "save", side_effect=RuntimeError("disk full")),
+            self.assertRaises(RuntimeError),
+        ):
+            self._post(disposition="HOLD")
+        self.assertFalse(QualityCheckResult.objects.exists(), "result must roll back")
+        self.unit.refresh_from_db()
+        self.assertEqual(self.unit.notes, "")
+
+    def test_pass_persists_without_touching_unit(self):
+        result = self._post(disposition="PASS")
+        result.refresh_from_db()
+        self.assertEqual(result.disposition, "PASS")
+        self.unit.refresh_from_db()
+        self.assertEqual(self.unit.notes, "")

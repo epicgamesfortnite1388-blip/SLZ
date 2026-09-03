@@ -26,12 +26,12 @@ from __future__ import annotations
 
 from typing import Optional
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Max
 from django.utils import timezone
 
 from apps.core.events import EntityCreated, EntityUpdated
-from apps.core.exceptions import ConflictError
+from apps.core.exceptions import BusinessRuleError, ConflictError
 from apps.core.transactions import atomic_with_events
 from apps.core.versioning import Revision, RevisionStatus
 
@@ -170,6 +170,7 @@ def activate_revision(
 # ---------------------------------------------------------------------------
 
 
+@transaction.atomic
 def post_check_result(
     *,
     plan_item,
@@ -185,7 +186,10 @@ def post_check_result(
 
     Guards:
     - Unit must belong to the same company as the plan item's product.
-    - PASS/FAIL/HOLD disposition. HOLD tags the unit's notes for quarantine.
+    - Disposition must be a declared value (PASS/FAIL/HOLD). HOLD tags the
+      unit's notes for quarantine.
+    - The result row AND the HOLD note update commit atomically (a failure in
+      the second write must not leave an orphaned result row).
     Result rows are append-only.
     """
     from apps.quality.models import QualityCheckResult
@@ -193,11 +197,14 @@ def post_check_result(
     plan_company = plan_item.revision.root.spec_revision.root.company_id
     unit_company = traceability_unit.company_id
     if plan_company != unit_company:
-        from apps.core.exceptions import BusinessRuleError
-
         raise BusinessRuleError(
             "Plan item and traceability unit must belong to the same company.",
             code="qc.cross_company",
+        )
+    if disposition not in dict(QualityCheckResult.Disposition.choices):
+        raise BusinessRuleError(
+            f"'{disposition}' is not a valid QC disposition.",
+            code="qc.invalid_disposition",
         )
 
     result = QualityCheckResult.objects.create(

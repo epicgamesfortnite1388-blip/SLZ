@@ -88,6 +88,11 @@ def record_decision(
     approve: bool,
     comment: str = "",
 ) -> WorkflowInstance:
+    # Re-read under lock: two concurrent decisions (or a decision racing a
+    # cancel) must not both pass the state/pending checks and double-finalize
+    # the instance (which would publish the approval event twice and write two
+    # audit rows). First committer wins; the loser gets a clean 409-style error.
+    instance = WorkflowInstance.objects.select_for_update().get(pk=instance.pk)
     if instance.state not in (WorkflowState.UNDER_REVIEW, WorkflowState.SUBMITTED):
         raise BusinessRuleError("Workflow is not open for decisions.")
 
@@ -125,6 +130,9 @@ def record_decision(
 def cancel_workflow(
     *, instance: WorkflowInstance, actor=None, reason: str = ""
 ) -> WorkflowInstance:
+    # Lock + re-check: a cancel racing a final approval must not both succeed
+    # (only one final state transition per instance).
+    instance = WorkflowInstance.objects.select_for_update().get(pk=instance.pk)
     if instance.state in (WorkflowState.APPROVED, WorkflowState.REJECTED, WorkflowState.CANCELLED):
         raise BusinessRuleError("Workflow already finalized.")
     _finalize(instance, WorkflowState.CANCELLED, actor, reason)
