@@ -409,3 +409,284 @@ class ProductionExecutionTests(TestCase):
         r2 = self.client.post("/api/v1/production/outputs/", payload, format="json")
         self.assertEqual(r2.status_code, 409, r2.content)
         self.assertEqual(ProductionOutput.objects.count(), count)
+
+    def _draft_order(self, number="WO-DRAFT"):
+        return ProductionOrder.objects.create(
+            company=self.company,
+            number=number,
+            customer_product=self.p["product"],
+            spec_revision=self.p["spec"],
+            planned_quantity="1000.000000",
+            uom=self.p["uom"],
+            status="DRAFT",
+        )
+
+    def test_material_issue_on_draft_order_rejected(self):
+        """Execution postings require a RELEASED order (Q-048) — enforced both
+        at serializer validation and again at the service layer."""
+        from apps.core.exceptions import ConflictError
+        from apps.production import services as production_services
+
+        draft = self._draft_order()
+        response = self.client.post(
+            "/api/v1/production/material-issues/",
+            {
+                "production_order": str(draft.id),
+                "material": str(self.resin.id),
+                "traceability_unit": str(self.unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "1.000000",
+                "uom": str(self.p["uom"].id),
+                "method": "EXPLICIT",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertIn("RELEASED", response.json()["error"]["details"]["production_order"][0])
+        self.assertEqual(MaterialIssue.objects.count(), 0)
+
+        # Service layer re-checks for direct callers that bypass serializers.
+        class _IssueSerializer:
+            validated_data = {"production_order": draft}
+
+        with self.assertRaises(ConflictError) as ctx:
+            production_services.create_material_issue(_IssueSerializer(), actor=self.user)
+        self.assertEqual(ctx.exception.code, "production.order_not_released")
+
+    def test_output_on_draft_order_rejected(self):
+        """Outputs are only recorded against RELEASED orders."""
+        draft = self._draft_order()
+        output_unit = TraceabilityUnit.objects.create(
+            company=self.company,
+            customer_product_id=self.p["product"].id,
+            unit_type=TraceabilityUnitType.BATCH,
+            identifier="OUTPUT-DRAFT",
+            quantity="10.000000",
+            uom=self.p["uom"],
+        )
+        response = self.client.post(
+            "/api/v1/production/outputs/",
+            {
+                "production_order": str(draft.id),
+                "traceability_unit": str(output_unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "10.000000",
+                "uom": str(self.p["uom"].id),
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertIn("RELEASED", response.json()["error"]["details"]["production_order"][0])
+        self.assertEqual(ProductionOutput.objects.count(), 0)
+
+    # ------------------------------------------------------------------
+    # Q-034 auto-costing: outputs post PRODUCTION_OUTPUT layers
+    # ------------------------------------------------------------------
+
+    def _seed_receipt(self, material, qty=Decimal("100"), price=Decimal("2")):
+        """Seed stock + a RECEIPT cost layer so issue WA is non-zero."""
+        from datetime import date
+
+        from apps.costing.models import CostLayerType
+        from apps.costing.services import post_cost_layer
+        from apps.inventory import services as inventory_services
+        from apps.inventory.models import StockMovementDirection
+
+        inventory_services.post_movement(
+            company=self.company,
+            warehouse=self.warehouse,
+            direction=StockMovementDirection.IN,
+            quantity=qty,
+            uom=self.p["uom"],
+            material=material,
+            traceability_unit=self.unit,
+            reference_type="test.seed",
+            actor=self.user,
+        )
+        return post_cost_layer(
+            company=self.company,
+            material=material,
+            date=date(2026, 8, 1),
+            quantity=qty,
+            unit_cost=price,
+            layer_type=CostLayerType.RECEIPT,
+            reference_type="test.receipt",
+            actor=self.user,
+        )
+
+    def test_output_autoposts_production_output_cost_layer(self):
+        """Q-034: produced stock enters the valuation ledger. Issue resin (ISSUE
+        layer at WA) then output a material-carrying unit — the output must
+        auto-post a PRODUCTION_OUTPUT layer carrying the consumed cost."""
+        from apps.catalog.models import MaterialSubtype
+        from apps.costing.models import CostLayer, CostLayerType
+
+        self._seed_receipt(self.resin, qty=Decimal("100"), price=Decimal("2"))
+        issue = self.client.post(
+            "/api/v1/production/material-issues/",
+            {
+                "production_order": str(self.order.id),
+                "material": str(self.resin.id),
+                "traceability_unit": str(self.unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "30.000000",
+                "uom": str(self.p["uom"].id),
+                "method": "EXPLICIT",
+            },
+            format="json",
+        )
+        self.assertEqual(issue.status_code, 201, issue.content)
+        # ISSUE layer: 30 @ WA 2 = 60
+        issue_layer = CostLayer.objects.get(
+            reference_type="production.MaterialIssue", layer_type=CostLayerType.ISSUE
+        )
+        self.assertEqual(issue_layer.total_cost, Decimal("60"))
+
+        film = Material.objects.create(
+            company=self.company,
+            code="FILM-EXEC",
+            name_fa="فیلم اجرا",
+            subtype=MaterialSubtype.SEMI_FINISHED,
+            base_uom=self.p["uom"],
+        )
+        out_unit = TraceabilityUnit.objects.create(
+            company=self.company,
+            material=film,
+            unit_type=TraceabilityUnitType.BATCH,
+            identifier="OUTPUT-FILM-001",
+            quantity="10.000000",
+            uom=self.p["uom"],
+        )
+        resp = self.client.post(
+            "/api/v1/production/outputs/",
+            {
+                "production_order": str(self.order.id),
+                "traceability_unit": str(out_unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "10.000000",
+                "uom": str(self.p["uom"].id),
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 201, resp.content)
+        output_id = resp.data["id"]
+
+        layer = CostLayer.objects.get(
+            reference_type="production.ProductionOutput", reference_id=output_id
+        )
+        self.assertEqual(layer.layer_type, CostLayerType.PRODUCTION_OUTPUT)
+        self.assertEqual(layer.material_id, film.id)
+        self.assertEqual(layer.quantity, Decimal("10"))
+        # 10 units absorbing the full 60 of consumed resin
+        self.assertEqual(layer.total_cost, Decimal("60"))
+        self.assertEqual(layer.unit_cost, Decimal("6"))
+
+    def test_output_without_material_posts_no_cost_layer(self):
+        """A unit that carries no catalog material has nothing to value — the
+        output posts normally but no PRODUCTION_OUTPUT layer is created."""
+        from apps.costing.models import CostLayer, CostLayerType
+
+        self._seed_receipt(self.resin, qty=Decimal("100"), price=Decimal("2"))
+        self.client.post(
+            "/api/v1/production/material-issues/",
+            {
+                "production_order": str(self.order.id),
+                "material": str(self.resin.id),
+                "traceability_unit": str(self.unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "10.000000",
+                "uom": str(self.p["uom"].id),
+                "method": "EXPLICIT",
+            },
+            format="json",
+        )
+        out_unit = TraceabilityUnit.objects.create(
+            company=self.company,
+            customer_product_id=self.p["product"].id,
+            unit_type=TraceabilityUnitType.BATCH,
+            identifier="OUTPUT-NOMAT",
+            quantity="5.000000",
+            uom=self.p["uom"],
+        )
+        resp = self.client.post(
+            "/api/v1/production/outputs/",
+            {
+                "production_order": str(self.order.id),
+                "traceability_unit": str(out_unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "5.000000",
+                "uom": str(self.p["uom"].id),
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 201, resp.content)
+        self.assertEqual(ProductionOutput.objects.count(), 1)
+        self.assertFalse(
+            CostLayer.objects.filter(layer_type=CostLayerType.PRODUCTION_OUTPUT).exists()
+        )
+
+    def test_second_output_absorbs_only_remaining_consumption(self):
+        """Two outputs of one order must not double-count the consumed cost:
+        the first absorbs the issued consumption, the second absorbs what is
+        left (zero if no further issues were posted)."""
+        from apps.catalog.models import MaterialSubtype
+        from apps.costing.models import CostLayer, CostLayerType
+
+        self._seed_receipt(self.resin, qty=Decimal("100"), price=Decimal("2"))
+        self.client.post(
+            "/api/v1/production/material-issues/",
+            {
+                "production_order": str(self.order.id),
+                "material": str(self.resin.id),
+                "traceability_unit": str(self.unit.id),
+                "warehouse": str(self.warehouse.id),
+                "quantity": "20.000000",
+                "uom": str(self.p["uom"].id),
+                "method": "EXPLICIT",
+            },
+            format="json",
+        )
+        film = Material.objects.create(
+            company=self.company,
+            code="FILM-EXEC-2",
+            name_fa="فیلم اجرا ۲",
+            subtype=MaterialSubtype.SEMI_FINISHED,
+            base_uom=self.p["uom"],
+        )
+
+        def _output(identifier, qty):
+            unit = TraceabilityUnit.objects.create(
+                company=self.company,
+                material=film,
+                unit_type=TraceabilityUnitType.BATCH,
+                identifier=identifier,
+                quantity=qty,
+                uom=self.p["uom"],
+            )
+            return self.client.post(
+                "/api/v1/production/outputs/",
+                {
+                    "production_order": str(self.order.id),
+                    "traceability_unit": str(unit.id),
+                    "warehouse": str(self.warehouse.id),
+                    "quantity": qty,
+                    "uom": str(self.p["uom"].id),
+                },
+                format="json",
+            )
+
+        first = _output("OUTPUT-2A", "10.000000")
+        self.assertEqual(first.status_code, 201, first.content)
+        second = _output("OUTPUT-2B", "10.000000")
+        self.assertEqual(second.status_code, 201, second.content)
+
+        layers = list(
+            CostLayer.objects.filter(
+                reference_type="production.ProductionOutput",
+                layer_type=CostLayerType.PRODUCTION_OUTPUT,
+            ).order_by("created_at")
+        )
+        self.assertEqual(len(layers), 2)
+        # First output absorbs the whole 40 (20 @ WA 2); second has nothing left.
+        self.assertEqual(layers[0].total_cost, Decimal("40"))
+        self.assertEqual(layers[1].total_cost, Decimal("0"))

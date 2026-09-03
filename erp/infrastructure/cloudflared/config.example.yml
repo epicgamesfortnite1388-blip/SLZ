@@ -1,0 +1,26 @@
+# cloudflared tunnel config — SLZ ERP public ingress.
+#
+# Public topology (no inbound ports on the ERP box):
+#   https://slz.abystral.kdns.fr  →  Cloudflare edge (TLS termination)
+#                                 →  cloudflared connector (outbound)
+#                                 →  http://127.0.0.1:80  (nginx, loopback only)
+#
+# Install on the host:
+#   1. cp this file to /etc/cloudflared/config.yml and fill in the real tunnel
+#      ID + credentials file path (never commit the credentials JSON).
+#   2. Install the unit: cp cloudflared-slz.service /etc/systemd/system/ &&
+#      systemctl daemon-reload && systemctl enable --now cloudflared-slz
+#   3. In the Cloudflare dashboard, route the DNS record for the hostname to
+#      the tunnel (DNS -> <hostname> -> Tunnel) instead of the origin IP.
+#   4. Verify: curl -sI https://<hostname>/health/
+#
+# The connector only makes outbound connections, so no firewall rule is
+# required and the pre-existing VPN on port 443 is untouched.
+tunnel: <TUNNEL_ID>                      # e.g. 10012828-fa1d-44c9-bb88-2b2f0e584468
+credentials-file: /root/.cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: slz.abystral.kdns.fr
+    service: http://127.0.0.1:80
+  # Anything not routed above gets a 404 from the edge.
+  - service: http_status:404

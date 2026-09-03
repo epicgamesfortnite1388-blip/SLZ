@@ -83,11 +83,23 @@ class ShipmentViewSet(AuditedModelViewSet):
         serializer.instance = s
 
     def create(self, request, *args, **kwargs):
+        from django.db import IntegrityError
+
+        from apps.core.exceptions import ConflictError
+
         create_serializer = ShipmentCreateSerializer(
             data=request.data, context={"request": request}
         )
         create_serializer.is_valid(raise_exception=True)
-        self.perform_create(create_serializer)
+        try:
+            self.perform_create(create_serializer)
+        except IntegrityError as exc:
+            if "nonce" in str(exc).lower():
+                raise ConflictError(
+                    "Duplicate submission detected — this delivery has already been posted.",
+                    code="duplicate_request",
+                ) from exc
+            raise
         shipment = create_serializer.instance
         read_serializer = ShipmentSerializer(shipment, context={"request": request})
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)

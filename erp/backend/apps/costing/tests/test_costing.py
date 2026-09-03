@@ -6,6 +6,7 @@ Covers:
 * Zero cost when no layers exist
 * Immutable layer audit trail
 * Issue layer cost at prevailing WA
+* Production-output layer posting (auto-posted by the production service)
 """
 
 from __future__ import annotations
@@ -234,3 +235,71 @@ class CostingIntegrationTests(CostingTestBase):
             actor=self.user,
         )
         self.assertEqual(layer.unit_cost, Decimal("0"))
+
+    def test_output_integration_posts_production_output_layer(self):
+        layer = integration.post_cost_on_output(
+            company=self.company,
+            material=self.material,
+            date="2026-08-03",
+            quantity="25",
+            unit_cost=Decimal("40"),
+            reference_type="production.ProductionOutput",
+            actor=self.user,
+        )
+        self.assertEqual(layer.layer_type, CostLayerType.PRODUCTION_OUTPUT)
+        self.assertEqual(layer.quantity, Decimal("25"))
+        self.assertEqual(layer.unit_cost, Decimal("40"))
+        self.assertEqual(layer.total_cost, Decimal("1000"))
+
+    def test_output_layer_quantity_enters_wa_additions(self):
+        """A produced material's layer adds qty + cost so produced stock carries
+        value and later consumption removes it at the correct WA."""
+        # 200 kg of produced material at $40 → $8,000 on 200 kg
+        integration.post_cost_on_output(
+            company=self.company,
+            material=self.material,
+            date="2026-08-03",
+            quantity="200",
+            unit_cost=Decimal("40"),
+            reference_type="production.ProductionOutput",
+            actor=self.user,
+        )
+        wa = services.wa_unit_cost(company=self.company, material=self.material)
+        self.assertEqual(wa, Decimal("40"))
+        summary = services.cost_summary(company=self.company)
+        self.assertEqual(len(summary), 1)
+        self.assertEqual(summary[0]["wa_unit_cost"], "40")
+        self.assertEqual(summary[0]["on_hand_qty"], "200")
+        self.assertEqual(summary[0]["on_hand_cost"], "8000")
+
+    def test_output_then_issue_consumes_produced_value(self):
+        """Produced stock is consumed at the WA established by the output layer."""
+        integration.post_cost_on_output(
+            company=self.company,
+            material=self.material,
+            date="2026-08-03",
+            quantity="100",
+            unit_cost=Decimal("20"),
+            reference_type="production.ProductionOutput",
+            actor=self.user,
+        )
+        # Consume 40 of the produced 100 at WA $20
+        layer = integration.post_cost_on_issue(
+            company=self.company,
+            material=self.material,
+            date="2026-08-04",
+            quantity="40",
+            reference_type="production.MaterialIssue",
+            actor=self.user,
+        )
+        self.assertEqual(layer.unit_cost, Decimal("20"))
+        wa = services.wa_unit_cost(
+            company=self.company,
+            material=self.material,
+            as_of_date=date(2026, 8, 4),
+        )
+        # 60 kg remaining, value $1,200 → WA $20
+        self.assertEqual(wa, Decimal("20"))
+        summary = services.cost_summary(company=self.company)
+        self.assertEqual(summary[0]["on_hand_qty"], "60")
+        self.assertEqual(summary[0]["on_hand_cost"], "1200")

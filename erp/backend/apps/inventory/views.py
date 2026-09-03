@@ -19,6 +19,7 @@ from apps.inventory.serializers import (
     GenealogyLinkSerializer,
     StockMovementSerializer,
     TraceabilityUnitSerializer,
+    TransferMovementSerializer,
     WarehouseAccessSerializer,
     WarehouseSerializer,
 )
@@ -176,3 +177,31 @@ class StockMovementViewSet(AuditedModelViewSet):
             warehouse=request.query_params.get("warehouse"),
         )
         return Response(rows)
+
+    @action(detail=False, methods=["post"], url_path="transfer")
+    def transfer(self, request):
+        """POST /inventory/movements/transfer/ — atomic OUT+IN pair between
+        two warehouses of the same company (negative-stock and quarantine
+        guards apply at the source)."""
+        serializer = TransferMovementSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        payload = serializer.validated_data
+        self._assert_company_allowed(payload["company"].pk)
+        out, incoming = services.transfer_stock(
+            company=payload["company"],
+            from_warehouse=payload["from_warehouse"],
+            to_warehouse=payload["to_warehouse"],
+            quantity=payload["quantity"],
+            uom=payload["uom"],
+            material=payload.get("material"),
+            traceability_unit=payload.get("traceability_unit"),
+            notes=payload.get("notes", ""),
+            actor=request.user,
+        )
+        return Response(
+            {
+                "from": StockMovementSerializer(out).data,
+                "to": StockMovementSerializer(incoming).data,
+            },
+            status=201,
+        )

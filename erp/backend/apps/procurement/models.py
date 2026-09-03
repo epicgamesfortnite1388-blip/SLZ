@@ -301,12 +301,24 @@ class GoodsReceipt(SoftDeleteModel):
     )
     received_at = models.DateField()
     notes = models.CharField(max_length=500, blank=True, default="")
+    # Client-supplied idempotency key — the DB rejects a second POST with the
+    # same nonce, preventing duplicate receipts from a retried submission.
+    nonce = models.UUIDField(
+        null=True,
+        blank=True,
+        help_text="Client-supplied idempotency key — duplicate POSTs with the same nonce are rejected.",
+    )
 
     class Meta:
         db_table = "procurement_goods_receipt"
         ordering = ["-received_at", "-created_at"]
         constraints = [
             models.UniqueConstraint(fields=["company", "number"], name="uq_grn_company_number"),
+            models.UniqueConstraint(
+                fields=["nonce"],
+                condition=models.Q(nonce__isnull=False),
+                name="uq_grn_nonce",
+            ),
         ]
 
     def __str__(self) -> str:

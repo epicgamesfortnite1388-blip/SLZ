@@ -184,7 +184,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 UserRole.objects.get_or_create(user=user, role=role)
         if company_ids:
             from apps.identity.models import CompanyMembership
-            from apps.organization.models import Company
 
             for cid in company_ids:
                 CompanyMembership.objects.get_or_create(user=user, company_id=cid)

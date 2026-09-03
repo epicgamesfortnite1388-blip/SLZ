@@ -570,10 +570,17 @@
 
 /* ===== Collapsible Sidebar ============================================ */
 
+/* Single source of truth for the navigation rail width: the shell scopes
+   --sidebar-width so the collapse state narrows both the nav itself and the
+   main-content offset that follows it (margin model). Collapsing must make
+   the content area expand automatically — no duplicated magic numbers. */
+.app-shell { --sidebar-width: 248px; }
+.app-shell:has(.sidebar--collapsed) { --sidebar-width: 56px; }
+
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: var(--sidebar-width, 248px);
+  width: var(--sidebar-width);
   min-height: 100vh;
   background-color: var(--color-sidebar-bg);
   color: var(--color-sidebar-text);
@@ -588,7 +595,13 @@
 }
 [dir="rtl"] .sidebar { left: auto; right: 0; }
 
-.sidebar--collapsed { width: 56px; }
+.sidebar__collapse-btn:focus-visible,
+.sidebar__link:focus-visible,
+.sidebar__close-btn:focus-visible,
+.sidebar__mobile-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
 
 .sidebar__header {
   display: flex;
@@ -697,28 +710,48 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar__mobile-toggle { display: block; }
-  .sidebar { transform: translateX(-100%); width: var(--sidebar-width); }
+  .sidebar__mobile-toggle {
+    display: block;
+    top: calc(var(--header-height, 60px) + 8px);
+    left: 8px;
+  }
+  .sidebar { transform: translateX(-100%); width: var(--sidebar-width, 248px); }
   [dir="rtl"] .sidebar { transform: translateX(100%); }
   .sidebar--mobile-open { transform: translateX(0); }
   .sidebar--mobile-open ~ .sidebar__overlay { display: block; }
+  .sidebar--mobile-open .sidebar__collapse-btn { display: none; }
+  .sidebar--mobile-open .sidebar__close-btn { display: inline-flex; }
   .app-shell__main { margin-inline-start: 0 !important; }
 }
 
+/* Desktop: the collapse control is the header affordance; the close button is
+   for the mobile drawer only. */
+.sidebar__close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-sidebar-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.sidebar__close-btn:hover { color: var(--color-sidebar-active); }
+
 /* App shell layout */
 .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
-.app-shell__header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-height, 56px); z-index: 150; }
-.app-shell__sidebar { position: fixed; top: var(--header-height, 56px); bottom: 0; left: 0; z-index: 100; }
+.app-shell__header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-height, 60px); z-index: 150; }
+.app-shell__sidebar { position: fixed; top: var(--header-height, 60px); bottom: 0; left: 0; z-index: 100; }
 [dir="rtl"] .app-shell__sidebar { left: auto; right: 0; }
 .app-shell__main {
-  margin-inline-start: var(--sidebar-width, 248px);
-  margin-top: var(--header-height, 56px);
+  margin-inline-start: var(--sidebar-width);
+  margin-top: var(--header-height, 60px);
   padding: 1.5rem;
   flex: 1;
   transition: margin-inline-start 0.2s ease;
 }
-.sidebar--collapsed ~ .app-shell__main,
-.sidebar--collapsed + .app-shell__main { margin-inline-start: 56px; }
 
 /* ---- Premium polish layer (visual redesign pass) ---- */
 

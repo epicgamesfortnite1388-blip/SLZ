@@ -82,15 +82,21 @@ def wa_unit_cost(company, material, as_of_date=None) -> Decimal:
 
     Formula:
         WA = total_net_cost / total_net_quantity
-    where net = sum(all RECEIPT + ADJUSTMENT layers) - sum(all ISSUE layers)
-    up to as_of_date.
+    where net = sum(all RECEIPT + ADJUSTMENT + PRODUCTION_OUTPUT layers)
+    - sum(all ISSUE layers) up to as_of_date.
     """
     qs = CostLayer.objects.filter(company=company, material=material)
     if as_of_date is not None:
         qs = qs.filter(date__lte=as_of_date)
 
-    # Receipts and adjustments add cost; issues remove it.
-    additions = qs.filter(layer_type__in=[CostLayerType.RECEIPT, CostLayerType.ADJUSTMENT])
+    # Receipts, adjustments and production outputs add cost; issues remove it.
+    additions = qs.filter(
+        layer_type__in=[
+            CostLayerType.RECEIPT,
+            CostLayerType.ADJUSTMENT,
+            CostLayerType.PRODUCTION_OUTPUT,
+        ]
+    )
     issues = qs.filter(layer_type=CostLayerType.ISSUE)
 
     add_cost = additions.aggregate(t=Sum("total_cost"))["t"] or Decimal("0")
@@ -134,7 +140,13 @@ def cost_summary(company, as_of_date=None):
     if as_of_date is not None:
         qs = qs.filter(date__lte=as_of_date)
 
-    add_qs = qs.filter(layer_type__in=[CostLayerType.RECEIPT, CostLayerType.ADJUSTMENT])
+    add_qs = qs.filter(
+        layer_type__in=[
+            CostLayerType.RECEIPT,
+            CostLayerType.ADJUSTMENT,
+            CostLayerType.PRODUCTION_OUTPUT,
+        ]
+    )
     iss_qs = qs.filter(layer_type=CostLayerType.ISSUE)
 
     add_totals = {

@@ -40,7 +40,9 @@
     "sectionIdentity": "هویت",
     "toggle": "باز و بسته کردن منو",
     "expand": "باز کردن منو",
-    "collapse": "بستن منو"
+    "collapse": "بستن منو",
+    "ariaLabel": "منوی اصلی",
+    "close": "بستن منو"
   },
   "userMenu": {
     "profile": "پروفایل",

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from apps.catalog.models import Material, UnitOfMeasure
+from apps.core.validation import PositiveDecimalField
 from apps.inventory.models import (
     GenealogyLink,
     StockMovement,
@@ -11,6 +13,48 @@ from apps.inventory.models import (
     Warehouse,
     WarehouseAccess,
 )
+from apps.organization.models import Company
+
+
+class TransferMovementSerializer(serializers.Serializer):
+    """Wire shape for a warehouse-to-warehouse stock transfer.
+
+    Posts one OUT movement at ``from_warehouse`` and one IN movement at
+    ``to_warehouse`` atomically (``inventory.services.transfer_stock``).
+    """
+
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    from_warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
+    to_warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
+    material = serializers.PrimaryKeyRelatedField(
+        queryset=Material.objects.all(), required=False, allow_null=True
+    )
+    traceability_unit = serializers.PrimaryKeyRelatedField(
+        queryset=TraceabilityUnit.objects.all(), required=False, allow_null=True
+    )
+    quantity = PositiveDecimalField()
+    uom = serializers.PrimaryKeyRelatedField(queryset=UnitOfMeasure.objects.all())
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate(self, attrs):
+        company = attrs["company"]
+        errors = {}
+        if attrs["from_warehouse"].company_id != company.id:
+            errors["from_warehouse"] = "Source warehouse must belong to the company."
+        if attrs["to_warehouse"].company_id != company.id:
+            errors["to_warehouse"] = "Destination warehouse must belong to the company."
+        if attrs.get("material") is not None and attrs["material"].company_id != company.id:
+            errors["material"] = "Material must belong to the company."
+        if (
+            attrs.get("traceability_unit") is not None
+            and attrs["traceability_unit"].company_id != company.id
+        ):
+            errors["traceability_unit"] = "Traceability unit must belong to the company."
+        if attrs.get("traceability_unit") is None and attrs.get("material") is None:
+            errors["material"] = "A transfer must identify a material or traceability unit."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
 
 class WarehouseSerializer(serializers.ModelSerializer):

@@ -11,6 +11,7 @@ from apps.core.exceptions import ConflictError
 from apps.core.transactions import atomic_with_events
 from apps.inventory import services as inventory_services
 from apps.inventory.models import StockMovementDirection
+from apps.production.models import ProductionOrderStatus
 
 
 def _actor_id(actor) -> Optional[str]:
@@ -72,8 +73,18 @@ def transition(
     return document
 
 
+def _assert_order_released(order) -> None:
+    """Execution postings are only valid against RELEASED production orders."""
+    if order.status != ProductionOrderStatus.RELEASED:
+        raise ConflictError(
+            "Execution postings require a RELEASED production order " f"(current: {order.status}).",
+            code="production.order_not_released",
+        )
+
+
 def create_material_issue(serializer, *, actor=None):
     """Post one immutable issue and its append-only OUT movement atomically."""
+    _assert_order_released(serializer.validated_data["production_order"])
     with atomic_with_events() as events:
         issue = serializer.save(created_by=actor, updated_by=actor)
         movement = inventory_services.post_movement(
@@ -149,6 +160,7 @@ def _post_issue_cost_layer(*, company, material, date, quantity, reference_id=No
 
 def create_production_output(serializer, *, actor=None):
     """Post one immutable output and its append-only IN movement atomically."""
+    _assert_order_released(serializer.validated_data["production_order"])
     with atomic_with_events() as events:
         output = serializer.save(created_by=actor, updated_by=actor)
         movement = inventory_services.post_movement(
@@ -183,4 +195,88 @@ def create_production_output(serializer, *, actor=None):
                 state={"direction": movement.direction, "quantity": str(movement.quantity)},
             )
         )
+
+        # Q-034: auto-post a PRODUCTION_OUTPUT cost layer so produced stock
+        # enters the valuation ledger at its actual consumed-material cost.
+        _post_output_cost_layer(output=output, actor=actor)
+
     return output
+
+
+def _post_output_cost_layer(*, output, actor=None):
+    """Post a costing PRODUCTION_OUTPUT layer. Best-effort — costing failures never break the output.
+
+    The layer is keyed to the produced unit's catalog material (units that
+    reference only a customer product have no material identity to value and
+    are skipped). The layer adds the produced quantity and its value to the
+    produced material's ledger so later consumption of that material removes
+    value at the correct WA.
+
+    Value = the portion of this order's material consumption (Σ ISSUE-layer
+    totals of the order's material issues) not yet absorbed by earlier outputs
+    of the same order — i.e. actual consumption cost since the last output
+    confirmation. For the common single-output order the layer therefore
+    carries the full consumed material cost; labor/machine conversion is
+    intentionally absent until Q-031/Q-033 rates are confirmed, and later
+    corrections arrive as ADJUSTMENT layers.
+    """
+    try:
+        from decimal import Decimal
+
+        from django.db.models import Sum
+
+        from apps.costing.integration import post_cost_on_output
+        from apps.costing.models import CostLayer, CostLayerType
+
+        order = output.production_order
+        unit = output.traceability_unit
+        material = unit.material if unit is not None and unit.material_id else None
+        if material is None:
+            # Produced unit without a catalog material — nothing to key the
+            # layer on (the IN movement is equally material-less).
+            return
+
+        issue_ids = list(order.material_issues.values_list("id", flat=True))
+        consumed = CostLayer.objects.filter(
+            company_id=order.company_id,
+            layer_type=CostLayerType.ISSUE,
+            reference_type="production.MaterialIssue",
+            reference_id__in=issue_ids,
+        ).aggregate(t=Sum("total_cost"))["t"] or Decimal("0")
+        # Cost already capitalised by earlier outputs of the same order (the
+        # current output's layer is not posted yet, so it is naturally absent).
+        other_output_ids = list(order.outputs.exclude(pk=output.pk).values_list("id", flat=True))
+        absorbed = CostLayer.objects.filter(
+            company_id=order.company_id,
+            layer_type=CostLayerType.PRODUCTION_OUTPUT,
+            reference_type="production.ProductionOutput",
+            reference_id__in=other_output_ids,
+        ).aggregate(t=Sum("total_cost"))["t"] or Decimal("0")
+        remaining = consumed - absorbed
+        if remaining < 0:
+            remaining = Decimal("0")
+        qty = Decimal(str(output.quantity))
+        if qty > 0 and remaining > 0:
+            unit_cost = (remaining / qty).quantize(Decimal("0.000001"))
+        else:
+            unit_cost = Decimal("0")
+
+        post_cost_on_output(
+            company=order.company,
+            material=material,
+            date=output.created_at.date() if output.created_at else None,
+            quantity=output.quantity,
+            unit_cost=unit_cost,
+            reference_type="production.ProductionOutput",
+            reference_id=output.id,
+            actor=actor,
+        )
+    except Exception:
+        import logging
+
+        logger = logging.getLogger("apps.production")
+        logger.warning(
+            "Cost layer posting skipped for production output %s",
+            getattr(output, "id", None),
+            exc_info=True,
+        )

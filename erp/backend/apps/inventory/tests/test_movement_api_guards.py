@@ -9,7 +9,6 @@ allowing phantom IN stock and negative balances to any holder of
 
 from __future__ import annotations
 
-
 from django.test import TestCase
 
 from apps.catalog.models import Material, UnitOfMeasure, UomDimension
@@ -89,4 +88,83 @@ class DirectMovementPostingGuardTests(TestCase):
                     "/api/v1/inventory/movements/", self._payload(quantity=qty), format="json"
                 )
                 self.assertEqual(resp.status_code, 422)
+        self.assertEqual(StockMovement.objects.count(), 0)
+
+    def test_raw_transfer_direction_rejected_via_api(self):
+        """A direct POST with direction=TRANSFER must fail: transfers are an
+        atomic OUT+IN pair via the dedicated transfer action."""
+        resp = self.client.post(
+            "/api/v1/inventory/movements/",
+            self._payload(direction="TRANSFER"),
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 422)
+        self.assertEqual(StockMovement.objects.count(), 0)
+
+    def test_transfer_action_moves_stock_between_warehouses(self):
+        from apps.inventory import services as inventory_services
+        from apps.inventory.models import StockMovementDirection
+
+        target = Warehouse.objects.create(
+            company=self.company,
+            site=self.site,
+            code="FG-T",
+            name_fa="مقصد",
+            store_type=WarehouseStoreType.FINISHED_GOODS,
+        )
+        inventory_services.post_movement(
+            company=self.company,
+            warehouse=self.warehouse,
+            direction=StockMovementDirection.IN,
+            quantity=10,
+            uom=self.uom,
+            material=self.material,
+            reference_type="test.seed",
+            actor=self.user,
+        )
+        resp = self.client.post(
+            "/api/v1/inventory/movements/transfer/",
+            {
+                "company": str(self.company.id),
+                "from_warehouse": str(self.warehouse.id),
+                "to_warehouse": str(target.id),
+                "material": str(self.material.id),
+                "quantity": "4",
+                "uom": str(self.uom.id),
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 201, resp.content)
+        self.assertEqual(StockMovement.objects.filter(direction="OUT").count(), 1)
+        self.assertEqual(StockMovement.objects.filter(direction="IN").count(), 2)  # seed + transfer
+        self.assertEqual(
+            StockMovement.objects.filter(reference_type="inventory.Transfer").count(), 2
+        )
+
+    def test_transfer_action_rejects_foreign_company_warehouse(self):
+        from apps.core.tests.factories import make_company, make_site
+
+        foreign = make_company(code="FGN")
+        foreign_site = make_site(company=foreign)
+        foreign_wh = Warehouse.objects.create(
+            company=foreign,
+            site=foreign_site,
+            code="FG-F",
+            name_fa="خارجی",
+            store_type=WarehouseStoreType.FINISHED_GOODS,
+        )
+        resp = self.client.post(
+            "/api/v1/inventory/movements/transfer/",
+            {
+                "company": str(self.company.id),
+                "from_warehouse": str(self.warehouse.id),
+                "to_warehouse": str(foreign_wh.id),
+                "material": str(self.material.id),
+                "quantity": "1",
+                "uom": str(self.uom.id),
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 400, resp.content)
+        self.assertIn("to_warehouse", resp.json()["error"]["details"])
         self.assertEqual(StockMovement.objects.count(), 0)

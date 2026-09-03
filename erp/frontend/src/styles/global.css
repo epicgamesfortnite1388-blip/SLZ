@@ -131,8 +131,12 @@ button {
       'main';
   }
 
+  /* The sidebar drawer (toggle + off-canvas nav + overlay) is rendered by
+     components.css as fixed children of this wrapper. It must not be hidden:
+     components.css later re-declares .app-shell__sidebar as fixed, so this
+     wrapper only needs to get out of the grid flow on small screens. */
   .app-shell__sidebar {
-    display: none;
+    position: fixed;
   }
 }
 

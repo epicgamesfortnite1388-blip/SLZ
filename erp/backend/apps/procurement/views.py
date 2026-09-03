@@ -210,11 +210,23 @@ class GoodsReceiptViewSet(AuditedModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Return the fully-populated receipt (with lines) after posting."""
+        from django.db import IntegrityError
+
+        from apps.core.exceptions import ConflictError
+
         create_serializer = GoodsReceiptCreateSerializer(
             data=request.data, context={"request": request}
         )
         create_serializer.is_valid(raise_exception=True)
-        self.perform_create(create_serializer)
+        try:
+            self.perform_create(create_serializer)
+        except IntegrityError as exc:
+            if "nonce" in str(exc).lower():
+                raise ConflictError(
+                    "Duplicate submission detected — this goods receipt has already been posted.",
+                    code="duplicate_request",
+                ) from exc
+            raise
         grn = create_serializer.instance
         read_serializer = GoodsReceiptSerializer(grn, context={"request": request})
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)

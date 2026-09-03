@@ -37,11 +37,11 @@ class CostLayer(BaseModel):
     - an optional PO line for receipt → purchase-price provenance
 
     WA cost for a material as of a date is:
-        sum(receipt_total + adjustment_total - issue_total
-            up to that date)
+        sum(receipt_total + adjustment_total + production_output_total
+            - issue_total up to that date)
         /
-        sum(receipt_qty + adjustment_qty - issue_qty
-            up to that date)
+        sum(receipt_qty + adjustment_qty + production_output_qty
+            - issue_qty up to that date)
     """
 
     company = models.ForeignKey(

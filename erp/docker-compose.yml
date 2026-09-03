@@ -1,5 +1,13 @@
-# SLZ ERP — local development orchestration.
-# Usage: docker compose up --build   (from the erp/ directory)
+# SLZ ERP — LOCAL DEVELOPMENT orchestration (public ports, dev settings,
+# code bind-mounts, gunicorn --reload). Do NOT use this file for production.
+#
+# Usage (dev):  docker compose up --build                (from erp/)
+# Usage (prod): docker compose -f docker-compose.prod.yml up -d --build
+#
+# Production runs the STANDALONE docker-compose.prod.yml (restricted port
+# exposure, prod settings, no bind-mounts). Never merge these two files:
+# compose concatenates `ports` across files, so overlaying prod settings on
+# this file would keep the public dev publishes below.
 services:
   postgres:
     image: postgres:16-alpine
@@ -81,6 +89,11 @@ services:
       dockerfile: infrastructure/docker/backend.Dockerfile
       args:
         REQ: dev
+    # Migrations + RBAC seeding are the backend entrypoint's job; celery only
+    # depends on backend being healthy. Empty entrypoint avoids re-running
+    # migrate/seed here (two containers racing the same seed caused transient
+    # unique-violation tracebacks on startup).
+    entrypoint: []
     command: ["celery", "-A", "config", "worker", "-l", "info"]
     env_file: .env
     environment:

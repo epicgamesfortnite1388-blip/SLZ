@@ -30,7 +30,7 @@
 | 1.2 | Python 3.11 (container: `python:3.11-slim`) | [STATICALLY VERIFIED] |
 | 1.3 | Node 20 (multi-stage frontend Dockerfile) | [STATICALLY VERIFIED] |
 | 1.4 | Git access to repository | [PROCEDURE] |
-| 1.5 | Domain / DNS / TLS certificate | [PROCEDURE] |
+| 1.5 | Domain / DNS: public name resolves through Cloudflare (zone in CF, or CNAME to a CF-for-SaaS custom hostname) — edge TLS + tunnel ingress | [PROCEDURE] |
 
 ---
 
@@ -38,7 +38,7 @@
 
 | # | Item | Status |
 |---|---|---|
-| 2.1 | Copy `erp/.env.example` → `erp/.env` (36 vars documented) | [PROCEDURE] |
+| 2.1 | Generate `erp/.env`: `bash erp/scripts/gen-env.sh` (random secrets, chmod 600; `erp/.env.example` documents every var) | [VERIFIED] |
 | 2.2 | `DJANGO_SECRET_KEY` ≥50-char random (prod.py refuses dev key) | [STATICALLY VERIFIED] |
 | 2.3 | `DJANGO_DEBUG=false`, production `ALLOWED_HOSTS` | [STATICALLY VERIFIED] |
 | 2.4 | `POSTGRES_*`, `REDIS_*`, `CELERY_*` credentials | [PROCEDURE] |
@@ -145,8 +145,10 @@
 | 9.4 | `nginx.conf`: SPA fallback, API proxy, health probes, security headers, gzip, rate limiting, CSP | [STATICALLY VERIFIED] |
 | 9.5 | `entrypoint.sh`: wait-for-db → migrate → seed_rbac (strict mode) → `exec $@` | [STATICALLY VERIFIED] |
 | 9.6 | `.dockerignore`: excludes .git, node_modules, .env, __pycache__, docs, IDE files | [STATICALLY VERIFIED] |
-| 9.7 | `docker compose up --build` — NOT EXECUTED | [NOT VERIFIED] |
-| 9.8 | Container smoke tests — NOT EXECUTED | [NOT VERIFIED] |
+| 9.7 | `docker compose -f docker-compose.prod.yml up -d --build` on VPS | [VERIFIED Sep 2026] |
+| 9.8 | Container smoke tests on VPS (health/ready, login, API E2E through nginx) | [VERIFIED Sep 2026] |
+| 9.9 | `docker-compose.prod.yml` standalone prod stack: zero public ports, loopback-only nginx, prod settings, image code only | [VERIFIED] |
+| 9.10 | Cloudflare Tunnel connector (outbound-only) registered; ingress to `127.0.0.1:80` | [VERIFIED] |
 
 ---
 
@@ -165,25 +167,25 @@
 ```bash
 # 1. Clone
 git fetch origin && git checkout main
-cd ERP
+cd <repo>
 
 # 2. Configure
-cp erp/.env.example erp/.env
-# Edit erp/.env with real secrets
+bash erp/scripts/gen-env.sh    # writes erp/.env with real random secrets
 
-# 3. Build and start
+# 3. Build and start (production stack — standalone file, NOT the dev one)
 cd erp
-docker compose build
-docker compose up -d
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up -d
 
 # 4. Verify
-docker compose logs backend | head -30   # expect: "database reachable" + "migrate" + "seed_rbac"
-curl http://localhost:8000/health/       # {"status":"ok"}
-curl http://localhost:8000/ready/        # {"status":"ready","checks":{"database":"ok","cache":"ok"}}
-curl http://localhost:5173               # SPA index.html
+docker compose -f docker-compose.prod.yml logs backend | head -30  # migrate + seed_rbac
+curl -H 'Host: <public-domain>' -H 'X-Forwarded-Proto: https' http://127.0.0.1:80/ready/
+curl -H 'Host: <public-domain>' -H 'X-Forwarded-Proto: https' http://127.0.0.1:80/api/v1/auth/login/   # 401 = alive
+# 5. Public ingress: Cloudflare Tunnel connector (see docs/VPS-DEPLOYMENT-HANDOFF.md §S/§T)
+#    → systemctl enable --now cloudflared-slz
 ```
 
-Status: [PROCEDURE] — Steps 3-4 need Docker daemon.
+Status: [VERIFIED Sep 2026] on the VPS (nginx loopback bind; public TLS at CF edge).
 
 ---
 
@@ -194,7 +196,7 @@ Status: [PROCEDURE] — Steps 3-4 need Docker daemon.
 | 12.1 | PostgreSQL backup: `docker compose exec postgres pg_dump -U slz_erp -Fc slz_erp > backup.dump` | [PROCEDURE] |
 | 12.2 | Media backup: tar the `media_data` volume | [PROCEDURE] |
 | 12.3 | Restore: `pg_restore` from dump | [PROCEDURE] |
-| 12.4 | No automated backup in repo | [VERIFIED] |
+| 12.4 | `erp/scripts/backup-erp.sh`: pg_dump + media archive + verify + retention + optional off-box rsync; cron via `--install-cron` | [VERIFIED] |
 
 ---
 

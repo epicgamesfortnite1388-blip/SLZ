@@ -50,3 +50,6 @@ Thumbs.db
 .freebuff/
 *.txt.bak
 .vite/
+
+# Subagent API keys (agent harness)
+/agent/.keys.json

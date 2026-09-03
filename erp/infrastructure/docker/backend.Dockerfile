@@ -18,7 +18,10 @@ RUN pip install -r requirements/${REQ}.txt
 
 COPY backend/ /app/
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# 755 (not merely +x): the container later switches to the non-root appuser,
+# who must be able to READ the script, not only execute it. A 7x1 file would
+# fail with "Permission denied" at container start under that user.
+RUN chmod 755 /usr/local/bin/entrypoint.sh
 
 # Non-root runtime user.
 RUN useradd -m appuser && chown -R appuser /app

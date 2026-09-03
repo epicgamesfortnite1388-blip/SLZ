@@ -108,6 +108,13 @@ class Shipment(SoftDeleteModel):
     )
     shipped_at = models.DateField()
     notes = models.CharField(max_length=500, blank=True, default="")
+    # Client-supplied idempotency key — the DB rejects a second POST with the
+    # same nonce, preventing double delivery from a retried submission.
+    nonce = models.UUIDField(
+        null=True,
+        blank=True,
+        help_text="Client-supplied idempotency key — duplicate POSTs with the same nonce are rejected.",
+    )
 
     class Meta:
         db_table = "shipment_shipment"
@@ -116,6 +123,11 @@ class Shipment(SoftDeleteModel):
             models.UniqueConstraint(
                 fields=["company", "number"],
                 name="uq_shipment_company_number",
+            ),
+            models.UniqueConstraint(
+                fields=["nonce"],
+                condition=models.Q(nonce__isnull=False),
+                name="uq_shipment_nonce",
             ),
         ]
 

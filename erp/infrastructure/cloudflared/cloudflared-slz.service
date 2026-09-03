@@ -1,0 +1,19 @@
+[Unit]
+Description=Cloudflare Tunnel connector for SLZ ERP (slz.abystral.kdns.fr)
+# The connector forwards to the ERP nginx published on 127.0.0.1:80 by
+# docker-compose.prod.yml, so it must start after Docker has brought the
+# stack up. Restart-on-failure keeps the tunnel up across brief outages.
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cloudflared --config /etc/cloudflared/config.yml tunnel run
+Restart=on-failure
+RestartSec=5
+# Outbound connector — no CAP_NET_BIND_SERVICE needed.
+NoNewPrivileges=true
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target

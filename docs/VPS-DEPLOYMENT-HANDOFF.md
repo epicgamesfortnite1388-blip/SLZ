@@ -1,8 +1,8 @@
 # SLZ ERP — VPS Deployment Handoff
 
-**Status:** LOCAL ALPHA READY (verified on Windows dev machine, SQLite).
-**Everything below marked NOT YET VERIFIED ON VPS must be executed on an
-Ubuntu VPS before the system is considered production-candidate.**
+**Status:** VPS-VERIFIED — prod compose + Cloudflare Tunnel deployed and
+health-checked on a 1-vCPU/4 GB Ubuntu VPS (September 2026). Items below still
+marked unverified remain so.
 
 ---
 
@@ -32,16 +32,18 @@ Ubuntu **22.04 LTS** or 24.04 LTS. Docker Engine ≥ 24 with Compose v2 plugin.
 
 ## D. DNS / domain
 
-Point an A/AAAA record at the VPS IP (e.g. `erp.example.com`). TLS terminates
-at nginx (or a reverse-proxy/CDN in front). Set `DJANGO_ALLOWED_HOSTS` to the
-domain plus localhost.
+The public name (e.g. `slz.abystral.kdns.fr`) must resolve through Cloudflare
+so the edge can terminate TLS and reach the tunnel connector. Two supported
+shapes: (1) the zone itself is in Cloudflare, or (2) DNS is hosted elsewhere
+(e.g. OVH) and the name is a CNAME into a Cloudflare-for-SaaS custom hostname
+on a CF zone. Set `DJANGO_ALLOWED_HOSTS` to the public name plus localhost.
 
 ## E. Required environment variables (`erp/.env`)
 
 ```
 DJANGO_SECRET_KEY=<50+ random chars>
 DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=erp.example.com,localhost
+DJANGO_ALLOWED_HOSTS=slz.abystral.kdns.fr,localhost,127.0.0.1
 POSTGRES_DB=slz_erp
 POSTGRES_USER=slz_erp
 POSTGRES_PASSWORD=<generated>
@@ -50,9 +52,8 @@ POSTGRES_PORT=5432
 CELERY_BROKER_URL=redis://redis:6379/0
 CELERY_RESULT_BACKEND=redis://redis:6379/1
 REDIS_CACHE_URL=redis://redis:6379/2
-CORS_ALLOWED_ORIGINS=https://erp.example.com
+CORS_ALLOWED_ORIGINS=https://slz.abystral.kdns.fr
 AUTH_THROTTLE_RATE=30/min
-VITE_API_BASE_URL=https://erp.example.com/api/v1   # build-time only
 DOCUMENTS_MAX_UPLOAD_BYTES=26214400
 DOCUMENTS_ALLOWED_EXTENSIONS=pdf,png,jpg,jpeg,xlsx,csv
 ```
@@ -60,8 +61,9 @@ DOCUMENTS_ALLOWED_EXTENSIONS=pdf,png,jpg,jpeg,xlsx,csv
 ## F. Secret generation
 
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(64))"   # DJANGO_SECRET_KEY
-openssl rand -base64 24                                        # POSTGRES_PASSWORD
+bash erp/scripts/gen-env.sh            # writes erp/.env (random secrets, chmod 600)
+bash erp/scripts/gen-env.sh --force    # rotate (then ALTER the postgres role
+                                       # password to match and restart the stack)
 ```
 
 Never commit `.env`. The repo's `.env.example` lists every variable.
@@ -82,11 +84,19 @@ redis:7-alpine via Compose, three logical DBs (broker/results/cache).
 
 ```bash
 cd /opt/slz && git clone <repo> slz && cd slz/erp
-cp .env.example .env    # then edit secrets
-docker compose up --build -d
+bash scripts/gen-env.sh   # writes erp/.env with real random secrets (600)
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Services: postgres, redis, backend (gunicorn), celery worker, frontend/nginx.
+
+**`docker-compose.yml` is the LOCAL DEV file and `docker-compose.prod.yml` is
+standalone production** — never merge the two (compose concatenates `ports`
+across files, so overlaying prod settings on the dev file keeps the public dev
+publishes). In production NOTHING is published to the public interface: the
+frontend nginx binds only `127.0.0.1:80` and the Cloudflare Tunnel connector
+(see §S/§T) is the sole public ingress. PostgreSQL/Redis/backend live only on
+the compose network.
 
 ## J. Migrations
 
@@ -135,14 +145,17 @@ Full checklist: `docs/LOCAL-ALPHA-CHECKLIST.md` (steps apply identically).
 
 ## O. Backups
 
-Nightly:
+`erp/scripts/backup-erp.sh` handles the nightly ERP backup:
 
 ```bash
-docker compose exec postgres pg_dump -U slz_erp slz_erp | gzip > backup-$(date +%F).sql.gz
-tar czf media-$(date +%F).tgz /var/lib/docker/volumes/*_media_data/_data
+bash erp/scripts/backup-erp.sh                 # run one backup now
+bash erp/scripts/backup-erp.sh --install-cron  # install /etc/cron.d/slz-erp-backup (daily 03:15)
 ```
 
-Ship off-box (rsync/S3). Retain ≥ 30 days. Test restores quarterly.
+It pg_dumps the database through `docker compose exec` (no host port needed),
+archives the media volume, verifies both archives, records SHA256, keeps the
+newest 30 daily archives (override `BACKUP_RETENTION`), and optionally rsyncs
+off-box when `OFFBOX_TARGET=user@host:/path` is set. Test restores quarterly.
 
 ## P. Restore
 
@@ -164,28 +177,51 @@ Images are rebuilt from git tags; rollback = `git checkout <previous-tag>`
 then `docker compose up --build -d`. Migrations are forward-only: pair
 destructive migrations with documented reversals before release.
 
-## S. Firewall
+## S. Firewall / port exposure
 
-Allow 80/443 in, SSH from admin IPs only. Postgres/Redis bind inside the
-compose network only — never publish 5432/6379.
+No inbound HTTP/S ports are required: the deployment uses a Cloudflare Tunnel
+connector (outbound-only). Nothing is published on the public interface — not
+5432/6379/8000 (compose-internal only) and not even 80/443 on the box (nginx
+binds `127.0.0.1:80`; if port 443 is occupied by another service, e.g. a VPN
+VLESS inbound, the tunnel topology avoids the conflict entirely). SSH from
+admin IPs only.
 
-## T. HTTPS
+## T. HTTPS — Cloudflare Tunnel (verified topology)
 
-Terminate TLS at nginx (certbot) or a load balancer; redirect 80→443;
-set `SECURE_SSL_REDIRECT`, `SECURE_PROXY_SSL_HEADER`,
-`SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_HSTS_SECONDS` in
-production settings before go-live.
+Public topology (TLS terminates at the Cloudflare edge):
+
+```text
+https://<domain>  ->  Cloudflare edge (TLS)  ->  cloudflared connector
+                  ->  http://127.0.0.1:80    ->  nginx (SPA + /api proxy)
+```
+
+Setup (see `erp/infrastructure/cloudflared/` for templates):
+
+1. `cloudflared tunnel login` (scoped to the zone hosting the public name),
+   `cloudflared tunnel create slz-erp`, then `cloudflared tunnel route dns
+   slz-erp <domain>` — the DNS record must live in a Cloudflare zone, or be a
+   CNAME at the upstream DNS provider into a Cloudflare-for-SaaS custom
+   hostname on a CF zone.
+2. Install `/etc/cloudflared/config.yml` (hostname → `http://127.0.0.1:80`)
+   and `cloudflared-slz.service`, then `systemctl enable --now cloudflared-slz`.
+3. Django prod settings enforce `SECURE_SSL_REDIRECT` via the
+   `X-Forwarded-Proto: https` header that cloudflared sends; nginx preserves it
+   (`$slz_forwarded_proto` map in nginx.conf) instead of overwriting it with
+   `$scheme` — overwriting would cause a redirect loop. The compose healthcheck
+   sends the header too so `/ready/` probes return 200, not 301.
 
 ## U. Production security checklist
 
-- [ ] `DJANGO_DEBUG=False`
-- [ ] Unique generated secret key, rotated quarterly
-- [ ] `ALLOWED_HOSTS` exact domains only
-- [ ] CORS restricted to the frontend origin
-- [ ] Auth throttle enabled (default 30/min per IP)
-- [ ] Admin panel either disabled or IP-restricted
-- [ ] Uploads: extension allowlist active; virus scanning deferred (documented gap)
-- [ ] Backups scheduled AND restore tested
+- [x] `DJANGO_DEBUG=False` (prod settings; `gen-env.sh` writes it)
+- [x] Unique generated secret key (`scripts/gen-env.sh`, 600 perms; rotate with
+      `--force` + restart + postgres `ALTER ROLE`)
+- [x] `ALLOWED_HOSTS` exact domains only (from `erp/.env`)
+- [x] CORS restricted to the frontend origin
+- [x] Auth throttle enabled (default 30/min per IP)
+- [x] Admin panel not reachable through nginx (no /admin proxy)
+- [x] Uploads: extension allowlist active; virus scanning deferred (documented gap)
+- [x] Restricted port exposure (nothing on the public interface; tunnel ingress)
+- [x] Backups scheduled (see §O) — restore still to be exercised on a schedule
 - [ ] Q-055 memberships provisioned per real org chart (IT-administered)
 
 ---

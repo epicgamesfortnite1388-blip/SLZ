@@ -138,6 +138,7 @@ def create_shipment(serializer, *, actor=None):
             status=ShipmentStatus.SHIPPED,
             shipped_at=payload["shipped_at"],
             notes=payload.get("notes", ""),
+            nonce=payload.get("nonce"),
             created_by=actor,
             updated_by=actor,
         )
@@ -173,7 +174,11 @@ def create_shipment(serializer, *, actor=None):
             # Verify the unit is allocated
             alloc = None
             if entry.get("allocation"):
-                alloc = entry["allocation"]
+                # Lock the allocation row: two concurrent shipments consuming
+                # the same RESERVED allocation must not both pass the status
+                # check below (double-shipment). The second transaction blocks
+                # here until the first commits, then sees SHIPPED and 409s.
+                alloc = Allocation.objects.select_for_update().get(pk=entry["allocation"].pk)
                 if alloc.status != AllocationStatus.RESERVED:
                     raise ConflictError(
                         f"Allocation {alloc.id} is not RESERVED.",

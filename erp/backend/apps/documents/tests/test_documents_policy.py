@@ -11,9 +11,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
 from apps.core.tests.factories import auth_client, grant, make_company, make_user
-from apps.partners.models import Partner
 from apps.documents.models import Attachment
 from apps.identity.models import Permission, Role, RolePermission, UserRole
+from apps.partners.models import Partner
 
 
 def grant_isolated(user, *codes):

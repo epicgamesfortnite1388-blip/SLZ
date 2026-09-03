@@ -22,18 +22,28 @@ This document is the single consolidated status view.
 
 ## Snapshot
 
-- **20 backend apps** (8 foundation + 10 domain + 2 execution). **312 backend tests**, all passing.
+- **20 backend apps** (8 foundation + 10 domain + 2 execution). **357 backend tests**, all passing.
 - **Frontend:** ~97 page components across all domain areas; **26 test files / 90 tests**, all passing.
 - **All confirmed business decisions (Q-026, Q-046, Q-048, Q-049, Q-053/Q-055) are implemented.**
 - **Execution layer is complete** — GRN, material issues (explicit/backflush), production outputs, genealogy,
-  QC results, allocations, shipments, costing (dated weighted-average).
+  QC results, allocations, shipments, costing (dated weighted-average), warehouse-to-warehouse transfers.
 - **12 architecture documents**, full requirements baseline, decision register, traceability matrix,
   do-not-build-yet lists, execution-preparation map.
 - **Multi-tenancy:** company isolation enforced on all 62 viewsets, cross-company regression tests in place,
   AuditLog now company-scoped, write guards on serializers.
-- **Docker/PostgreSQL/Redis/Celery stack** statically audited (Dockerfiles, nginx, compose, entrypoint,
-  healthchecks) but not container-runtime tested — Docker unavailable on this machine.
-- **Release readiness:** ~87% for alpha deployment. The remaining gap is Docker daemon verification.
+- **Concurrency hardening (2026-09-03):** OUT postings serialised via PostgreSQL advisory xact locks;
+  shipment delivery locks the consumed allocation (double-shipment race closed); GRN + shipment POSTs are
+  nonce-idempotent (duplicate submissions → 409); material issues/outputs require a RELEASED order;
+  stock transfers are atomic OUT+IN pairs via `POST /inventory/movements/transfer/`.
+- **Docker/PostgreSQL/Redis/Celery stack container-verified (2026-09-03, 1-vCPU VPS):** all images build;
+  full `docker compose up` healthy — backend `/ready/` green (Postgres + Redis probes), nginx SPA + API
+  proxy serving, JWT login + company-scoped reads + audited writes exercised end-to-end. Two deployment
+  bugs found and fixed during verification: entrypoint permission (non-root appuser could not read the
+  script — `chmod 755`) and nginx `limit_req_zone` placed inside the `server` block (moved to http
+  context). Celery no longer re-runs migrate/seed on start (backend owns that; racing seeds produced
+  transient unique-violation tracebacks).
+- **Release readiness:** Docker-daemon gate cleared; remaining work is production hardening (TLS, real
+  secrets) per `docs/VPS-DEPLOYMENT-HANDOFF.md`.
 
 ---
 
@@ -79,9 +89,7 @@ This document is the single consolidated status view.
 
 | Issue | Description |
 |---|---|
-| Docker unverified | 312/90 tests pass on SQLite; PostgreSQL, Redis, Celery not container-tested |
 | PRODUCTION_OUTPUT costing | Cost layer type defined but not auto-posted on output (RECEIPT + ISSUE only) |
-| No CompanySelector UI | Multi-company users (Q-055) manually set company; no UI widget yet |
 | No sample data fixtures | No seed data for demo; all data created manually |
 | No email/SMS notifications | Gated on DR-008; in-app notifications work |
 | No MRP/reorder logic | Gated on Q-034 cost rates dataset |

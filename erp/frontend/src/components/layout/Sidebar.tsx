@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
@@ -103,6 +103,8 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+const SIDEBAR_NAV_ID = 'app-sidebar';
+
 /** Collapsible sidebar: expanded shows icons + labels, collapsed shows icons only.
  *  Mobile has a drawer overlay. State persists via localStorage. */
 export function Sidebar(): JSX.Element {
@@ -112,6 +114,8 @@ export function Sidebar(): JSX.Element {
     try { return localStorage.getItem('slz_sidebar_collapsed') === '1'; } catch { return false; }
   });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
+  const drawerRef = useRef<HTMLElement | null>(null);
 
   const toggle = useCallback(() => {
     setCollapsed((v) => {
@@ -125,12 +129,42 @@ export function Sidebar(): JSX.Element {
     });
   }, []);
 
+  const openMobile = useCallback(() => setMobileOpen(true), []);
+  const closeMobile = useCallback(() => {
+    setMobileOpen(false);
+    // Return focus to the hamburger so keyboard users are not stranded.
+    toggleRef.current?.focus();
+  }, []);
+
   const location = useLocation();
 
-  // Close mobile drawer on route change
+  // Close mobile drawer on route change (navigation inside the drawer).
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
+
+  // Escape closes the drawer; body scroll is locked while it is open so the
+  // background cannot scroll underneath the overlay.
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeMobile();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen, closeMobile]);
+
+  // Bring keyboard focus into the drawer when it opens.
+  useEffect(() => {
+    if (mobileOpen) {
+      drawerRef.current?.focus();
+    }
+  }, [mobileOpen]);
 
   const cls = ['sidebar', collapsed ? 'sidebar--collapsed' : '', mobileOpen ? 'sidebar--mobile-open' : ''].filter(Boolean).join(' ');
 
@@ -139,17 +173,28 @@ export function Sidebar(): JSX.Element {
       {/* Mobile hamburger */}
       <button
         type="button"
+        ref={toggleRef}
         className="sidebar__mobile-toggle"
-        onClick={() => setMobileOpen((v) => !v)}
+        onClick={() => (mobileOpen ? closeMobile() : openMobile())}
         aria-label={t('nav.toggle')}
+        aria-expanded={mobileOpen}
+        aria-controls={SIDEBAR_NAV_ID}
       >
         <span className="sidebar__hamburger" />
       </button>
 
       {/* Mobile overlay */}
-      {mobileOpen && <div className="sidebar__overlay" onClick={() => setMobileOpen(false)} aria-hidden />}
+      {mobileOpen && (
+        <div className="sidebar__overlay" onClick={closeMobile} aria-hidden="true" />
+      )}
 
-      <nav className={cls} aria-label={t('nav.dashboard')}>
+      <nav
+        id={SIDEBAR_NAV_ID}
+        ref={drawerRef}
+        className={cls}
+        aria-label={t('nav.ariaLabel')}
+        tabIndex={mobileOpen ? -1 : undefined}
+      >
         <div className="sidebar__header">
           {!collapsed && <span className="sidebar__title">{t('app.title')}</span>}
           <button
@@ -157,9 +202,18 @@ export function Sidebar(): JSX.Element {
             className="sidebar__collapse-btn"
             onClick={toggle}
             aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
+            aria-expanded={!collapsed}
             title={collapsed ? t('nav.expand') : t('nav.collapse')}
           >
             {collapsed ? '\u2192' : '\u2190'}
+          </button>
+          <button
+            type="button"
+            className="sidebar__close-btn"
+            onClick={closeMobile}
+            aria-label={t('nav.close')}
+          >
+            {'\u00d7'}
           </button>
         </div>
 

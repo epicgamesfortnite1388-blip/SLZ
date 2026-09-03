@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from decimal import Decimal
 
 from django.test import TestCase
@@ -26,7 +27,7 @@ from apps.inventory.models import (
 )
 from apps.partners.models import Customer, Partner
 from apps.sales.models import SalesOrder, SalesOrderLine
-from apps.shipment.models import Allocation, AllocationStatus
+from apps.shipment.models import Allocation, AllocationStatus, Shipment
 
 
 def build_prereqs(company):
@@ -284,3 +285,128 @@ class AllocationTests(TestCase):
                 actor=self.user,
             )
         self.assertIn("Insufficient", str(ctx.exception))
+
+
+class DeliveryTests(TestCase):
+    """Delivery posting (create_shipment): atomic OUT movements, allocation
+    consumption, reuse rejection, and idempotency."""
+
+    def setUp(self):
+        self.company = make_company()
+        self.p = build_prereqs(self.company)
+        self.user = make_user()
+        grant(
+            self.user,
+            "shipment.allocation.view",
+            "shipment.allocation.manage",
+            "shipment.delivery.view",
+            "shipment.delivery.manage",
+        )
+        self.client = auth_client(self.user)
+        inventory_services.post_movement(
+            company=self.company,
+            warehouse=self.p["warehouse"],
+            direction=StockMovementDirection.IN,
+            quantity=Decimal("500"),
+            uom=self.p["uom"],
+            material=self.p["material"],
+            traceability_unit=self.p["unit"],
+            reference_type="test.seed",
+            actor=self.user,
+        )
+
+    def _reserve(self, qty="50"):
+        resp = self.client.post(
+            "/api/v1/shipment/allocations/",
+            {
+                "company": str(self.company.id),
+                "sales_order_line": str(self.p["sol"].id),
+                "traceability_unit": str(self.p["unit"].id),
+                "quantity": qty,
+                "uom": str(self.p["uom"].id),
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 201, resp.content)
+        return resp.json()["id"]
+
+    def _deliver(self, *, allocation_id, quantity="50", number="D-1", nonce=None):
+        payload = {
+            "company": str(self.company.id),
+            "customer": str(self.p["customer"].id),
+            "warehouse": str(self.p["warehouse"].id),
+            "number": number,
+            "shipped_at": "2026-08-22",
+            "lines": [
+                {
+                    "traceability_unit": str(self.p["unit"].id),
+                    "sales_order_line": str(self.p["sol"].id),
+                    "allocation": str(allocation_id) if allocation_id is not None else None,
+                    "quantity": quantity,
+                    "uom": str(self.p["uom"].id),
+                }
+            ],
+        }
+        if nonce is not None:
+            payload["nonce"] = str(nonce)
+        return self.client.post("/api/v1/shipment/deliveries/", payload, format="json")
+
+    def test_delivery_posts_out_movement_and_consumes_allocation(self):
+        alloc_id = self._reserve()
+        resp = self._deliver(allocation_id=alloc_id)
+        self.assertEqual(resp.status_code, 201, resp.content)
+        body = resp.json()
+        self.assertEqual(body["status"], "SHIPPED")
+        self.assertEqual(len(body["lines"]), 1)
+
+        alloc = Allocation.objects.get(pk=alloc_id)
+        self.assertEqual(alloc.status, AllocationStatus.SHIPPED)
+        # Ledger: seed IN 500 - OUT 50
+        from apps.inventory.services import on_hand_quantity
+
+        on_hand = on_hand_quantity(
+            company=self.company,
+            warehouse=self.p["warehouse"],
+            traceability_unit=self.p["unit"],
+        )
+        self.assertEqual(on_hand, Decimal("450"))
+
+    def test_shipped_allocation_cannot_be_reused(self):
+        """Regression (double-shipment): consuming the same RESERVED allocation
+        twice must fail the second time — the allocation is marked SHIPPED and
+        excluded from the writable queryset, so a retried/duplicate delivery
+        cannot ship the unit again."""
+        alloc_id = self._reserve()
+        first = self._deliver(allocation_id=alloc_id, number="D-1")
+        self.assertEqual(first.status_code, 201, first.content)
+
+        second = self._deliver(allocation_id=alloc_id, number="D-2")
+        self.assertEqual(second.status_code, 400, second.content)
+        self.assertIn("allocation", second.json()["error"]["details"]["lines"][0])
+        self.assertEqual(Allocation.objects.filter(status=AllocationStatus.SHIPPED).count(), 1)
+        # Only the first delivery posted an OUT movement.
+        from apps.inventory.models import StockMovement
+
+        outs = StockMovement.objects.filter(reference_type="shipment.ShipmentLine", direction="OUT")
+        self.assertEqual(outs.count(), 1)
+
+    def test_delivery_without_allocation_still_guarded_by_stock(self):
+        """A delivery that does not reference an allocation still cannot exceed
+        on-hand stock (negative-stock guard in post_movement)."""
+        resp = self._deliver(allocation_id=None, quantity="600")
+        self.assertEqual(resp.status_code, 422, resp.content)
+        self.assertEqual(resp.json()["error"]["code"], "inventory.insufficient_stock")
+
+    def test_duplicate_nonce_rejected_on_delivery(self):
+        """Same nonce on two delivery POSTs — the second is rejected with 409
+        even though the allocation differs (retried submission protection)."""
+        alloc_a = self._reserve(qty="30")
+        alloc_b = self._reserve(qty="20")
+        nonce = uuid.uuid4()
+        first = self._deliver(allocation_id=alloc_a, quantity="30", number="D-N1", nonce=nonce)
+        self.assertEqual(first.status_code, 201, first.content)
+        second = self._deliver(allocation_id=alloc_b, quantity="20", number="D-N2", nonce=nonce)
+        self.assertEqual(second.status_code, 409, second.content)
+        self.assertEqual(second.json()["error"]["code"], "duplicate_request")
+        # Nothing from the second (duplicate) attempt was persisted.
+        self.assertEqual(Shipment.objects.filter(number="D-N2").count(), 0)

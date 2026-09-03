@@ -23,6 +23,7 @@ from django.db.models import Case, DecimalField, F, Sum, Value, When
 
 from apps.core.exceptions import BusinessRuleError
 from apps.core.middleware import get_correlation_id
+from apps.core.transactions import postgres_advisory_xact_lock
 from apps.inventory.models import StockMovement, StockMovementDirection, WarehouseStoreType
 
 _IN = StockMovementDirection.IN
@@ -69,14 +70,29 @@ def post_movement(
         raise BusinessRuleError(
             "Movement quantity must be positive.", code="inventory.quantity_invalid"
         )
-    if direction not in (_IN, _OUT, StockMovementDirection.TRANSFER):
-        raise BusinessRuleError("Unknown direction.", code="inventory.direction_invalid")
+    if direction not in (_IN, _OUT):
+        raise BusinessRuleError(
+            "Unknown direction; stock transfers must use transfer_stock().",
+            code="inventory.direction_invalid",
+        )
     if direction != _IN and warehouse.store_type == WarehouseStoreType.QUARANTINE:
         raise BusinessRuleError(
             "Quarantined stock cannot be issued.", code="inventory.quarantine_issue"
         )
 
     if direction == _OUT:
+        # Serialise concurrent OUTs against the same stock dimension: the
+        # derived on-hand check below is read-then-write, so without a lock two
+        # parallel postings could both pass it and drive stock negative. The
+        # advisory xact lock keys on (company, warehouse, material|unit) and is
+        # held until this transaction commits.
+        postgres_advisory_xact_lock(
+            "stock.out",
+            company.pk,
+            warehouse.pk,
+            getattr(material, "pk", None) or "",
+            getattr(traceability_unit, "pk", None) or "",
+        )
         on_hand = on_hand_quantity(
             company=company,
             warehouse=warehouse,
@@ -216,3 +232,71 @@ def kardex(*, company, traceability_unit=None, material=None, warehouse=None) ->
             }
         )
     return rows
+
+
+@transaction.atomic
+def transfer_stock(
+    *,
+    company,
+    from_warehouse,
+    to_warehouse,
+    quantity,
+    uom,
+    material=None,
+    traceability_unit=None,
+    notes: str = "",
+    actor=None,
+):
+    """Move stock between two warehouses as one atomic OUT + IN pair.
+
+    The source posting runs the standard negative-stock and quarantine guards;
+    the destination posting is a plain IN. Both rows carry the same
+    ``reference_type``/``reference_id`` so the pair is traceable as one
+    transfer. Returns ``(out_movement, in_movement)``.
+    """
+    if from_warehouse is None or to_warehouse is None or from_warehouse.pk == to_warehouse.pk:
+        raise BusinessRuleError(
+            "Transfer source and destination warehouses must differ.",
+            code="inventory.transfer_same_warehouse",
+        )
+    if from_warehouse.company_id != company.id or to_warehouse.company_id != company.id:
+        raise BusinessRuleError(
+            "Both warehouses must belong to the same company.",
+            code="inventory.transfer_cross_company",
+        )
+    if traceability_unit is None and material is None:
+        raise BusinessRuleError(
+            "A transfer must identify a material or traceability unit.",
+            code="inventory.transfer_missing_item",
+        )
+
+    reference_type = "inventory.Transfer"
+    reference_id = None  # both rows share no parent doc; pair via notes/type
+
+    out_movement = post_movement(
+        company=company,
+        warehouse=from_warehouse,
+        direction=_OUT,
+        quantity=quantity,
+        uom=uom,
+        material=material,
+        traceability_unit=traceability_unit,
+        reference_type=reference_type,
+        reference_id=reference_id,
+        notes=notes or f"Transfer {from_warehouse.code} -> {to_warehouse.code}",
+        actor=actor,
+    )
+    in_movement = post_movement(
+        company=company,
+        warehouse=to_warehouse,
+        direction=_IN,
+        quantity=quantity,
+        uom=uom,
+        material=material,
+        traceability_unit=traceability_unit,
+        reference_type=reference_type,
+        reference_id=reference_id,
+        notes=notes or f"Transfer {from_warehouse.code} -> {to_warehouse.code}",
+        actor=actor,
+    )
+    return out_movement, in_movement

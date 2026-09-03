@@ -40,7 +40,9 @@
     "sectionIdentity": "Identity",
     "toggle": "Toggle navigation",
     "expand": "Expand sidebar",
-    "collapse": "Collapse sidebar"
+    "collapse": "Collapse sidebar",
+    "ariaLabel": "Main navigation",
+    "close": "Close menu"
   },
   "userMenu": {
     "profile": "Profile",

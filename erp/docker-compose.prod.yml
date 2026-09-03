@@ -1,0 +1,145 @@
+# SLZ ERP — standalone production stack.
+#
+#     docker compose -f docker-compose.prod.yml up -d --build
+#
+# (Run from erp/ so the compose project is "erp" and the same named volumes —
+# erp_pg_data, erp_media_data — are reused; the dev file `docker-compose.yml`
+# is for local development only and must NOT be mixed into this file. Compose
+# concatenates `ports` across files, so overlaying a "restricted" file on the
+# dev file would keep the dev publishes. This file therefore stands alone.)
+#
+# Security posture:
+#   * NO service is published to the public interface. PostgreSQL, Redis and
+#     the backend API exist only inside the compose network. The frontend
+#     nginx is bound to 127.0.0.1:80 so the Cloudflare Tunnel connector on
+#     the host (outbound-only) is the single public ingress. Port 443 on the
+#     host belongs to a pre-existing VPN service and is never touched.
+#   * Public TLS is terminated at the Cloudflare edge for the proxied domain;
+#     nginx stays plain HTTP on loopback and preserves the X-Forwarded-Proto
+#     header so Django's SECURE_SSL_REDIRECT works (see nginx.conf).
+#   * Backend/Celery run config.settings.prod (DEBUG off, secure cookies,
+#     HSTS, strict ALLOWED_HOSTS), image code only (no bind-mount, no --reload),
+#     production requirements, and fail hard if RBAC seeding fails.
+#   * Secrets come from erp/.env (generate: scripts/gen-env.sh; never commit).
+#     The `:?` interpolations make a missing secret fail loudly instead of
+#     silently falling back to the dev defaults from the base file.
+#   * Backups: scripts/backup-erp.sh (nightly cron; pg_dump + media volume).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-slz_erp}
+      POSTGRES_USER: ${POSTGRES_USER:-slz_erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in erp/.env}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-slz_erp}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/backend.Dockerfile
+      args:
+        REQ: prod
+    # Entrypoint migrates + seeds RBAC (strict) before handing off to gunicorn.
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --bind
+      - 0.0.0.0:8000
+      - --workers
+      - "3"
+      - --access-logfile
+      - "-"
+      - --error-logfile
+      - "-"
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in erp/.env}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?set DJANGO_ALLOWED_HOSTS in erp/.env}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      REDIS_CACHE_URL: redis://redis:6379/2
+      SEED_RBAC_STRICT: "true"
+      COLLECT_STATIC: "0"
+    volumes:
+      - media_data:/app/media
+    healthcheck:
+      # X-Forwarded-Proto: https so SECURE_SSL_REDIRECT does not 301 the probe.
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f -H 'X-Forwarded-Proto: https' http://localhost:8000/ready/ || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/backend.Dockerfile
+      args:
+        REQ: prod
+    # Migrations + RBAC seeding are the backend's job; celery waits for a
+    # healthy backend then starts the worker directly (empty entrypoint so it
+    # does not re-run migrate/seed and race the same tables).
+    entrypoint: []
+    command: ["celery", "-A", "config", "worker", "-l", "info"]
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in erp/.env}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?set DJANGO_ALLOWED_HOSTS in erp/.env}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      SEED_RBAC_STRICT: "true"
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/frontend.Dockerfile
+    # Loopback-only bind — reachable only by the Cloudflare Tunnel connector.
+    ports:
+      - "127.0.0.1:80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  media_data:

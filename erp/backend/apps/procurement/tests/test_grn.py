@@ -7,11 +7,13 @@ Pins the posting contract of ``create_goods_receipt``:
 * material/PO consistency;
 * receivable PO statuses (APPROVED / SENT only);
 * quarantine destinations rejected;
-* company isolation on the receive path.
+* company isolation on the receive path;
+* duplicate-submission (nonce) idempotency.
 """
 
 from __future__ import annotations
 
+import uuid
 from decimal import Decimal
 
 from django.test import TestCase
@@ -311,6 +313,47 @@ class GoodsReceiptFlowTests(GrnTestBase):
 
         ok_post = auth_client(poster).get("/api/v1/procurement/goods-receipts/")
         self.assertEqual(ok_post.status_code, 200)
+
+    def test_duplicate_nonce_rejected_on_grn(self):
+        """Same nonce on two receipt POSTs — the second is rejected with 409
+        (retried-submission protection), even though it would otherwise pass
+        the over-receipt guard."""
+        po, line = self._make_po(quantity=Decimal("10"))
+        client = self._client_with("procurement.grn.manage")
+        nonce = uuid.uuid4()
+        base = {
+            "company": str(self.company.id),
+            "warehouse": str(self.warehouse.id),
+            "purchase_order": str(po.id),
+            "received_at": "2026-08-22",
+            "nonce": str(nonce),
+            "lines": [
+                {
+                    "po_line": str(line.id),
+                    "material": str(self.material.id),
+                    "quantity": "5",
+                    "uom": str(self.uom.id),
+                    "traceability_unit_type": "ROLL",
+                }
+            ],
+        }
+        first = client.post(
+            "/api/v1/procurement/goods-receipts/",
+            {**base, "number": "GRN-N1"},
+            format="json",
+        )
+        self.assertEqual(first.status_code, 201, first.content)
+        second = client.post(
+            "/api/v1/procurement/goods-receipts/",
+            {**base, "number": "GRN-N2"},
+            format="json",
+        )
+        self.assertEqual(second.status_code, 409)
+        self.assertEqual(second.json()["error"]["code"], "duplicate_request")
+        # The duplicate attempt persisted nothing.
+        from apps.procurement.models import GoodsReceipt
+
+        self.assertFalse(GoodsReceipt.objects.filter(number="GRN-N2").exists())
 
 
 class GrnCompanyIsolationTests(GrnTestBase):

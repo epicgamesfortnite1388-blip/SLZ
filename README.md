@@ -7,14 +7,17 @@ The platform is a modular-monolith **Django 4.2 + DRF backend**, a **React 18 +
 TypeScript SPA**, and PostgreSQL/Redis infrastructure orchestrated with Docker
 Compose. It ships the full foundation (identity & RBAC, JWT auth, append-only
 audit trail with before/after diffs, documents/attachments, bilingual fa/en
-with Jalali dates, notifications, generic approval workflow) plus the
-**confirmed domain layers**: master data, product engineering with versioned
-specifications, BOM/routing, procurement and sales documents, production orders,
-quality plans, warehouses, and tooling assets.
+with Jalali dates, notifications, generic approval workflow), the **confirmed
+domain layers** (master data, product engineering with versioned
+specifications, BOM/routing, procurement and sales documents, production
+orders, quality plans, warehouses, tooling assets), and the **execution layer**
+(stock movements & ledger/kardex, GRN receiving, material issues & production
+outputs, dated weighted-average costing, allocations & shipments, genealogy
+links, QC results) with multi-company isolation (Q-055).
 
-> The execution/traceability layer (stock movements, material issue, genealogy,
-> QC execution) is deliberately **not implemented** — it is gated on open SLZ
-> business decisions (see `docs/PROJECT-STATUS.md`).
+> Open business decisions that remain deliberately out of scope are listed in
+> `docs/PROJECT-STATUS.md` (known limitations) and
+> `docs/requirements/do-not-build-yet.md`.
 
 ## Repository layout
 
@@ -25,7 +28,7 @@ ERP/
 │   └── architecture/         # how the platform is built
 ├── skills/                   # domain-knowledge primers for AI agents
 └── erp/
-    ├── backend/              # Django + DRF monolith (18 apps)
+    ├── backend/              # Django + DRF monolith (20 apps)
     ├── frontend/             # Vite + React 18 + TypeScript SPA
     ├── infrastructure/       # Dockerfiles, nginx
     ├── scripts/              # container entrypoint

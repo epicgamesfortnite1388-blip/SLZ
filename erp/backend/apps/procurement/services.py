@@ -180,6 +180,7 @@ def create_goods_receipt(serializer, *, actor=None):
             status=GoodsReceiptStatus.POSTED,
             received_at=payload["received_at"],
             notes=payload.get("notes", ""),
+            nonce=payload.get("nonce"),
             created_by=actor,
             updated_by=actor,
         )

@@ -219,6 +219,9 @@ class GoodsReceiptCreateSerializer(serializers.Serializer):
     number = serializers.CharField(max_length=40)
     received_at = serializers.DateField()
     notes = serializers.CharField(required=False, allow_blank=True, default="")
+    # Client-supplied idempotency key; duplicates are rejected by the DB
+    # unique constraint (mapped to 409 in the view).
+    nonce = serializers.UUIDField(required=False, allow_null=True)
     lines = GoodsReceiptLineInputSerializer(many=True)
 
     def validate(self, attrs):

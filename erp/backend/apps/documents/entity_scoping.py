@@ -14,7 +14,8 @@ from __future__ import annotations
 from typing import Optional
 
 from django.apps import apps
-from django.core.exceptions import ObjectDoesNotExist, ValidationError as DjangoValidationError
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from apps.core.exceptions import NotFoundError, ValidationError
 
