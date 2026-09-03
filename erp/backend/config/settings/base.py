@@ -69,6 +69,10 @@ LOCAL_APPS = [
     "apps.costing",
     # Task 013 — Shipment (allocation + delivery).
     "apps.shipment",
+    # Task 014 — Planning (reorder policies + read-only planning engine).
+    "apps.planning",
+    # Task 015 — Recall (traceability-based quality events).
+    "apps.recall",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

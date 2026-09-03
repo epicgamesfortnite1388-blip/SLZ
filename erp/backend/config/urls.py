@@ -46,6 +46,10 @@ api_v1 = [
     path("costing/", include("apps.costing.urls")),
     # Task 013 — Shipment (allocation + delivery).
     path("shipment/", include("apps.shipment.urls")),
+    # Task 014 — Planning (reorder policies + planning run).
+    path("planning/", include("apps.planning.urls")),
+    # Task 015 — Recall (traceability-based quality events).
+    path("recall/", include("apps.recall.urls")),
 ]
 
 urlpatterns = [

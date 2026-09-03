@@ -139,6 +139,13 @@ PLATFORM_PERMISSIONS = [
     ("shipment.allocation.manage", "Manage allocations", "مدیریت تخصیص‌ها"),
     ("shipment.delivery.view", "View deliveries", "مشاهده تحویل‌ها"),
     ("shipment.delivery.manage", "Post deliveries", "ثبت تحویل‌ها"),
+    # --- Task 014 Planning (reorder policies + planning engine) -------------
+    ("planning.policy.view", "View planning policies", "مشاهده سیاست‌های برنامه‌ریزی"),
+    ("planning.policy.manage", "Manage planning policies", "مدیریت سیاست‌های برنامه‌ریزی"),
+    ("planning.suggestion.view", "View planning suggestions", "مشاهده پیشنهادهای برنامه‌ریزی"),
+    # --- Task 015 Recall (traceability-based quality events) ----------------
+    ("recall.recall.view", "View recalls and exposure", "مشاهده فراخوان‌ها و موارد درگیر"),
+    ("recall.recall.manage", "Manage recalls", "مدیریت فراخوان‌ها"),
 ]
 
 

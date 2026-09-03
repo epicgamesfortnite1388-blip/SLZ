@@ -1030,5 +1030,99 @@
     "actions": {
       "release": "آزادسازی"
     }
+  },
+  "planning": {
+    "policies": {
+      "title": "سیاست‌های برنامه‌ریزی",
+      "subtitle": "حداقل/حداکثر سفارش‌دهی به‌ازای هر کالا و انبار. موتور برنامه‌ریزی فقط پیشنهاد می‌دهد و هرگز سفارش نمی‌سازد.",
+      "new": "سیاست جدید",
+      "errors": {
+        "itemRequired": "کالای موردنظر این سیاست را انتخاب کنید."
+      }
+    },
+    "run": {
+      "title": "اجرای برنامه‌ریزی",
+      "subtitle": "موجودی پیش‌بینی‌شده = موجودی + تأمین باز − رزرو − تقاضای قطعی.",
+      "empty": "هنوز سیاست فعالی ندارید — ابتدا یک سیاست بسازید."
+    },
+    "fields": {
+      "itemType": "نوع کالا",
+      "warehouse": "انبار",
+      "material": "متریال",
+      "customerProduct": "محصول مشتری",
+      "reorderPoint": "نقطه سفارش",
+      "targetLevel": "سطح هدف",
+      "safetyStock": "موجودی احتیاطی",
+      "onHand": "موجودی",
+      "incoming": "دریافتی",
+      "openProduction": "تولید باز",
+      "allocated": "رزرو",
+      "openDemand": "تقاضای باز",
+      "projected": "پیش‌بینی",
+      "suggestedQty": "مقدار پیشنهادی",
+      "suggestedAction": "اقدام پیشنهادی"
+    },
+    "itemTypes": {
+      "MATERIAL": "متریال خریدنی",
+      "PRODUCT": "محصول تولیدی"
+    },
+    "actions": {
+      "NONE": "بدون اقدام",
+      "PURCHASE": "خرید",
+      "MANUFACTURE": "تولید"
+    },
+    "summary": {
+      "actionRequired": "نیازمند اقدام",
+      "totalPolicies": "سیاست‌ها"
+    }
+  },
+  "recall": {
+    "recalls": {
+      "title": "فراخوان‌ها",
+      "subtitle": "رویدادهای کیفی مبتنی بر ردیابی. ایجاد فراخوان هرگز موجودی یا ارسال‌ها را تغییر نمی‌دهد.",
+      "new": "فراخوان جدید",
+      "detail": "جزئیات فراخوان",
+      "addUnit": "افزودن واحد",
+      "noUnits": "هنوز واحدی اعلام نشده است."
+    },
+    "fields": {
+      "code": "کد",
+      "status": "وضعیت",
+      "severity": "شدت",
+      "affectedUnits": "واحدهای درگیر",
+      "initiatedAt": "شروع",
+      "reason": "دلیل",
+      "notes": "یادداشت‌ها",
+      "traceabilityUnit": "واحد ردیابی",
+      "unitType": "نوع واحد",
+      "note": "یادداشت"
+    },
+    "severities": {
+      "LOW": "کم",
+      "MEDIUM": "متوسط",
+      "HIGH": "زیاد",
+      "CRITICAL": "بحرانی"
+    },
+    "transitions": {
+      "done": "فراخوان به وضعیت {{status}} رفت.",
+      "to": {
+        "OPEN": "باز کردن",
+        "INVESTIGATING": "در حال بررسی",
+        "ACTION_REQUIRED": "اقدام لازم",
+        "CLOSED": "بستن",
+        "CANCELLED": "لغو"
+      }
+    },
+    "exposure": {
+      "title": "موارد درگیر",
+      "subtitle": "فقط‌خواندنی و محاسبه‌شده از روی رکوردهای شجره‌نامه و ارسال — هیچ تغییری اعمال نمی‌شود.",
+      "compute": "محاسبه موارد درگیر",
+      "seedUnits": "واحدهای پایه",
+      "upstream": "کالای خام بالادست",
+      "downstream": "واحدهای پایین‌دست",
+      "productionOrders": "سفارش‌های تولید",
+      "shipments": "ارسال‌ها",
+      "customers": "مشتریان"
+    }
   }
 }

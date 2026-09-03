@@ -42,6 +42,7 @@ const NAV_SECTIONS: NavSection[] = [
       { labelKey: 'inventory.warehouses.title', to: '/inventory/warehouses', permission: 'inventory.warehouse.view' },
       { labelKey: 'inventory.traceability.title', to: '/inventory/traceability-units', permission: 'inventory.movement.view' },
       { labelKey: 'inventory.balances.title', to: '/inventory/balances', permission: 'catalog.material.view' },
+      { labelKey: 'planning.policies.title', to: '/planning/policies', permission: 'planning.policy.view' },
     ],
   },
   {
@@ -49,6 +50,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { labelKey: 'quality.plans.title', to: '/quality/plans', permission: 'quality.plan.view' },
       { labelKey: 'quality.checkResults.title', to: '/quality/check-results', permission: 'quality.results.view' },
+      { labelKey: 'recall.recalls.title', to: '/recall/recalls', permission: 'recall.recall.view' },
     ],
   },
   {

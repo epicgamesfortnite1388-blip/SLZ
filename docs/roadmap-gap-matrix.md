@@ -115,6 +115,30 @@ largest remaining unblocked UI workstream.
 2. **Detail/edit polish for the small entities** flagged ¹ above, if desired.
 3. Everything else requires the business decisions above.
 
+### Added 2026-09-03 (final roadmap pass)
+
+- ✅ **Planning (Task 014):** `apps.planning` — company-scoped reorder policies
+  (purchased Material XOR manufactured CustomerProduct per warehouse) with
+  conditional unique constraints + serializer XOR enforcement; read-only
+  planning engine (`run_planning`) projecting on-hand + open PO/production
+  supply − reservations − confirmed SO demand, suggesting order-up-to
+  replenishment. Engine never writes documents (human review → existing PO/MO
+  workflows). RBAC `planning.policy.*` / `planning.suggestion.view` seeded in
+  `seed_rbac`. Migrations + API tests (audit, cross-company rejection,
+  exactly-one-item, RBAC denial, engine math, inactivity skip).
+- ✅ **Recall (Task 015):** `apps.recall` — company-scoped recalls with affected
+  traceability units, explicit status machine (DRAFT→OPEN→INVESTIGATING /
+  ACTION_REQUIRED→CLOSED, CANCELLED) enforced under `select_for_update` with a
+  terminal-state guard, and a bounded, cycle-safe, read-only exposure
+  computation over `GenealogyLink`/`ProductionOutput`/`ShipmentLine` answering
+  raw-lot ancestry, produced descendants, producing orders, and affected
+  shipments/customers. Migrations + API tests (default DRAFT, illegal
+  transitions 422, terminal edit/delete 422, cross-company unit 400, company
+  isolation, genealogy/shipment exposure, cycle safety).
+- ✅ **Frontend:** planning browse/create + "Run planning" screen and recall
+  browse/create/detail (transitions, unit attach, exposure) — typed API layers,
+  routes, sidebar entries, fa/en i18n; typecheck + lint + 98 tests + build green.
+
 ## Adversarial audit additions (2026-08-23, QA agent)
 
 | Finding | Severity | Status |

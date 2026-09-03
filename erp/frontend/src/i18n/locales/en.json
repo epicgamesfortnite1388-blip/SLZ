@@ -1030,5 +1030,99 @@
     "actions": {
       "release": "Release"
     }
+  },
+  "planning": {
+    "policies": {
+      "title": "Planning policies",
+      "subtitle": "Reorder min/max policies per item and warehouse. The planning engine suggests replenishment; it never creates orders.",
+      "new": "New policy",
+      "errors": {
+        "itemRequired": "Choose the item this policy applies to."
+      }
+    },
+    "run": {
+      "title": "Run planning",
+      "subtitle": "Projected availability = on-hand + open supply − reservations − confirmed demand.",
+      "empty": "No active policies yet — create one first."
+    },
+    "fields": {
+      "itemType": "Item type",
+      "warehouse": "Warehouse",
+      "material": "Material",
+      "customerProduct": "Customer product",
+      "reorderPoint": "Reorder point",
+      "targetLevel": "Target level",
+      "safetyStock": "Safety stock",
+      "onHand": "On hand",
+      "incoming": "Incoming",
+      "openProduction": "Open production",
+      "allocated": "Allocated",
+      "openDemand": "Open demand",
+      "projected": "Projected",
+      "suggestedQty": "Suggested qty",
+      "suggestedAction": "Suggested action"
+    },
+    "itemTypes": {
+      "MATERIAL": "Purchased material",
+      "PRODUCT": "Manufactured product"
+    },
+    "actions": {
+      "NONE": "No action",
+      "PURCHASE": "Purchase",
+      "MANUFACTURE": "Manufacture"
+    },
+    "summary": {
+      "actionRequired": "Action required",
+      "totalPolicies": "Policies"
+    }
+  },
+  "recall": {
+    "recalls": {
+      "title": "Recalls",
+      "subtitle": "Traceability-based quality events. Creating a recall never mutates stock or shipments.",
+      "new": "New recall",
+      "detail": "Recall detail",
+      "addUnit": "Add unit",
+      "noUnits": "No affected units declared yet."
+    },
+    "fields": {
+      "code": "Code",
+      "status": "Status",
+      "severity": "Severity",
+      "affectedUnits": "Affected units",
+      "initiatedAt": "Initiated",
+      "reason": "Reason",
+      "notes": "Notes",
+      "traceabilityUnit": "Traceability unit",
+      "unitType": "Unit type",
+      "note": "Note"
+    },
+    "severities": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High",
+      "CRITICAL": "Critical"
+    },
+    "transitions": {
+      "done": "Recall moved to {{status}}.",
+      "to": {
+        "OPEN": "Open",
+        "INVESTIGATING": "Investigating",
+        "ACTION_REQUIRED": "Action required",
+        "CLOSED": "Close",
+        "CANCELLED": "Cancel"
+      }
+    },
+    "exposure": {
+      "title": "Exposure",
+      "subtitle": "Computed read-only from genealogy and shipment records — nothing is mutated.",
+      "compute": "Compute exposure",
+      "seedUnits": "Seed units",
+      "upstream": "Upstream raw lots",
+      "downstream": "Downstream units",
+      "productionOrders": "Production orders",
+      "shipments": "Shipments",
+      "customers": "Customers"
+    }
   }
 }

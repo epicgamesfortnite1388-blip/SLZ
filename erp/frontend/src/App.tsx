@@ -81,6 +81,12 @@ import { ProductionExecutionCenter } from '@/pages/production/ProductionExecutio
 import { AllocationsPage } from '@/pages/shipment/AllocationsPage';
 import { GoodsReceiptsPage } from '@/pages/shipment/GoodsReceiptsPage';
 import { ShipmentsPage } from '@/pages/shipment/ShipmentsPage';
+import { PlanningPoliciesPage } from '@/pages/planning/PlanningPoliciesPage';
+import { PlanningPolicyCreatePage } from '@/pages/planning/PlanningPolicyCreatePage';
+import { PlanningRunPage } from '@/pages/planning/PlanningRunPage';
+import { RecallsPage } from '@/pages/recall/RecallsPage';
+import { RecallCreatePage } from '@/pages/recall/RecallCreatePage';
+import { RecallDetailPage } from '@/pages/recall/RecallDetailPage';
 import { CostSummaryPage } from '@/pages/costing/CostSummaryPage';
 import { ApprovalsPage } from '@/pages/workflow/ApprovalsPage';
 import { WorkflowDefinitionsPage } from '@/pages/workflow/WorkflowDefinitionsPage';
@@ -918,6 +924,60 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="costing.layer.view">
                 <CostSummaryPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="planning">
+          <Route
+            path="policies"
+            element={
+              <ProtectedRoute requiredPermission="planning.policy.view">
+                <PlanningPoliciesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="policies/new"
+            element={
+              <ProtectedRoute requiredPermission="planning.policy.manage">
+                <PlanningPolicyCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="run"
+            element={
+              <ProtectedRoute requiredPermission="planning.suggestion.view">
+                <PlanningRunPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="recall">
+          <Route
+            path="recalls"
+            element={
+              <ProtectedRoute requiredPermission="recall.recall.view">
+                <RecallsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="recalls/new"
+            element={
+              <ProtectedRoute requiredPermission="recall.recall.manage">
+                <RecallCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="recalls/:id"
+            element={
+              <ProtectedRoute requiredPermission="recall.recall.view">
+                <RecallDetailPage />
               </ProtectedRoute>
             }
           />

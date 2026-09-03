@@ -3,7 +3,7 @@
 **Project:** Custom ERP/MES for صنایع لفاف زرین (Zarrin Laff Industries / SLZ) — a
 made-to-order flexible-packaging manufacturer, one of six NEPTA-group companies.
 **Workspace:** `E:\Code\Project\ERP` (backend `erp/backend`, frontend `erp/frontend`).
-**Last updated:** 2026-09-03 (VPS prod deployment + second audit pass).
+**Last updated:** 2026-09-03 (final roadmap pass: planning + recall).
 
 This document is the single consolidated status view.
 
@@ -22,10 +22,10 @@ This document is the single consolidated status view.
 
 ## Snapshot
 
-- **20 backend apps** (8 foundation + 10 domain + 2 execution). **371 backend tests** on SQLite
+- **22 backend apps** (foundation + domain + execution + planning + recall). **381 backend tests** on SQLite
   (all passing; 4 PostgreSQL-only concurrency tests skip there and pass on real PG) — plus a
   2×-threaded PG suite for workflow finalization races.
-- **Frontend:** ~97 page components across all domain areas; **26 test files / 90 tests**, all passing.
+- **Frontend:** ~100 page components across all domain areas; **28 test files / 98 tests**, all passing.
 - **All confirmed business decisions (Q-026, Q-046, Q-048, Q-049, Q-053/Q-055) are implemented.**
 - **Execution layer is complete** — GRN, material issues (explicit/backflush), production outputs, genealogy,
   QC results, allocations, shipments, costing (dated weighted-average), warehouse-to-warehouse transfers.
@@ -51,6 +51,18 @@ This document is the single consolidated status view.
   script — `chmod 755`) and nginx `limit_req_zone` placed inside the `server` block (moved to http
   context). Celery no longer re-runs migrate/seed on start (backend owns that; racing seeds produced
   transient unique-violation tracebacks).
+- **Planning (Task 014, 2026-09-03):** company-scoped reorder policies (one purchased `Material` XOR one
+  manufactured `CustomerProduct` per warehouse) + a deterministic, read-only planning engine that projects
+  on-hand + open purchase/production supply − reservations − confirmed demand and suggests order-up-to
+  replenishment. The engine never creates orders — human review routes through the existing PO/MO
+  workflows. UI: policy browse/create + "Run planning" screen. RBAC: `planning.policy.*`,
+  `planning.suggestion.view`.
+- **Recall (Task 015, 2026-09-03):** quality-event records over traceability — company-scoped recalls with
+  explicit affected traceability units, a locked/audited status machine (DRAFT → OPEN → INVESTIGATING /
+  ACTION_REQUIRED → CLOSED, CANCELLED), and a read-only exposure computation that walks the append-only
+  genealogy ledger in both directions to surface upstream raw lots, downstream finished units, producing
+  production orders, and affected shipments/customers. Creating/computing a recall never mutates stock.
+  UI: recall browse/create + detail with transitions, unit attachment, and exposure.
 - **Release readiness (2026-09-03):** production hardening shipped — standalone `docker-compose.prod.yml`
   (zero public ports), real secrets via `scripts/gen-env.sh`, nightly backups via `scripts/backup-erp.sh`,
   Cloudflare Tunnel connector registered. DNS routing of the public hostname is a documented P2
@@ -101,11 +113,10 @@ This document is the single consolidated status view.
 
 | Issue | Description |
 |---|---|
-| No sample data fixtures | No seed data for demo; all data created manually |
-| No email/SMS notifications | Gated on DR-008; in-app notifications work |
-| No MRP/reorder logic | Gated on Q-034 cost rates dataset |
-| No recall automation | Q-044 not answered; genealogy model supports it |
-| No bin tracking | Q-047 not addressed |
+| Sample-data fixture breadth | `seed_demo_data` exists (deterministic, guarded); not wired to a UI "load demo" button |
+| Email/SMS notifications | Gated on DR-008; in-app notifications work, provider failures isolated |
+| BOM-driven MRP explosion | Planning foundation ships (reorder policies + read-only engine); BOM-exploded material demand needs the consumption-basis dataset (business-open) |
+| Bin/location tracking | Q-047 not addressed; balance layer intentionally unchanged (deferred with justification) |
 
 ---
 
