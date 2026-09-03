@@ -62,9 +62,16 @@ class ShipmentViewSet(AuditedModelViewSet):
     http_method_names = ["get", "post", "head", "options"]
 
     queryset = (
-        Shipment.objects.all()
-        .select_related("company", "sales_order", "customer", "warehouse")
-        .prefetch_related("lines")
+        Shipment.objects.all().select_related("company", "sales_order", "customer", "warehouse")
+        # Prefetch the nested line FKs the list serializer reads (avoids N+1
+        # on shipment lists).
+        .prefetch_related(
+            "lines",
+            "lines__sales_order_line",
+            "lines__allocation",
+            "lines__traceability_unit",
+            "lines__uom",
+        )
     )
     serializer_class = ShipmentSerializer
     permission_map = {"POST": "shipment.delivery.manage"}

@@ -75,22 +75,37 @@ largest remaining unblocked UI workstream.
 
 ## Blocked (business decisions) — recorded once, not re-litigated
 
-- **Execution & traceability layer** across inventory/production/quality/sales/
-  procurement: ⛔ Q-046 (with Q-048/049/026). Extension points documented in
-  [architecture/execution-preparation.md](architecture/execution-preparation.md).
 - **Approval hierarchy/threshold content:** ⛔ #7, Q-054/056 (engine + admin built).
-- **Costing, scrap absorption, tooling cost model:** ⛔ Q-031/033/034/035, Q-004/036.
-- **Multi-company data-scoping rules + scoping UI:** ⛔ Q-055/Q-053 — impact map in
-  [architecture/multi-tenancy-preparation.md](architecture/multi-tenancy-preparation.md).
+- **Costing scrap/tooling cost model extras:** ⛔ Q-004/036 — dated WA costing
+  engine itself is ✅ (RECEIPT + ISSUE + PRODUCTION_OUTPUT auto-posted, 2026-09-03).
+- **Multi-company data-scoping UI:** ⛔ Q-053 — the RULES are implemented
+  (Q-055: company_scope_lookup on all viewsets, audited writes, cross-company
+  regression tests); the role-assignment *matrix UI* remains open.
 - **Attachment upload privilege policy:** needs an RBAC seed decision (documented
   in PROJECT-STATUS Task 021).
 
+### Implemented since this matrix was generated (2026-08-22 → 2026-09-03)
+
+- ✅ **Execution & traceability layer** (Q-046/048/049/026): GRN receiving with
+  traceability-unit creation + IN movements + RECEIPT cost layers; material
+  issues (explicit/backflush); production outputs; genealogy links; QC check
+  results per roll (PASS/FAIL/HOLD); allocations (reserve/release); shipment
+  deliveries with atomic OUT movements; warehouse transfers; PRODUCTION_OUTPUT
+  auto-costing. Container-verified on a VPS (PostgreSQL/Redis/Celery/nginx).
+- ✅ **Concurrency hardening:** OUT postings serialized via advisory xact locks;
+  delivery locks the allocation; GRN/shipment nonce idempotency; workflow
+  decisions/cancel row-locked; two-thread PostgreSQL regression tests.
+- ✅ **Production hardening:** standalone `docker-compose.prod.yml` (zero public
+  ports), real secrets (`scripts/gen-env.sh`), nightly backups
+  (`scripts/backup-erp.sh`), Cloudflare Tunnel connector. Public DNS routing of
+  the hostname remains P2 infrastructure (documented in `.agent-work/STATE.md`;
+  no Cloudflare/DNS changes without explicit authorization).
+
 ## Infrastructure-gated
 
-- 🔧 Container path (image builds, PostgreSQL/Redis under Compose, nginx):
-  **NOT EXECUTED — DOCKER UNAVAILABLE** in the authoring environment.
-  Application logic itself is fully verified on the SQLite test profile;
-  `RELEASE-CHECKLIST.md` §12–13 is the outstanding runbook step.
+- ✅ Container path verified (2026-09-03): images build, full prod compose stack
+  healthy on a 1-vCPU/4 GB VPS — PostgreSQL/Redis/Celery/nginx, readiness probes,
+  JWT login, audited writes, and the PG-only concurrency suites all green.
 
 ## Remaining unblocked workstreams (ranked)
 
@@ -105,7 +120,7 @@ largest remaining unblocked UI workstream.
 | Finding | Severity | Status |
 |---|---|---|
 | Attachments had NO company scoping (cross-company list/download/upload/delete) | P0 | FIXED — resolver + stamping + scoped register; 8 regression tests |
-| Stock movement OUT balance check is check-then-write without locking | P2 (race under concurrent writers on Postgres) | DOCUMENTED - recommend serializing writers per scope (e.g. select_for_update on the aggregate-key rows); owner: execution agent |
+| Stock movement OUT balance check is check-then-write without locking | P2 (race under concurrent writers on Postgres) | FIXED 2026-09-03 — advisory xact lock keyed on company/warehouse/material|unit inside the posting; two-thread PG regression tests |
 | Sample product data fit: per-layer material COLOR and layer treatments (corona/sealability/chemical/reflection) have no structured fields; print-cylinder metadata (repeat/sleeve/plate) unmodeled | P3 | DOCUMENTED - representable today only via free-form SpecParameter conventions; needs a modeling decision |
 | nginx nested asset location suppressed inherited security headers | P2 | FIXED in committed hardening pass (06cc64d lineage) - verify headers duplicated into the assets location at next deploy review |
 | .env.example contained stray "[TEMPLATE]" line | P4 | check current state |

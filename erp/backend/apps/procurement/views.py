@@ -192,9 +192,18 @@ class GoodsReceiptViewSet(AuditedModelViewSet):
     http_method_names = ["get", "post", "head", "options"]
 
     queryset = (
-        GoodsReceipt.objects.all()
-        .select_related("company", "warehouse", "supplier", "purchase_order")
-        .prefetch_related("lines")
+        GoodsReceipt.objects.all().select_related(
+            "company", "warehouse", "supplier", "purchase_order"
+        )
+        # Prefetch the nested line FKs the list serializer reads (avoids N+1
+        # on GRN lists).
+        .prefetch_related(
+            "lines",
+            "lines__po_line",
+            "lines__material",
+            "lines__uom",
+            "lines__traceability_unit",
+        )
     )
     company_scope_lookup = "company"
     serializer_class = GoodsReceiptSerializer
