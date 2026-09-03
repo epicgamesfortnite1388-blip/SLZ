@@ -1,5 +1,10 @@
 # FINAL AUTONOMOUS STATE
 
+> Superseded as the *current* handoff by `.agent-work/FINAL-STATE.md` (this
+> file is the historical snapshot at commit 408f368). Since this snapshot was
+> written, the final handoff pass committed `.agent-work/` + `agent/` (7c3bb15,
+> 018478a) and pushed them to origin/main — the working tree is now fully clean.
+
 Updated: 2026-09-03 (final pass COMPLETE)
 
 ## Outcome
