@@ -4,6 +4,13 @@
 health-checked on a 1-vCPU/4 GB Ubuntu VPS (September 2026). Items below still
 marked unverified remain so.
 
+> **Freshness note (2026-09-03):** counts in this doc (18 apps, 342 backend
+tests, "costing not yet implemented") are superseded. Current ground truth:
+> **22 apps / 381 backend tests / 98 frontend tests**, costing auto-posts
+> (RECEIPT + ISSUE + PRODUCTION_OUTPUT), plus planning + recall modules. See
+> `docs/PROJECT-STATUS.md` and `docs/FINAL-TEST-VPS-AUDIT.md`. The topology and
+> runbook sections below remain accurate.
+
 ---
 
 ## A. Current application state
