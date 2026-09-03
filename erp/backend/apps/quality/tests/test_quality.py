@@ -28,9 +28,10 @@ from apps.catalog.models import (
 from apps.core.tests.factories import auth_client, grant, make_company, make_user
 from apps.core.versioning import RevisionStatus
 from apps.engineering.models import CustomerProduct, SpecificationRevision
+from apps.inventory.models import TraceabilityUnit, TraceabilityUnitType
 from apps.manufacturing.models import WorkCenter
 from apps.partners.models import Partner
-from apps.inventory.models import TraceabilityUnit, TraceabilityUnitType
+from apps.quality import services as quality_services
 from apps.quality.models import (
     QualityCharacteristic,
     QualityCheckResult,
@@ -38,7 +39,6 @@ from apps.quality.models import (
     QualityPlanItem,
     QualityPlanRevision,
 )
-from apps.quality import services as quality_services
 
 
 def build_prereqs(company):
