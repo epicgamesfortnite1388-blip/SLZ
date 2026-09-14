@@ -4,12 +4,15 @@ vi.mock('../client', () => ({
   apiClient: {
     get: vi.fn(() => Promise.resolve({ results: [] })),
     post: vi.fn(() => Promise.resolve({ id: '1' })),
+    patch: vi.fn(() => Promise.resolve({ id: '1' })),
   },
 }));
 
 import { apiClient } from '../client';
 import {
   createWorkCenter,
+  updateWorkCenter,
+  updateMachine,
   activateBomRevision,
   activateRoutingRevision,
   fetchBom,
@@ -31,6 +34,22 @@ describe('manufacturing API', () => {
       code: 'EXT',
       name_fa: 'اکستروژن',
       company: 'co1',
+    });
+  });
+
+  it('PATCHes the work-center edit flow to the work-centers endpoint', async () => {
+    await updateWorkCenter('wc-1', { name_fa: 'چاپ', sequence_hint: 2 });
+    expect(apiClient.patch).toHaveBeenCalledWith('/manufacturing/work-centers/wc-1/', {
+      name_fa: 'چاپ',
+      sequence_hint: 2,
+    });
+  });
+
+  it('PATCHes the machine edit flow to the machines endpoint', async () => {
+    await updateMachine('m-1', { name_en: 'Press 2', capability_profile: {} });
+    expect(apiClient.patch).toHaveBeenCalledWith('/manufacturing/machines/m-1/', {
+      name_en: 'Press 2',
+      capability_profile: {},
     });
   });
 

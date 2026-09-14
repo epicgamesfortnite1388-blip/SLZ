@@ -49,6 +49,14 @@ export function EmployeeDetailPage(): JSX.Element {
           <Link to="/master-data/employees" className="link-back">
             {t('employees.detail.back')}
           </Link>
+          {data && hasPermission('hr.employee.manage') && id && (
+            <>
+              {' · '}
+              <Link to={`/master-data/employees/${id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            </>
+          )}
         </p>
       </div>
 

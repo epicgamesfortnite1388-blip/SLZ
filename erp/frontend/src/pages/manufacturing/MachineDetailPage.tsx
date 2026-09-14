@@ -64,6 +64,14 @@ export function MachineDetailPage(): JSX.Element {
           <Link to="/manufacturing/machines" className="link-back">
             {t('manufacturing.detail.back')}
           </Link>
+          {data && hasPermission('manufacturing.machine.manage') && id && (
+            <>
+              {' · '}
+              <Link to={`/manufacturing/machines/${id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            </>
+          )}
         </p>
       </div>
 

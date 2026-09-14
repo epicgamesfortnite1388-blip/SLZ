@@ -44,6 +44,16 @@ export function createSite(payload: Partial<Site>): Promise<Site> {
   return apiClient.post<Site>('/organization/sites/', payload);
 }
 
+/** Update a company (audited PATCH; `code` is a business number — immutable). */
+export function updateCompany(id: string, payload: Partial<Company>): Promise<Company> {
+  return apiClient.patch<Company>(`/organization/companies/${id}/`, payload);
+}
+
+/** Update a site (audited PATCH). */
+export function updateSite(id: string, payload: Partial<Site>): Promise<Site> {
+  return apiClient.patch<Site>(`/organization/sites/${id}/`, payload);
+}
+
 /** A site-scoped department (mirrors ``DepartmentSerializer``). */
 export interface Department {
   id: string;
@@ -62,6 +72,14 @@ export function createDepartment(
   payload: Partial<Department>,
 ): Promise<Department> {
   return apiClient.post<Department>('/organization/departments/', payload);
+}
+
+/** Update a department (audited PATCH). */
+export function updateDepartment(
+  id: string,
+  payload: Partial<Department>,
+): Promise<Department> {
+  return apiClient.patch<Department>(`/organization/departments/${id}/`, payload);
 }
 
 /** Production capability codes (mirrors ``ProductionCapability``). */

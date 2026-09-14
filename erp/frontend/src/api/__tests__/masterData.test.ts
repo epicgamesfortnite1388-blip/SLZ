@@ -4,6 +4,7 @@ vi.mock('../client', () => ({
   apiClient: {
     get: vi.fn(() => Promise.resolve({ results: [] })),
     post: vi.fn(() => Promise.resolve({ id: '1' })),
+    patch: vi.fn(() => Promise.resolve({ id: '1' })),
   },
 }));
 
@@ -14,6 +15,10 @@ import {
   fetchPartner,
   fetchMaterial,
   fetchUom,
+  updatePartner,
+  updateProduct,
+  updateMaterial,
+  updateEmployee,
 } from '../masterData';
 
 describe('masterData API', () => {
@@ -58,5 +63,37 @@ describe('masterData API', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/catalog/materials/material-1/');
     await fetchUom('uom-1');
     expect(apiClient.get).toHaveBeenCalledWith('/catalog/uoms/uom-1/');
+  });
+
+  it('PATCHes the partner edit flow to the partners endpoint', async () => {
+    await updatePartner('p-1', { name_fa: 'الف', is_customer: true });
+    expect(apiClient.patch).toHaveBeenCalledWith('/partners/partners/p-1/', {
+      name_fa: 'الف',
+      is_customer: true,
+    });
+  });
+
+  it('PATCHes the product edit flow to the catalog endpoint', async () => {
+    await updateProduct('prod-1', { name_fa: 'محصول', is_active: true });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/products/prod-1/', {
+      name_fa: 'محصول',
+      is_active: true,
+    });
+  });
+
+  it('PATCHes the material edit flow to the catalog endpoint', async () => {
+    await updateMaterial('mat-1', { reorder_point: 10, safety_stock: 5 });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/materials/mat-1/', {
+      reorder_point: 10,
+      safety_stock: 5,
+    });
+  });
+
+  it('PATCHes the employee edit flow to the hr endpoint', async () => {
+    await updateEmployee('emp-1', { job_title: 'اپراتور', is_active: false });
+    expect(apiClient.patch).toHaveBeenCalledWith('/hr/employees/emp-1/', {
+      job_title: 'اپراتور',
+      is_active: false,
+    });
   });
 });

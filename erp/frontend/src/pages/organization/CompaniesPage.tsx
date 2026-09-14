@@ -15,6 +15,8 @@ export function CompaniesPage(): JSX.Element {
   const { hasPermission } = useAuth();
   const collection = useCollection<Company>('/organization/companies/');
 
+  const canManage = hasPermission('organization.company.manage');
+
   const columns: Column<Company>[] = [
     { headerKey: 'masterData.fields.code', render: (r) => r.code },
     { headerKey: 'masterData.fields.nameFa', render: (r) => r.name_fa },
@@ -24,6 +26,18 @@ export function CompaniesPage(): JSX.Element {
       render: (r) => <BoolCell value={r.is_active} />,
       align: 'center',
     },
+    ...(canManage
+      ? [
+          {
+            headerKey: 'common.actions',
+            render: (r: Company) => (
+              <Link to={`/organization/companies/${r.id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -34,7 +48,7 @@ export function CompaniesPage(): JSX.Element {
       rowKey={(r) => r.id}
       collection={collection}
       headerAction={
-        hasPermission('organization.company.manage') ? (
+        canManage ? (
           <Link to="/organization/companies/new">
             <Button size="sm">{t('organization.companies.new')}</Button>
           </Link>

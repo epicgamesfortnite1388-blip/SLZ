@@ -108,6 +108,11 @@ export function createWarehouse(payload: Partial<Warehouse>): Promise<Warehouse>
   return apiClient.post<Warehouse>('/inventory/warehouses/', payload);
 }
 
+/** Update a warehouse (audited PATCH). */
+export function updateWarehouse(id: string, payload: Partial<Warehouse>): Promise<Warehouse> {
+  return apiClient.patch<Warehouse>(`/inventory/warehouses/${id}/`, payload);
+}
+
 export function fetchTraceabilityUnits(
   query = '?page_size=100',
 ): Promise<Paginated<TraceabilityUnit>> {

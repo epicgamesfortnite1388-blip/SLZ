@@ -43,6 +43,38 @@ class DepartmentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    def validate(self, attrs):
+        """Hierarchy integrity: a parent must live on the same site and must
+        never create a cycle (self-parent or a deeper A→B→A loop). Enforced on
+        create AND update — the edit UI makes reparenting a routine operation.
+        An explicit null parent (``"parent" in attrs``) always clears; an
+        omitted parent on PATCH falls back to the instance's current one so a
+        site change cannot silently strand it cross-site."""
+        instance = getattr(self, "instance", None)
+        site = attrs.get("site") or (instance.site if instance is not None else None)
+        if "parent" in attrs:
+            parent = attrs["parent"]
+        elif instance is not None:
+            parent = instance.parent
+        else:
+            parent = None
+
+        if parent is not None:
+            if site is None or parent.site_id != site.pk:
+                raise serializers.ValidationError(
+                    {"parent": "A department's parent must belong to the same site."}
+                )
+            seen = {instance.pk} if instance is not None else set()
+            node = parent
+            while node is not None:
+                if node.pk in seen:
+                    raise serializers.ValidationError(
+                        {"parent": "This parent assignment would create a cycle."}
+                    )
+                seen.add(node.pk)
+                node = node.parent
+        return attrs
+
 
 class CompanyViewSet(AuditedModelViewSet):
     queryset = Company.objects.all()

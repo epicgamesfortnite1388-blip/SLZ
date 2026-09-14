@@ -44,6 +44,14 @@ export function WorkCenterDetailPage(): JSX.Element {
           <Link to="/manufacturing/work-centers" className="link-back">
             {t('manufacturing.detail.back')}
           </Link>
+          {data && hasPermission('manufacturing.workcenter.manage') && id && (
+            <>
+              {' · '}
+              <Link to={`/manufacturing/work-centers/${id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            </>
+          )}
         </p>
       </div>
 

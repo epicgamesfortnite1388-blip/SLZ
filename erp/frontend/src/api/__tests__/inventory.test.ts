@@ -4,6 +4,7 @@ vi.mock('../client', () => ({
   apiClient: {
     get: vi.fn(() => Promise.resolve({ results: [] })),
     post: vi.fn(() => Promise.resolve({ id: '1' })),
+    patch: vi.fn(() => Promise.resolve({ id: '1' })),
   },
 }));
 
@@ -11,6 +12,7 @@ import { apiClient } from '../client';
 import {
   createTraceabilityUnit,
   createWarehouse,
+  updateWarehouse,
   fetchStockMovements,
   fetchTraceabilityUnits,
   WAREHOUSE_STORE_TYPES,
@@ -33,6 +35,14 @@ describe('inventory API', () => {
       code: 'WH-RM',
       name_fa: 'انبار مواد اولیه',
       store_type: 'RAW_MATERIAL',
+    });
+  });
+
+  it('PATCHes the warehouse edit flow to the warehouses endpoint', async () => {
+    await updateWarehouse('wh-1', { name_fa: 'انبار محصول', is_active: false });
+    expect(apiClient.patch).toHaveBeenCalledWith('/inventory/warehouses/wh-1/', {
+      name_fa: 'انبار محصول',
+      is_active: false,
     });
   });
 

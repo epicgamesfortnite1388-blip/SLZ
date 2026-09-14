@@ -72,11 +72,24 @@ export function createWorkCenter(
   return apiClient.post<WorkCenter>('/manufacturing/work-centers/', payload);
 }
 
+/** Update a work center (audited PATCH). */
+export function updateWorkCenter(
+  id: string,
+  payload: Partial<WorkCenter>,
+): Promise<WorkCenter> {
+  return apiClient.patch<WorkCenter>(`/manufacturing/work-centers/${id}/`, payload);
+}
+
 /** Create a machine (audited write path). */
 export function createMachine(
   payload: Partial<Machine>,
 ): Promise<Machine> {
   return apiClient.post<Machine>('/manufacturing/machines/', payload);
+}
+
+/** Update a machine (audited PATCH). */
+export function updateMachine(id: string, payload: Partial<Machine>): Promise<Machine> {
+  return apiClient.patch<Machine>(`/manufacturing/machines/${id}/`, payload);
 }
 
 /** A BOM root — the durable identity of a versioned bill of materials. */

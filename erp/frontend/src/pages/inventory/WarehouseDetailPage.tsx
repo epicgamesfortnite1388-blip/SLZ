@@ -48,6 +48,14 @@ export function WarehouseDetailPage(): JSX.Element {
           <Link to="/inventory/warehouses" className="link-back">
             {t('inventory.warehouses.detail.back')}
           </Link>
+          {data && hasPermission('inventory.warehouse.manage') && id && (
+            <>
+              {' · '}
+              <Link to={`/inventory/warehouses/${id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            </>
+          )}
         </p>
       </div>
 

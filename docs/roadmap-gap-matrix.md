@@ -22,7 +22,7 @@ frontend tests green, migration-drift gate clean, lint/typecheck/build green,
 |---|---|---|---|---|---|
 | Companies | ✅ | ✅ | —¹ | —¹ | ¹ small entities; detail/edit not yet built |
 | Sites | ✅ | ✅ | —¹ | —¹ | incl. timezone field |
-| Departments | ✅ | ✅ | —¹ | —¹ | parent hierarchy supported server-side |
+| Departments | ✅ | ✅ | —¹ | ✅ | edit (2026-09-14); parent now cycle/same-site validated server-side |
 | Site capabilities | ✅ | ✅ | —¹ | —¹ | SR-15 |
 | Employees | ✅ | ✅ | ✅ | —² | |
 | Partners | ✅ | ✅ | ✅ | ✅ | **reference edit flow**; contacts/addresses sub-panels; customer/supplier role-profile panels ✅; attachments; audit history |
@@ -109,10 +109,13 @@ largest remaining unblocked UI workstream.
 
 ## Remaining unblocked workstreams (ranked)
 
-1. **Replicate the edit flow** to remaining master-data entities (products,
-   materials, companies, sites, employees, work centers, machines, warehouses…)
-   using `PartnerEditPage` as the pattern; each gets a PATCH contract test.
-2. **Detail/edit polish for the small entities** flagged ¹ above, if desired.
+1. ~~Replicate the edit flow~~ — ✅ **DONE (2026-09-14, takeover session):**
+   ProductEdit, MaterialEdit, EmployeeEdit, WarehouseEdit, WorkCenterEdit,
+   MachineEdit, CompanyEdit, SiteEdit, DepartmentEdit shipped following the
+   PartnerEditPage pattern (identity `code` fields read-only; `is_active` flag;
+   permission-gated routes + detail-page/list-row Edit links; fa/en i18n;
+   +10 PATCH contract tests; typecheck/lint/vitest/build green).
+2. Detail/edit polish for the small entities flagged ¹ above, if desired.
 3. Everything else requires the business decisions above.
 
 ### Added 2026-09-03 (final roadmap pass)

@@ -1,15 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/auth/AuthContext';
+import { useNavigate, useParams } from 'react-router-dom';
 import { apiClient } from '@/api/client';
-import { createDepartment, type Department } from '@/api/organization';
+import { updateDepartment, type Department } from '@/api/organization';
 import type { Paginated } from '@/api/masterData';
 import { isApiError } from '@/api/types';
-import { Alert, Button, Card, FormField, Input } from '@/components/ui';
-import { BoolCell, CollectionView, type Column } from '@/components/CollectionView';
-import { useCollection } from '@/hooks/useCollection';
+import { Alert, Button, Card, FormField, Input, Spinner } from '@/components/ui';
 
 interface Option {
   id: string;
@@ -17,67 +13,18 @@ interface Option {
 }
 
 /**
- * Departments: site-scoped organizational units with an optional parent for
- * hierarchy. List and create are on the same page (master-data browse pattern).
+ * Department edit form — replicates the PartnerEditPage PATCH flow for the
+ * organization Department master. `code` stays fixed (business numbers are
+ * immutable identities); site, parent hierarchy, and naming are editable and
+ * audited server-side.
  */
-export function DepartmentsPage(): JSX.Element {
+export function DepartmentEditPage(): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { hasPermission } = useAuth();
-  const collection = useCollection<Department>('/organization/departments/');
+  const { id = '' } = useParams();
 
-  const canManage = hasPermission('organization.department.manage');
-
-  const columns: Column<Department>[] = [
-    { headerKey: 'masterData.fields.code', render: (r) => r.code },
-    { headerKey: 'masterData.fields.nameFa', render: (r) => r.name_fa },
-    { headerKey: 'masterData.fields.nameEn', render: (r) => r.name_en || '—' },
-    {
-      headerKey: 'masterData.fields.active',
-      render: (r) => <BoolCell value={r.is_active} />,
-      align: 'center',
-    },
-    ...(canManage
-      ? [
-          {
-            headerKey: 'common.actions',
-            render: (r: Department) => (
-              <Link to={`/organization/departments/${r.id}/edit`} className="link-inline">
-                {t('common.edit')}
-              </Link>
-            ),
-          },
-        ]
-      : []),
-  ];
-
-  return (
-    <div className="stack">
-      <CollectionView
-        titleKey="organization.departments.title"
-        subtitleKey="organization.departments.subtitle"
-        columns={columns}
-        rowKey={(r) => r.id}
-        collection={collection}
-        headerAction={
-          canManage ? (
-            <Button size="sm" onClick={() => navigate('/organization/departments/new')}>
-              {t('organization.departments.new')}
-            </Button>
-          ) : null
-        }
-      />
-    </div>
-  );
-}
-
-/**
- * Department create form — follows the established master-data create pattern
- * with site picker, code, and bilingual name fields.
- */
-export function DepartmentCreatePage(): JSX.Element {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [sites, setSites] = useState<Option[]>([]);
   const [departments, setDepartments] = useState<Option[]>([]);
@@ -87,41 +34,51 @@ export function DepartmentCreatePage(): JSX.Element {
   const [code, setCode] = useState('');
   const [nameFa, setNameFa] = useState('');
   const [nameEn, setNameEn] = useState('');
+  const [isActive, setIsActive] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    const load = (path: string, set: (v: Option[]) => void): void => {
-      apiClient
-        .get<Paginated<Option>>(`${path}?page_size=200`)
-        .then((res) => {
-          if (cancelled) return;
-          set(res.results);
-        })
-        .catch(() => {
-          /* Non-fatal. */
-        });
-    };
-    load('/organization/sites/', setSites);
-    load('/organization/departments/', setDepartments);
+    Promise.all([
+      apiClient.get<Department>(`/organization/departments/${id}/`),
+      apiClient.get<Paginated<Option>>('/organization/sites/?page_size=200'),
+      apiClient.get<Paginated<Option>>('/organization/departments/?page_size=200'),
+    ])
+      .then(([department, si, de]) => {
+        if (cancelled) return;
+        setSite(department.site);
+        setParent(department.parent ?? '');
+        setCode(department.code);
+        setNameFa(department.name_fa);
+        setNameEn(department.name_en ?? '');
+        setIsActive(department.is_active);
+        setSites(si.results);
+        setDepartments(de.results);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setLoadError(isApiError(err) ? err.message : t('common.error'));
+        setLoading(false);
+      });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [id, t]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      await createDepartment({
+      await updateDepartment(id, {
         site,
         parent: parent || null,
-        code,
         name_fa: nameFa,
         name_en: nameEn,
+        is_active: isActive,
       });
       navigate('/organization/departments');
     } catch (err) {
@@ -139,9 +96,9 @@ export function DepartmentCreatePage(): JSX.Element {
     required: boolean,
   ): JSX.Element => (
     <FormField label={t(labelKey)} required={required}>
-      {({ id }) => (
+      {({ id: fieldId }) => (
         <select
-          id={id}
+          id={fieldId}
           className="input"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -159,10 +116,31 @@ export function DepartmentCreatePage(): JSX.Element {
     </FormField>
   );
 
+  if (loading) {
+    return (
+      <div className="table-state">
+        <Spinner label={t('common.loading')} />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="stack">
+        <Alert variant="danger" title={t('common.error')}>
+          <p>{loadError}</p>
+          <Button variant="secondary" size="sm" onClick={() => window.history.back()}>
+            {t('common.back')}
+          </Button>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="stack">
       <div className="page-header">
-        <h1 className="page-header__title">{t('organization.departments.new')}</h1>
+        <h1 className="page-header__title">{t('organization.departments.edit')}</h1>
       </div>
 
       <Card>
@@ -176,22 +154,14 @@ export function DepartmentCreatePage(): JSX.Element {
           {selectField('organization.fields.site', site, setSite, sites, true)}
           {selectField('organization.departments.parent', parent, setParent, departments, false)}
 
-          <FormField label={t('masterData.fields.code')} required>
-            {({ id }) => (
-              <Input
-                id={id}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                disabled={submitting}
-                required
-              />
-            )}
+          <FormField label={t('masterData.fields.code')}>
+            {({ id: fieldId }) => <Input id={fieldId} value={code} disabled readOnly />}
           </FormField>
 
           <FormField label={t('masterData.fields.nameFa')} required>
-            {({ id }) => (
+            {({ id: fieldId }) => (
               <Input
-                id={id}
+                id={fieldId}
                 value={nameFa}
                 onChange={(e) => setNameFa(e.target.value)}
                 disabled={submitting}
@@ -201,15 +171,25 @@ export function DepartmentCreatePage(): JSX.Element {
           </FormField>
 
           <FormField label={t('masterData.fields.nameEn')}>
-            {({ id }) => (
+            {({ id: fieldId }) => (
               <Input
-                id={id}
+                id={fieldId}
                 value={nameEn}
                 onChange={(e) => setNameEn(e.target.value)}
                 disabled={submitting}
               />
             )}
           </FormField>
+
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              disabled={submitting}
+            />
+            {t('masterData.fields.active')}
+          </label>
 
           <div className="form-actions">
             <Button type="submit" loading={submitting}>

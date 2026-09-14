@@ -113,6 +113,14 @@ export function MaterialDetailPage(): JSX.Element {
           <Link to="/master-data/materials" className="link-back">
             {t('materials.detail.back')}
           </Link>
+          {data && hasPermission('catalog.material.manage') && id && (
+            <>
+              {' · '}
+              <Link to={`/master-data/materials/${id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            </>
+          )}
         </p>
       </div>
 

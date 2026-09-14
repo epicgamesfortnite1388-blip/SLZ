@@ -142,9 +142,19 @@ export function updatePartner(id: string, payload: Partial<Partner>): Promise<Pa
   return apiClient.patch<Partner>(`/partners/partners/${id}/`, payload);
 }
 
+/** Update a product (audited PATCH; PartnerEditPage is the reference flow). */
+export function updateProduct(id: string, payload: Partial<Product>): Promise<Product> {
+  return apiClient.patch<Product>(`/catalog/products/${id}/`, payload);
+}
+
 /** Create a material via the audited service layer. */
 export function createMaterial(payload: Partial<Material>): Promise<Material> {
   return apiClient.post<Material>('/catalog/materials/', payload);
+}
+
+/** Update a material (audited PATCH; identity fields stay server-enforced). */
+export function updateMaterial(id: string, payload: Partial<Material>): Promise<Material> {
+  return apiClient.patch<Material>(`/catalog/materials/${id}/`, payload);
 }
 
 /** Fetch one material by id for engineering detail labels. */
@@ -174,6 +184,11 @@ export function createEmployee(
   payload: Partial<Employee>,
 ): Promise<Employee> {
   return apiClient.post<Employee>('/hr/employees/', payload);
+}
+
+/** Update an employee (audited PATCH). */
+export function updateEmployee(id: string, payload: Partial<Employee>): Promise<Employee> {
+  return apiClient.patch<Employee>(`/hr/employees/${id}/`, payload);
 }
 
 // ── Product taxonomy (SR-02 — multi-level classification) ──

@@ -3,7 +3,8 @@
 **Project:** Custom ERP/MES for صنایع لفاف زرین (Zarrin Laff Industries / SLZ) — a
 made-to-order flexible-packaging manufacturer, one of six NEPTA-group companies.
 **Workspace:** `E:\Code\Project\ERP` (backend `erp/backend`, frontend `erp/frontend`).
-**Last updated:** 2026-09-03 (final roadmap pass: planning + recall).
+**Last updated:** 2026-09-14 (takeover session: master-data edit-flow replication +
+new-VPS deployment verification; previous pass 2026-09-03: planning + recall).
 
 This document is the single consolidated status view.
 
@@ -63,6 +64,19 @@ This document is the single consolidated status view.
   genealogy ledger in both directions to surface upstream raw lots, downstream finished units, producing
   production orders, and affected shipments/customers. Creating/computing a recall never mutates stock.
   UI: recall browse/create + detail with transitions, unit attachment, and exposure.
+- **Master-data edit flows (2026-09-14):** the PartnerEditPage PATCH pattern is now replicated to
+  Product, Material, Employee, Warehouse, WorkCenter, Machine, Company, Site, and Department —
+  identity `code` fields stay read-only in the UI, `is_active` is manageable, every route/link is
+  gated by the module's `*.manage` permission, and 10 new PATCH contract tests guard the API paths
+  (frontend 28 files / 108 tests green; backend 381 green).
+- **New-VPS deployment verification (2026-09-14):** `docker-compose.prod.yml` stack (secrets via
+  `scripts/gen-env.sh`) rebuilt from a fresh clone on a clean Ubuntu 24.04 VPS — postgres/redis/
+  backend(healthy)/celery/frontend up, zero public ports, `/ready/` green through the loopback nginx,
+  JWT login + audited CREATE/PATCH exercised end-to-end with before/after diffs in the audit log.
+- **Department hierarchy integrity (2026-09-14):** `Department.parent` now validates same-site
+  membership and acyclicity (self-parent, two-level, and deep chains) on create AND update in the
+  serializer — previously the reparenting edit flow could corrupt the hierarchy. 4 regression tests
+  added (backend 385 total).
 - **Release readiness (2026-09-03):** production hardening shipped — standalone `docker-compose.prod.yml`
   (zero public ports), real secrets via `scripts/gen-env.sh`, nightly backups via `scripts/backup-erp.sh`,
   Cloudflare Tunnel connector registered. DNS routing of the public hostname is a documented P2

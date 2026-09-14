@@ -15,6 +15,8 @@ export function SitesPage(): JSX.Element {
   const { hasPermission } = useAuth();
   const collection = useCollection<Site>('/organization/sites/');
 
+  const canManage = hasPermission('organization.site.manage');
+
   const columns: Column<Site>[] = [
     { headerKey: 'masterData.fields.code', render: (r) => r.code },
     { headerKey: 'masterData.fields.nameFa', render: (r) => r.name_fa },
@@ -24,6 +26,18 @@ export function SitesPage(): JSX.Element {
       render: (r) => <BoolCell value={r.is_active} />,
       align: 'center',
     },
+    ...(canManage
+      ? [
+          {
+            headerKey: 'common.actions',
+            render: (r: Site) => (
+              <Link to={`/organization/sites/${r.id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -34,7 +48,7 @@ export function SitesPage(): JSX.Element {
       rowKey={(r) => r.id}
       collection={collection}
       headerAction={
-        hasPermission('organization.site.manage') ? (
+        canManage ? (
           <Link to="/organization/sites/new">
             <Button size="sm">{t('organization.sites.new')}</Button>
           </Link>

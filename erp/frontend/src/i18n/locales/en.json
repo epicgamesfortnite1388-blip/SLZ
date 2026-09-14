@@ -17,7 +17,8 @@
     "back": "Back",
     "addLine": "Add line",
     "notFound": "Not found",
-    "confirmAction": "Confirm"
+    "confirmAction": "Confirm",
+    "edit": "Edit"
   },
   "language": {
     "label": "Language",
@@ -132,12 +133,14 @@
     "companies": {
       "title": "Companies",
       "subtitle": "Legal entities — the root of company scoping.",
-      "new": "New company"
+      "new": "New company",
+      "edit": "Edit company"
     },
     "sites": {
       "title": "Sites",
       "subtitle": "Physical facilities belonging to a company.",
-      "new": "New site"
+      "new": "New site",
+      "edit": "Edit site"
     },
     "fields": {
       "timezone": "Timezone",
@@ -147,7 +150,8 @@
       "title": "Departments",
       "subtitle": "Site-scoped organizational units with optional parent hierarchy.",
       "new": "New department",
-      "parent": "Parent department"
+      "parent": "Parent department",
+      "edit": "Edit department"
     },
     "siteCapabilities": {
       "title": "Site capabilities",
@@ -282,7 +286,8 @@
       "title": "Product details",
       "back": "← Back to products",
       "notFound": "This product could not be found."
-    }
+    },
+    "edit": "Edit product"
   },
   "materials": {
     "title": "Materials",
@@ -332,7 +337,8 @@
       "identifier": "Identifier",
       "unitType": "Type",
       "quantity": "Quantity"
-    }
+    },
+    "edit": "Edit material"
   },
   "uoms": {
     "title": "Units of measure",
@@ -368,7 +374,8 @@
       "title": "Employee details",
       "back": "← Back to employees",
       "notFound": "This employee could not be found."
-    }
+    },
+    "edit": "Edit employee"
   },
   "engineering": {
     "activate": "Activate",
@@ -447,12 +454,15 @@
     "workCenters": {
       "title": "Work centers",
       "subtitle": "Production stages that group interchangeable machines.",
-      "new": "New work center"
+      "new": "New work center",
+      "edit": "Edit work center"
     },
     "machines": {
       "title": "Machines",
       "subtitle": "Physical resources with a data-driven capability profile.",
-      "new": "New machine"
+      "new": "New machine",
+      "edit": "Edit machine",
+      "invalidProfileJson": "Capability profile must be valid JSON."
     },
     "boms": {
       "title": "Bills of materials",
@@ -489,7 +499,8 @@
       "opWorkCenter": "Work center",
       "opName": "Operation",
       "setupTime": "Setup (min)",
-      "runRate": "Run rate"
+      "runRate": "Run rate",
+      "capabilityProfile": "Capability profile (JSON)"
     },
     "detail": {
       "bomTitle": "BOM Detail",
@@ -522,7 +533,8 @@
         "title": "Warehouse details",
         "back": "← Back to warehouses",
         "notFound": "This warehouse could not be found."
-      }
+      },
+      "edit": "Edit warehouse"
     },
     "access": {
       "title": "Warehouse access",

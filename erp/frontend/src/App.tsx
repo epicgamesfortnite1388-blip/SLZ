@@ -12,6 +12,7 @@ import { PartnerCreatePage } from '@/pages/masterData/PartnerCreatePage';
 import { PartnerDetailPage } from '@/pages/masterData/PartnerDetailPage';
 import { ProductsPage } from '@/pages/masterData/ProductsPage';
 import { ProductCreatePage } from '@/pages/masterData/ProductCreatePage';
+import { ProductEditPage } from '@/pages/masterData/ProductEditPage';
 import { ProductsDetailPage } from '@/pages/masterData/ProductsDetailPage';
 import { ProductGroupsPage } from '@/pages/masterData/ProductGroupsPage';
 import { ProductGroupCreatePage } from '@/pages/masterData/ProductGroupCreatePage';
@@ -23,6 +24,7 @@ import { ProductFamiliesPage } from '@/pages/masterData/ProductFamiliesPage';
 import { ProductFamilyCreatePage } from '@/pages/masterData/ProductFamilyCreatePage';
 import { MaterialsPage } from '@/pages/masterData/MaterialsPage';
 import { MaterialCreatePage } from '@/pages/masterData/MaterialCreatePage';
+import { MaterialEditPage } from '@/pages/masterData/MaterialEditPage';
 import { MaterialDetailPage } from '@/pages/masterData/MaterialDetailPage';
 import { UomsPage } from '@/pages/masterData/UomsPage';
 import { UomCreatePage } from '@/pages/masterData/UomCreatePage';
@@ -31,6 +33,7 @@ import { UomConversionCreatePage } from '@/pages/masterData/UomConversionCreateP
 import { EmployeesPage } from '@/pages/masterData/EmployeesPage';
 import { EmployeeDetailPage } from '@/pages/masterData/EmployeeDetailPage';
 import { EmployeeCreatePage } from '@/pages/masterData/EmployeeCreatePage';
+import { EmployeeEditPage } from '@/pages/masterData/EmployeeEditPage';
 import { CustomerProductsPage } from '@/pages/engineering/CustomerProductsPage';
 import { CustomerProductCreatePage } from '@/pages/engineering/CustomerProductCreatePage';
 import { CustomerProductDetailPage } from '@/pages/engineering/CustomerProductDetailPage';
@@ -40,9 +43,11 @@ import { ToolingAssetCreatePage } from '@/pages/engineering/ToolingAssetCreatePa
 import { ToolingAssetDetailPage } from '@/pages/engineering/ToolingAssetDetailPage';
 import { WorkCentersPage } from '@/pages/manufacturing/WorkCentersPage';
 import { WorkCenterCreatePage } from '@/pages/manufacturing/WorkCenterCreatePage';
+import { WorkCenterEditPage } from '@/pages/manufacturing/WorkCenterEditPage';
 import { WorkCenterDetailPage } from '@/pages/manufacturing/WorkCenterDetailPage';
 import { MachinesPage } from '@/pages/manufacturing/MachinesPage';
 import { MachineCreatePage } from '@/pages/manufacturing/MachineCreatePage';
+import { MachineEditPage } from '@/pages/manufacturing/MachineEditPage';
 import { MachineDetailPage } from '@/pages/manufacturing/MachineDetailPage';
 import { BomRevisionsPage } from '@/pages/manufacturing/BomRevisionsPage';
 import { BomRootsPage } from '@/pages/manufacturing/BomRootsPage';
@@ -54,6 +59,7 @@ import { RoutingRootsPage } from '@/pages/manufacturing/RoutingRootsPage';
 import { RoutingRootCreatePage } from '@/pages/manufacturing/RoutingRootCreatePage';
 import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
 import { WarehouseCreatePage } from '@/pages/inventory/WarehouseCreatePage';
+import { WarehouseEditPage } from '@/pages/inventory/WarehouseEditPage';
 import { WarehouseDetailPage } from '@/pages/inventory/WarehouseDetailPage';
 import { WarehouseAccessPage } from '@/pages/inventory/WarehouseAccessPage';
 import { TraceabilityUnitsPage } from '@/pages/inventory/TraceabilityUnitsPage';
@@ -103,9 +109,12 @@ import { PermissionsPage } from '@/pages/identity/PermissionsPage';
 import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { CompaniesPage } from '@/pages/organization/CompaniesPage';
 import { CompanyCreatePage } from '@/pages/organization/CompanyCreatePage';
+import { CompanyEditPage } from '@/pages/organization/CompanyEditPage';
 import { SitesPage } from '@/pages/organization/SitesPage';
 import { SiteCreatePage } from '@/pages/organization/SiteCreatePage';
+import { SiteEditPage } from '@/pages/organization/SiteEditPage';
 import { DepartmentsPage, DepartmentCreatePage } from '@/pages/organization/DepartmentsPage';
+import { DepartmentEditPage } from '@/pages/organization/DepartmentEditPage';
 import { SiteCapabilitiesPage, SiteCapabilityCreatePage } from '@/pages/organization/SiteCapabilitiesPage';
 
 /** Root application: keeps direction in sync and declares the route table. */
@@ -181,6 +190,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="catalog.product.view">
                 <ProductsDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="products/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.product.manage">
+                <ProductEditPage />
               </ProtectedRoute>
             }
           />
@@ -273,6 +290,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="materials/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.material.manage">
+                <MaterialEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="uoms/new"
             element={
               <ProtectedRoute requiredPermission="catalog.uom.manage">
@@ -325,6 +350,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="hr.employee.view">
                 <EmployeeDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="employees/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="hr.employee.manage">
+                <EmployeeEditPage />
               </ProtectedRoute>
             }
           />
@@ -415,6 +448,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="work-centers/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.workcenter.manage">
+                <WorkCenterEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="machines"
             element={
               <ProtectedRoute requiredPermission="manufacturing.machine.view">
@@ -435,6 +476,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="manufacturing.machine.view">
                 <MachineDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="machines/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="manufacturing.machine.manage">
+                <MachineEditPage />
               </ProtectedRoute>
             }
           />
@@ -534,6 +583,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="inventory.warehouse.view">
                 <WarehouseDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="warehouses/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="inventory.warehouse.manage">
+                <WarehouseEditPage />
               </ProtectedRoute>
             }
           />
@@ -753,6 +810,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="companies/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="organization.company.manage">
+                <CompanyEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="sites"
             element={
               <ProtectedRoute requiredPermission="organization.site.view">
@@ -769,6 +834,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="sites/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="organization.site.manage">
+                <SiteEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="departments"
             element={
               <ProtectedRoute requiredPermission="organization.department.view">
@@ -781,6 +854,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="organization.department.manage">
                 <DepartmentCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="departments/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="organization.department.manage">
+                <DepartmentEditPage />
               </ProtectedRoute>
             }
           />
