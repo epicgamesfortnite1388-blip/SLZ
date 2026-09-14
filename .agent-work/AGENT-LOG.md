@@ -16,3 +16,10 @@ External TCP probes (check-host.net multi-node): inbound 22/80/443/8080 ALL filt
 - **P0 found live:** built SPA called `http://localhost:8000/api/v1` (dev default in `src/api/client.ts`, no VITE_API_BASE_URL in image build) → every API call blocked by the app's own CSP `connect-src 'self'`. UI was dead-on-arrival in the real deployment; unit tests never caught it (jsdom mocks fetch).
 - **Fix (d310a41):** DEFAULT_BASE_URL → same-origin `/api/v1` (nginx already proxies /api/), Vite dev proxy added for dev parity, .env.example override commented. Rebuilt frontend image; gates: typecheck ✓ lint ✓ 109/109 ✓.
 - **E2E results: 18/18 PASS, no page errors** — login UI, fa default + dir=rtl, sidebar collapse + localStorage persistence, no overflow, re-expand, en/ltr switch, UoM list→edit→save→backend persistence (verified via API), mobile hamburger/drawer/Escape, mobile RTL.
+
+## 2026-09-14 — Public access delivered via interim Cloudflare quick tunnel (Buffy)
+- cloudflared login cert hand-off fails deterministically on this headless host ("Failed to fetch resource" x2 after user authorized — known limitation: callback delivers cert to the browser's machine).
+- Workaround: transient `systemd-run` unit cfquick2 running `cloudflared tunnel --url http://127.0.0.1:8080` (no credentials needed) → https://accompanied-sussex-shopzilla-ericsson.trycloudflare.com
+- Interim gotcha fixed: /etc/cloudflared/config.yml.staged-for-erp moved aside (it was auto-loaded and 404ing all paths); .trycloudflare.com added to DJANGO_ALLOWED_HOSTS for the interim URL only.
+- Verified through real public edge: SPA 200, deep links 200, /ready/ green, superuser login issues token, headless-browser UI login OK (RTL, zero page errors).
+- Caveats: quick-tunnel hostname is ephemeral (changes on restart; unit has no restart policy — reboot kills it). Permanent erp.slz.dpdns.org still needs cert.pem / tunnel token / API token from the user; ingress config staged and ready.
