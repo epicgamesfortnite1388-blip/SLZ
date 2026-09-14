@@ -24,7 +24,9 @@ COMPOSE="docker compose --project-directory "$ERP_DIR" -f "$ERP_DIR/docker-compo
 
 BACKUP_ROOT="${BACKUP_ROOT:-/root/slz-erp-backups}"
 RETENTION="${BACKUP_RETENTION:-30}"
-LOG="/var/log/slz-erp-backup.log"
+# Log path is overridable for non-root operators (e.g. docker-group users);
+# an unwritable log degrades to stdout only instead of aborting the backup.
+LOG="${SLZ_LOG:-/var/log/slz-erp-backup.log}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 DEST="$BACKUP_ROOT/$STAMP"
 mkdir -p "$DEST"
@@ -39,7 +41,11 @@ PG_USER="$(pg_val POSTGRES_USER slz_erp)"
 PG_DB="$(pg_val POSTGRES_DB slz_erp)"
 
 ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-log() { echo "[$(ts)] $*" | tee -a "$LOG"; }
+log() {
+    # tee to the log file when possible; never let log I/O kill the backup
+    # (set -euo pipefail would otherwise abort on a read-only /var/log).
+    echo "[$(ts)] $*" | tee -a "$LOG" >/dev/null 2>&1 || echo "[$(ts)] $*"
+}
 die() { log "ERROR: $*"; exit 1; }
 
 if [ "${1:-}" = "--install-cron" ]; then
