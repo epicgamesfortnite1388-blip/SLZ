@@ -355,6 +355,42 @@ class GoodsReceiptFlowTests(GrnTestBase):
 
         self.assertFalse(GoodsReceipt.objects.filter(number="GRN-N2").exists())
 
+    def test_duplicate_document_number_rejected_as_409_not_500(self):
+        """A retried POST that reuses the SAME per-company document number
+        trips uq_grn_company_number (not the nonce index). That is still a
+        duplicate submission and must surface as a clean 409 — live testing on
+        the deployed stack surfaced this as a 500 before the fix (2026-09-14)."""
+        po, line = self._make_po(quantity=Decimal("10"))
+        client = self._client_with("procurement.grn.manage")
+        base = {
+            "company": str(self.company.id),
+            "warehouse": str(self.warehouse.id),
+            "purchase_order": str(po.id),
+            "received_at": "2026-08-22",
+            "lines": [
+                {
+                    "po_line": str(line.id),
+                    "material": str(self.material.id),
+                    "quantity": "2",
+                    "uom": str(self.uom.id),
+                    "traceability_unit_type": "ROLL",
+                }
+            ],
+        }
+        first = client.post(
+            "/api/v1/procurement/goods-receipts/",
+            {**base, "number": "GRN-DUPNUM"},
+            format="json",
+        )
+        self.assertEqual(first.status_code, 201, first.content)
+        retry = client.post(
+            "/api/v1/procurement/goods-receipts/",
+            {**base, "number": "GRN-DUPNUM", "nonce": str(uuid.uuid4())},
+            format="json",
+        )
+        self.assertEqual(retry.status_code, 409, retry.content)
+        self.assertEqual(retry.json()["error"]["code"], "duplicate_request")
+
 
 class GrnCompanyIsolationTests(GrnTestBase):
     def test_receive_against_foreign_po_is_blocked(self):

@@ -230,7 +230,14 @@ class GoodsReceiptViewSet(AuditedModelViewSet):
         try:
             self.perform_create(create_serializer)
         except IntegrityError as exc:
-            if "nonce" in str(exc).lower():
+            # A retried submission can trip EITHER the nonce uniqueness OR the
+            # per-company document-number constraint — both mean "already
+            # posted" and both must surface as a clean 409 (never a 500).
+            # Match backend-agnostically: Postgres reports the constraint name
+            # ("duplicate key ... uq_grn_company_number"), SQLite reports
+            # "UNIQUE constraint failed: ...".
+            marker = str(exc).lower()
+            if "nonce" in marker or "duplicate" in marker or "unique constraint" in marker:
                 raise ConflictError(
                     "Duplicate submission detected — this goods receipt has already been posted.",
                     code="duplicate_request",

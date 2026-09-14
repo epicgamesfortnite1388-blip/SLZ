@@ -44,6 +44,15 @@ PY
 echo "[entrypoint] applying database migrations..."
 python manage.py migrate --noinput
 
+# Ensure the mounted media volume is writable. A named volume mounted over
+# /app/media inherits the volume root's ownership (root), which the non-root
+# runtime user cannot write to — uploads would 500 with PermissionError.
+# (Only meaningful when running as root; a rootless runtime skips this.)
+if [ "$(id -u)" = "0" ] && [ -d /app/media ]; then
+    chown -R appuser:appuser /app/media
+    echo "[entrypoint] media volume ownership fixed (appuser)."
+fi
+
 # Seed platform RBAC (permissions + admin role).
 # In production (SEED_RBAC_STRICT=1/true) we exit if seeding fails;
 # in development we tolerate failure so the container still starts.

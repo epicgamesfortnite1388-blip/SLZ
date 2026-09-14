@@ -410,3 +410,19 @@ class DeliveryTests(TestCase):
         self.assertEqual(second.json()["error"]["code"], "duplicate_request")
         # Nothing from the second (duplicate) attempt was persisted.
         self.assertEqual(Shipment.objects.filter(number="D-N2").count(), 0)
+
+    def test_duplicate_document_number_rejected_as_409_not_500(self):
+        """A retried POST that reuses the SAME per-company document number
+        trips uq_shipment_company_number (not the nonce index). That is still a
+        duplicate submission and must surface as a clean 409 — live testing on
+        the deployed stack surfaced this as a 500 before the fix (2026-09-14)."""
+        alloc = self._reserve(qty="10")
+        first = self._deliver(allocation_id=alloc, quantity="10", number="D-DUPNUM")
+        self.assertEqual(first.status_code, 201, first.content)
+        retry = self._deliver(
+            allocation_id=None, quantity="5", number="D-DUPNUM", nonce=uuid.uuid4()
+        )
+        self.assertEqual(retry.status_code, 409, retry.content)
+        self.assertEqual(retry.json()["error"]["code"], "duplicate_request")
+        # The retry persisted nothing — stock unchanged by the failed attempt.
+        self.assertEqual(Shipment.objects.filter(number="D-DUPNUM").count(), 1)

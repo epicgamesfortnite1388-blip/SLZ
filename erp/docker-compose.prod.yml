@@ -26,6 +26,17 @@
 #   * Backups: scripts/backup-erp.sh (nightly cron; pg_dump + media volume).
 
 services:
+  # One-shot volume bootstrap: a named volume mounted over /app/media inherits
+  # the volume root's ownership (root), while the app runs as the non-root
+  # appuser (uid 1000). Without this, every upload 500s with PermissionError.
+  # Runs as root, fixes ownership, then exits. Safe to re-run on every deploy.
+  media-init:
+    image: alpine:3.20
+    command: ["sh", "-c", "chown -R 1000:1000 /media && echo '[media-init] ownership fixed'"]
+    volumes:
+      - media_data:/media
+    restart: "no"
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -94,6 +105,8 @@ services:
       retries: 5
       start_period: 20s
     depends_on:
+      media-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:

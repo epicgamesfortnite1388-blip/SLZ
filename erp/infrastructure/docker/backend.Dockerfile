@@ -23,8 +23,10 @@ COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 # fail with "Permission denied" at container start under that user.
 RUN chmod 755 /usr/local/bin/entrypoint.sh
 
-# Non-root runtime user.
-RUN useradd -m appuser && chown -R appuser /app
+# Non-root runtime user. /app/media is created (and owned by appuser) at
+# build time so a NEW named volume mounted over it inherits the correct
+# ownership; media-init in the prod compose self-heals pre-existing volumes.
+RUN useradd -m appuser && chown -R appuser /app && mkdir -p /app/media && chown appuser:appuser /app/media
 USER appuser
 
 EXPOSE 8000
