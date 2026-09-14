@@ -147,7 +147,7 @@ services:
       dockerfile: infrastructure/docker/frontend.Dockerfile
     # Loopback-only bind — reachable only by the Cloudflare Tunnel connector.
     ports:
-      - "127.0.0.1:80:80"
+      - "127.0.0.1:8080:80"
     depends_on:
       backend:
         condition: service_healthy

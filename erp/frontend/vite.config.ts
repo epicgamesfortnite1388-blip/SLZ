@@ -13,6 +13,15 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Dev parity with production: the SPA calls same-origin `/api/v1` and the
+    // dev server forwards to the backend, exactly like the nginx proxy in the
+    // built deployment (see src/api/client.ts).
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
   },
   test: {
     globals: true,

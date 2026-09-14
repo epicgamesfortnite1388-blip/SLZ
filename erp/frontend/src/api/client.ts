@@ -7,10 +7,17 @@
  *  - Attach a fresh `X-Correlation-ID` (UUID) per request.
  *  - Parse JSON responses and throw a typed {@link ApiError} on non-2xx.
  *  - Transparently refresh the access token once on `401`, then retry.
+ *
+ * Same-origin by default: production builds call `/api/v1` on the serving
+ * origin, which the reverse proxy (nginx) routes to the backend. The Vite dev
+ * server proxies `/api` the same way (see vite.config.ts). This keeps cookies
+ * first-party and avoids CSP `connect-src` violations and mixed-content
+ * breakage when the app is served over HTTPS (e.g. behind a tunnel).
+ * An absolute base URL can still be forced via `VITE_API_BASE_URL`.
  */
 import { ApiError, type ApiErrorEnvelope, type ApiErrorType } from './types';
 
-const DEFAULT_BASE_URL = 'http://localhost:8000/api/v1';
+const DEFAULT_BASE_URL = '/api/v1';
 
 export function getBaseUrl(): string {
   const fromEnv = import.meta.env.VITE_API_BASE_URL;
