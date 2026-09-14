@@ -6,7 +6,7 @@ import { BoolCell, CollectionView, type Column } from '@/components/CollectionVi
 import { useCollection } from '@/hooks/useCollection';
 import type { UnitOfMeasure } from '@/api/masterData';
 
-function useColumns(): Column<UnitOfMeasure>[] {
+function useColumns(canManage: boolean): Column<UnitOfMeasure>[] {
   const { t } = useTranslation();
   return [
     { headerKey: 'masterData.fields.code', render: (r) => r.code },
@@ -20,13 +20,26 @@ function useColumns(): Column<UnitOfMeasure>[] {
       render: (r) => <BoolCell value={r.is_active} />,
       align: 'center',
     },
+    ...(canManage
+      ? [
+          {
+            headerKey: 'common.actions',
+            render: (r: UnitOfMeasure) => (
+              <Link to={`/master-data/uoms/${r.id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 }
 
 export function UomsPage(): JSX.Element {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
-  const columns = useColumns();
+  const canManage = hasPermission('catalog.uom.manage');
+  const columns = useColumns(canManage);
   const collection = useCollection<UnitOfMeasure>('/catalog/uoms/');
   return (
     <CollectionView
@@ -36,7 +49,7 @@ export function UomsPage(): JSX.Element {
       rowKey={(r) => r.id}
       collection={collection}
       headerAction={
-        hasPermission('catalog.uom.manage') ? (
+        canManage ? (
           <Link to="/master-data/uoms/new">
             <Button size="sm">{t('uoms.new')}</Button>
           </Link>

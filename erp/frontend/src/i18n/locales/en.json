@@ -167,7 +167,8 @@
         "RECYCLING_GRINDING": "Recycling / grinding",
         "CUTTING_SEWING": "Cutting / sewing",
         "WAREHOUSING": "Warehousing"
-      }
+      },
+      "edit": "Edit site capability"
     }
   },
   "permissions": {
@@ -260,22 +261,26 @@
   "productGroups": {
     "title": "Product groups",
     "subtitle": "Top commercial grouping for CRM and sales lines (SR-02).",
-    "new": "New product group"
+    "new": "New product group",
+    "edit": "Edit product group"
   },
   "productTypes": {
     "title": "Product types",
     "subtitle": "Level 1 — broad product categories (نوع).",
-    "new": "New product type"
+    "new": "New product type",
+    "edit": "Edit product type"
   },
   "productClasses": {
     "title": "Product classes",
     "subtitle": "Level 2 — sub-categories within a type (طبقه).",
-    "new": "New product class"
+    "new": "New product class",
+    "edit": "Edit product class"
   },
   "productFamilies": {
     "title": "Product families",
     "subtitle": "Level 3 — families within a class (خانواده).",
-    "new": "New product family"
+    "new": "New product family",
+    "edit": "Edit product family"
   },
   "products": {
     "title": "Products",
@@ -355,12 +360,17 @@
     },
     "fromUom": "From UoM",
     "toUom": "To UoM",
-    "factor": "Factor"
+    "factor": "Factor",
+    "edit": "Edit unit of measure"
   },
   "uomConversions": {
     "title": "UoM conversions",
     "subtitle": "Conversion factors between units of the same dimension.",
-    "new": "New conversion"
+    "new": "New conversion",
+    "edit": "Edit conversion",
+    "from": "From unit",
+    "to": "To unit",
+    "factor": "Factor"
   },
   "employees": {
     "title": "Employees",

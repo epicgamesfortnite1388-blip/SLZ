@@ -19,6 +19,12 @@ import {
   updateProduct,
   updateMaterial,
   updateEmployee,
+  updateUom,
+  updateUomConversion,
+  updateProductGroup,
+  updateProductType,
+  updateProductClass,
+  updateProductFamily,
 } from '../masterData';
 
 describe('masterData API', () => {
@@ -94,6 +100,34 @@ describe('masterData API', () => {
     expect(apiClient.patch).toHaveBeenCalledWith('/hr/employees/emp-1/', {
       job_title: 'اپراتور',
       is_active: false,
+    });
+  });
+
+  it('PATCHes the small-entity edit flows to the catalog endpoints', async () => {
+    await updateUom('uom-1', { name_fa: 'کیلوگرم', dimension: 'MASS' });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/uoms/uom-1/', {
+      name_fa: 'کیلوگرم',
+      dimension: 'MASS',
+    });
+    await updateUomConversion('uc-1', { factor: '1000' });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/uom-conversions/uc-1/', {
+      factor: '1000',
+    });
+    await updateProductGroup('pg-1', { name_en: 'Films' });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/product-groups/pg-1/', {
+      name_en: 'Films',
+    });
+    await updateProductType('pt-1', { name_en: 'Types' });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/product-types/pt-1/', {
+      name_en: 'Types',
+    });
+    await updateProductClass('pc-1', { product_type: 'pt-1' });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/product-classes/pc-1/', {
+      product_type: 'pt-1',
+    });
+    await updateProductFamily('pf-1', { product_class: 'pc-1' });
+    expect(apiClient.patch).toHaveBeenCalledWith('/catalog/product-families/pf-1/', {
+      product_class: 'pc-1',
     });
   });
 });

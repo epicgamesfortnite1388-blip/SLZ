@@ -125,3 +125,14 @@ export function createSiteCapability(
     payload,
   );
 }
+
+/** Update a site capability (audited PATCH). */
+export function updateSiteCapability(
+  id: string,
+  payload: Partial<SiteCapability>,
+): Promise<SiteCapability> {
+  return apiClient.patch<SiteCapability>(
+    `/organization/site-capabilities/${id}/`,
+    payload,
+  );
+}

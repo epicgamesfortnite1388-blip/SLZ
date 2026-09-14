@@ -11,11 +11,25 @@ export function ProductGroupsPage(): JSX.Element {
   const { hasPermission } = useAuth();
   const collection = useCollection<ProductGroup>('/catalog/product-groups/');
 
+  const canManage = hasPermission('catalog.productgroup.manage');
+
   const columns: Column<ProductGroup>[] = [
     { headerKey: 'masterData.fields.code', render: (r) => r.code },
     { headerKey: 'masterData.fields.nameFa', render: (r) => r.name_fa },
     { headerKey: 'masterData.fields.nameEn', render: (r) => r.name_en || '—' },
     { headerKey: 'masterData.fields.active', render: (r) => <BoolCell value={r.is_active} />, align: 'center' },
+    ...(canManage
+      ? [
+          {
+            headerKey: 'common.actions',
+            render: (r: ProductGroup) => (
+              <Link to={`/master-data/product-groups/${r.id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -26,7 +40,7 @@ export function ProductGroupsPage(): JSX.Element {
       rowKey={(r) => r.id}
       collection={collection}
       headerAction={
-        hasPermission('catalog.productgroup.manage') ? (
+        canManage ? (
           <Link to="/master-data/product-groups/new">
             <Button size="sm">{t('productGroups.new')}</Button>
           </Link>

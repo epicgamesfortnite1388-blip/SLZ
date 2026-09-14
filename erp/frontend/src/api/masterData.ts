@@ -179,6 +179,51 @@ export function fetchUom(id: string): Promise<UnitOfMeasure> {
   return apiClient.get<UnitOfMeasure>(`/catalog/uoms/${id}/`);
 }
 
+/** Update a unit of measure (PATCH; `code` stays fixed). */
+export function updateUom(id: string, payload: Partial<UnitOfMeasure>): Promise<UnitOfMeasure> {
+  return apiClient.patch<UnitOfMeasure>(`/catalog/uoms/${id}/`, payload);
+}
+
+/** Update a UoM conversion (PATCH; same-dimension rule stays server-side). */
+export function updateUomConversion(
+  id: string,
+  payload: Partial<UomConversion>,
+): Promise<UomConversion> {
+  return apiClient.patch<UomConversion>(`/catalog/uom-conversions/${id}/`, payload);
+}
+
+/** Update a product group (PATCH). */
+export function updateProductGroup(
+  id: string,
+  payload: Partial<ProductGroup>,
+): Promise<ProductGroup> {
+  return apiClient.patch<ProductGroup>(`/catalog/product-groups/${id}/`, payload);
+}
+
+/** Update a product type (PATCH). */
+export function updateProductType(
+  id: string,
+  payload: Partial<ProductType>,
+): Promise<ProductType> {
+  return apiClient.patch<ProductType>(`/catalog/product-types/${id}/`, payload);
+}
+
+/** Update a product class (PATCH). */
+export function updateProductClass(
+  id: string,
+  payload: Partial<ProductClass>,
+): Promise<ProductClass> {
+  return apiClient.patch<ProductClass>(`/catalog/product-classes/${id}/`, payload);
+}
+
+/** Update a product family (PATCH). */
+export function updateProductFamily(
+  id: string,
+  payload: Partial<ProductFamily>,
+): Promise<ProductFamily> {
+  return apiClient.patch<ProductFamily>(`/catalog/product-families/${id}/`, payload);
+}
+
 /** Create an employee (audited write path). */
 export function createEmployee(
   payload: Partial<Employee>,

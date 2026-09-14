@@ -22,14 +22,22 @@ import { ProductClassesPage } from '@/pages/masterData/ProductClassesPage';
 import { ProductClassCreatePage } from '@/pages/masterData/ProductClassCreatePage';
 import { ProductFamiliesPage } from '@/pages/masterData/ProductFamiliesPage';
 import { ProductFamilyCreatePage } from '@/pages/masterData/ProductFamilyCreatePage';
+import {
+  ProductGroupEditPage,
+  ProductTypeEditPage,
+  ProductClassEditPage,
+  ProductFamilyEditPage,
+} from '@/pages/masterData/ProductTaxonomyEditPages';
 import { MaterialsPage } from '@/pages/masterData/MaterialsPage';
 import { MaterialCreatePage } from '@/pages/masterData/MaterialCreatePage';
 import { MaterialEditPage } from '@/pages/masterData/MaterialEditPage';
 import { MaterialDetailPage } from '@/pages/masterData/MaterialDetailPage';
 import { UomsPage } from '@/pages/masterData/UomsPage';
 import { UomCreatePage } from '@/pages/masterData/UomCreatePage';
+import { UomEditPage } from '@/pages/masterData/UomEditPage';
 import { UomConversionsPage } from '@/pages/masterData/UomConversionsPage';
 import { UomConversionCreatePage } from '@/pages/masterData/UomConversionCreatePage';
+import { UomConversionEditPage } from '@/pages/masterData/UomConversionEditPage';
 import { EmployeesPage } from '@/pages/masterData/EmployeesPage';
 import { EmployeeDetailPage } from '@/pages/masterData/EmployeeDetailPage';
 import { EmployeeCreatePage } from '@/pages/masterData/EmployeeCreatePage';
@@ -116,6 +124,7 @@ import { SiteEditPage } from '@/pages/organization/SiteEditPage';
 import { DepartmentsPage, DepartmentCreatePage } from '@/pages/organization/DepartmentsPage';
 import { DepartmentEditPage } from '@/pages/organization/DepartmentEditPage';
 import { SiteCapabilitiesPage, SiteCapabilityCreatePage } from '@/pages/organization/SiteCapabilitiesPage';
+import { SiteCapabilityEditPage } from '@/pages/organization/SiteCapabilityEditPage';
 
 /** Root application: keeps direction in sync and declares the route table. */
 export default function App(): JSX.Element {
@@ -218,6 +227,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="product-groups/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.productgroup.manage">
+                <ProductGroupEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="product-types"
             element={
               <ProtectedRoute requiredPermission="catalog.producttaxonomy.view">
@@ -230,6 +247,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
                 <ProductTypeCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-types/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
+                <ProductTypeEditPage />
               </ProtectedRoute>
             }
           />
@@ -250,6 +275,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="product-classes/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
+                <ProductClassEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="product-families"
             element={
               <ProtectedRoute requiredPermission="catalog.producttaxonomy.view">
@@ -262,6 +295,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
                 <ProductFamilyCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="product-families/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.producttaxonomy.manage">
+                <ProductFamilyEditPage />
               </ProtectedRoute>
             }
           />
@@ -306,6 +347,14 @@ export default function App(): JSX.Element {
             }
           />
           <Route
+            path="uoms/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.uom.manage">
+                <UomEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="uoms"
             element={
               <ProtectedRoute requiredPermission="catalog.uom.view">
@@ -326,6 +375,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="catalog.uom.manage">
                 <UomConversionCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="uom-conversions/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="catalog.uom.manage">
+                <UomConversionEditPage />
               </ProtectedRoute>
             }
           />
@@ -878,6 +935,14 @@ export default function App(): JSX.Element {
             element={
               <ProtectedRoute requiredPermission="organization.sitecapability.manage">
                 <SiteCapabilityCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="site-capabilities/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission="organization.sitecapability.manage">
+                <SiteCapabilityEditPage />
               </ProtectedRoute>
             }
           />

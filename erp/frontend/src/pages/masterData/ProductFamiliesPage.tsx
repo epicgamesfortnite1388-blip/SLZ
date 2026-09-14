@@ -11,11 +11,25 @@ export function ProductFamiliesPage(): JSX.Element {
   const { hasPermission } = useAuth();
   const collection = useCollection<ProductFamily>('/catalog/product-families/');
 
+  const canManage = hasPermission('catalog.producttaxonomy.manage');
+
   const columns: Column<ProductFamily>[] = [
     { headerKey: 'masterData.fields.code', render: (r) => r.code },
     { headerKey: 'masterData.fields.nameFa', render: (r) => r.name_fa },
     { headerKey: 'masterData.fields.nameEn', render: (r) => r.name_en || '—' },
     { headerKey: 'masterData.fields.active', render: (r) => <BoolCell value={r.is_active} />, align: 'center' },
+    ...(canManage
+      ? [
+          {
+            headerKey: 'common.actions',
+            render: (r: ProductFamily) => (
+              <Link to={`/master-data/product-families/${r.id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -26,7 +40,7 @@ export function ProductFamiliesPage(): JSX.Element {
       rowKey={(r) => r.id}
       collection={collection}
       headerAction={
-        hasPermission('catalog.producttaxonomy.manage') ? (
+        canManage ? (
           <Link to="/master-data/product-families/new">
             <Button size="sm">{t('productFamilies.new')}</Button>
           </Link>

@@ -11,10 +11,24 @@ export function UomConversionsPage(): JSX.Element {
   const { hasPermission } = useAuth();
   const collection = useCollection<UomConversion>('/catalog/uom-conversions/');
 
+  const canManage = hasPermission('catalog.uom.manage');
+
   const columns: Column<UomConversion>[] = [
     { headerKey: 'uoms.fromUom', render: (r) => r.from_uom },
     { headerKey: 'uoms.toUom', render: (r) => r.to_uom },
     { headerKey: 'uoms.factor', render: (r) => r.factor, align: 'end' },
+    ...(canManage
+      ? [
+          {
+            headerKey: 'common.actions',
+            render: (r: UomConversion) => (
+              <Link to={`/master-data/uom-conversions/${r.id}/edit`} className="link-inline">
+                {t('common.edit')}
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -25,7 +39,7 @@ export function UomConversionsPage(): JSX.Element {
       rowKey={(r) => r.id}
       collection={collection}
       headerAction={
-        hasPermission('catalog.uom.manage') ? (
+        canManage ? (
           <Link to="/master-data/uom-conversions/new">
             <Button size="sm">{t('uomConversions.new')}</Button>
           </Link>
